@@ -141,7 +141,7 @@
         .date-label { color: var(--gold-dim); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
         .date-val { font-size: 1.2rem; font-weight: bold; }
         
-        /* UPDATED: Bigger Clock */
+        /* Bigger Clock */
         #live-clock { font-size: 1.8rem; font-family: 'Courier New', monospace; letter-spacing: -1px; }
 
         .location-val { font-size: 1rem; color: var(--text-muted); }
@@ -214,7 +214,7 @@
         .ramadan-days { font-size: 2.5rem; color: var(--text-main); font-weight: bold; }
         .ramadan-sub { font-size: 0.9rem; color: var(--gold-dim); }
 
-        /* NEW: RAMADAN SPECIFIC STYLES */
+        /* RAMADAN SPECIFIC STYLES */
         .ramadan-active-panel {
             display: none; /* Hidden by default, shown via JS during Ramadan */
             grid-column: span 12;
@@ -239,25 +239,38 @@
             font-size: 0.8rem;
         }
 
-        /* ASHRA PROGRESS BAR */
+        /* UPDATED ASHRA PROGRESS BAR (Fixed Visibility) */
         .ashra-container {
             margin-top: 10px;
             background: #222;
-            height: 20px;
-            border-radius: 10px;
+            height: 24px; /* Slightly taller for mobile visibility */
+            border-radius: 12px;
             overflow: hidden;
-            position: relative;
+            position: relative; /* Essential for overlay */
         }
+        
         .ashra-bar {
             height: 100%;
             width: 0%;
             transition: width 0.5s ease-in-out;
+            /* Text removed from here to prevent clipping */
+        }
+
+        /* New overlay class to ensure text is always visible */
+        .ashra-text-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.7rem;
-            color: #000;
+            font-size: 0.85rem;
             font-weight: bold;
+            color: #fff;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.9); /* Heavy shadow for legibility on all colors */
+            z-index: 2;
         }
 
         /* 6. NIGHT PRAYERS */
@@ -335,7 +348,7 @@
         @media (min-width: 768px) {
             h1 { font-size: 3rem; }
             .prayer-hero { grid-column: span 12; } 
-            .ramadan-active-panel { grid-column: span 12; } /* Full width for Ramadan panel */
+            .ramadan-active-panel { grid-column: span 12; } 
             .text-widget { grid-column: span 6; } 
             .night-widget { grid-column: span 6; } 
             .names-widget { grid-column: span 6; }
@@ -426,6 +439,7 @@
                 <div class="date-label" style="color: #ccc; margin-bottom: 5px;">Ashra Progress: <span id="ashra-name" style="color:var(--gold);">--</span></div>
                 <div class="ashra-container">
                     <div class="ashra-bar" id="ashra-bar"></div>
+                    <div class="ashra-text-overlay" id="ashra-text-display">Day --</div>
                 </div>
             </div>
         </section>
@@ -515,11 +529,11 @@
         let state = {
             prayers: {},
             nextPrayer: null,
-            prevPrayerTime: null, // New: For progress bar calc
+            prevPrayerTime: null, 
             adhanPlayed: false,
             namesList: [],
             weatherInterval: null,
-            isRamadan: false // Toggle for debugging or real detection
+            isRamadan: false 
         };
 
         // --- INIT ---
@@ -646,14 +660,16 @@
             } else {
                 ashraName = "Third Ashra: Protection (Nijat)";
                 ashraColor = "var(--ashra-protect)"; // Red/Tomato
-                progress = ((day - 20) / 10) * 100; // Assuming 30 days
+                progress = ((day - 20) / 10) * 100; 
             }
 
             document.getElementById('ashra-name').innerText = ashraName;
             const bar = document.getElementById('ashra-bar');
             bar.style.width = `${progress}%`;
             bar.style.backgroundColor = ashraColor;
-            bar.innerText = `Day ${day}`;
+            
+            // Text is now in the overlay so it doesn't get cut off
+            document.getElementById('ashra-text-display').innerText = `Day ${day}`;
         }
 
         function updateFastingTimer() {
@@ -759,7 +775,7 @@
                     // Determine previous prayer time for progress bar
                     let prevName = (i===0) ? "Isha" : sequence[i-1];
                     let prevTime = parseTime(state.prayers[prevName]);
-                    if (i===0) prevTime.setDate(prevTime.getDate() - 1); // Yesterday's Isha
+                    if (i===0) prevTime.setDate(prevTime.getDate() - 1); 
                     state.prevPrayerTime = prevTime;
 
                     document.getElementById('curr-name').innerText = prevName;
@@ -770,12 +786,9 @@
             }
 
             if(!found) {
-                // Next is Fajr Tomorrow
                 const fTime = parseTime(state.prayers.Fajr);
                 fTime.setDate(fTime.getDate() + 1);
                 state.nextPrayer = { name: "Fajr", time: fTime };
-
-                // Previous was Isha Today
                 state.prevPrayerTime = parseTime(state.prayers.Isha);
 
                 document.getElementById('curr-name').innerText = "Isha";
@@ -802,7 +815,6 @@
             const now = new Date();
             const diff = state.nextPrayer.time - now;
 
-            // 1. Handle Adhan / Next Prayer
             if(diff <= 0) {
                 if(!state.adhanPlayed && state.nextPrayer.name !== 'Sunrise') {
                     playAdhan();
@@ -811,7 +823,7 @@
                 return;
             }
 
-            // 2. Update Countdown Text
+            // Update Countdown Text
             const h = Math.floor(diff / 3600000);
             const m = Math.floor((diff % 3600000) / 60000);
             const s = Math.floor((diff % 60000) / 1000);
@@ -819,7 +831,7 @@
                 `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
             document.getElementById('next-label').innerText = `Next: ${state.nextPrayer.name}`;
 
-            // 3. Update Prayer Progress Bar (FIXED LOGIC)
+            // Update Prayer Progress Bar
             if (state.prevPrayerTime) {
                 const totalDuration = state.nextPrayer.time - state.prevPrayerTime;
                 const elapsed = now - state.prevPrayerTime;
@@ -827,7 +839,6 @@
                 document.getElementById('progress-fill').style.width = `${Math.min(Math.max(pct,0),100)}%`;
             }
 
-            // 4. Update Ramadan Fasting Timer (if active)
             if(state.isRamadan) updateFastingTimer();
         }
 
