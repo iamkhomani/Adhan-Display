@@ -3,7 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Islamic Dashboard Pro</title>
+    <meta name="description" content="Adhan Display is a free, beautiful Islamic dashboard for Muslim prayer times, Qibla direction, daily Quran verses, and Adhan audio. Perfect for home screens, mosques, and digital signage.">
+    <meta name="keywords" content="Adhan Display, Muslim Prayer Times, Islamic Dashboard, Prayer Clock, Adhan Audio, Quran Verse of the Day, Mosque Signage, Salah Times Netherlands">
+    <meta name="author" content="Adhan Display">
+    <meta name="robots" content="index, follow">
+
+    <meta property="og:title" content="Adhan Display - Muslim Prayer Times Dashboard">
+    <meta property="og:description" content="Turn any screen into a beautiful Islamic prayer clock with Adhan audio, Quran verses, and live Makkah stream.">
+    <meta property="og:image" content="images/adhan display muslim prayer times dashboard logo.jpg">
+    <meta property="og:url" content="https://yourwebsite.com">
+    <meta property="og:type" content="website">
+
+    <link rel="icon" type="image/jpg" href="images/adhan display muslim prayer times dashboard logo.jpg">
+
+    <title>Adhan Display - Muslim Prayer Times Dashboard</title>
+    
     <style>
         /* --- THEME: LUXURY BLACK & GOLD --- */
         :root {
@@ -18,7 +32,8 @@
         }
 
         body {
-            background-image: url('images/background.jpg');
+            /* Updated Background Filename */
+            background-image: url('images/adhan display muslim prayer times dashboard background.jpg');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -28,7 +43,9 @@
             margin: 0;
             min-height: 100vh;
             overflow-y: auto;
-            padding-bottom: 50px; /* Space for scrolling */
+            padding-bottom: 80px; /* Space for scrolling & footer */
+            display: flex;
+            flex-direction: column;
         }
 
         /* --- LAYOUT GRID --- */
@@ -40,6 +57,7 @@
             grid-template-columns: repeat(12, 1fr);
             gap: 20px;
             box-sizing: border-box;
+            flex: 1; /* Pushes footer down */
         }
 
         /* Generic Card Style */
@@ -79,7 +97,7 @@
         
         h1 {
             color: var(--gold);
-            font-size: 2.5rem; /* Mobile default */
+            font-size: 2.5rem; 
             margin: 0;
             text-transform: uppercase;
             letter-spacing: 3px;
@@ -99,7 +117,7 @@
         .info-panel {
             grid-column: span 12;
             display: flex;
-            flex-wrap: wrap; /* Wraps on very small screens */
+            flex-wrap: wrap; 
             justify-content: space-around;
             align-items: center;
             background: rgba(0,0,0,0.7);
@@ -130,7 +148,7 @@
         .progress-container { width: 100%; height: 6px; background: #333; margin-top: 20px; border-radius: 3px; overflow: hidden; }
         .progress-bar { height: 100%; background: var(--gold); width: 0%; transition: width 1s linear; }
 
-        /* 4. NIGHT PRAYERS (TAHAJJUD) - NEW */
+        /* 4. NIGHT PRAYERS (TAHAJJUD) */
         .night-widget {
             grid-column: span 12;
             text-align: center;
@@ -166,6 +184,7 @@
         .text-widget {
             grid-column: span 12;
             min-height: 140px;
+            position: relative;
         }
 
         .widget-title { 
@@ -179,6 +198,22 @@
         }
         .quote-text { font-size: 1rem; line-height: 1.5; font-style: italic; color: #e0e0e0; }
         .quote-ref { font-size: 0.8rem; color: var(--gold); margin-top: 10px; text-align: right; }
+
+        /* NEW: Quran Button inside Text Widget */
+        .btn-quran {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: transparent;
+            border: 1px solid var(--gold-dim);
+            color: var(--gold);
+            padding: 5px 10px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+        .btn-quran:hover { background: var(--gold); color: #000; }
 
         /* 7. YOUTUBE BUTTON CARD */
         .video-card {
@@ -219,13 +254,26 @@
             animation: pulse 1.5s infinite;
         }
 
+        /* --- FOOTER & LOGO --- */
+        footer {
+            margin-top: auto;
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid #222;
+            background: rgba(0,0,0,0.8);
+        }
+        .footer-logo {
+            width: 80px; /* Small Logo */
+            height: auto;
+            opacity: 0.8;
+            transition: 0.3s;
+        }
+        .footer-logo:hover { opacity: 1; }
+
         /* --- RESPONSIVE BREAKPOINTS --- */
-        
-        /* TABLET (min-width: 768px) */
         @media (min-width: 768px) {
             h1 { font-size: 3rem; }
-            
-            .prayer-hero { grid-column: span 12; } /* Full width hero on tablet */
+            .prayer-hero { grid-column: span 12; } 
             .night-widget { grid-column: span 6; }
             .names-widget { grid-column: span 6; }
             .ramadan-widget { grid-column: span 6; }
@@ -233,32 +281,25 @@
             .text-widget { grid-column: span 6; }
         }
 
-        /* DESKTOP (min-width: 1024px) */
         @media (min-width: 1024px) {
-            .prayer-hero { grid-column: span 6; grid-row: span 2; } /* Hero takes substantial space */
-            .night-widget { grid-column: span 6; } /* Night tracker next to hero */
-            
-            /* Right Side Column */
+            .prayer-hero { grid-column: span 6; grid-row: span 2; } 
+            .night-widget { grid-column: span 6; } 
             .names-widget { grid-column: span 3; }
             .ramadan-widget { grid-column: span 3; }
-            
-            /* Bottom Row */
             .text-widget { grid-column: span 4; }
             .video-card { grid-column: span 4; }
         }
 
-        /* ANIMATION */
         @keyframes pulse {
             0% { opacity: 1; }
             50% { opacity: 0.4; }
             100% { opacity: 1; }
         }
 
-        /* Audio Controls */
         .audio-control {
             position: fixed;
             bottom: 20px;
-            right: 20px;
+            right: 20px; /* Avoids BMC widget on right */
             background: var(--gold);
             color: black;
             border: none;
@@ -270,22 +311,25 @@
             z-index: 100;
             font-size: 0.9rem;
         }
-        .audio-control:hover { background: #fff; }
+        /* Move audio button slightly left so it doesn't overlap BMC widget */
+        @media (min-width: 768px) {
+            .audio-control { right: 100px; } 
+        }
 
     </style>
 </head>
 <body>
 
-    <div class="dashboard-container">
+    <main class="dashboard-container">
         
-        <div class="header-section">
+        <header class="header-section">
             <div class="title-wrapper">
-                <h1>Islamic Dashboard</h1>
+                <h1>Adhan Display</h1>
                 <div class="shahada">La ilaha illa Allah, Muhammadur Rasul Allah</div>
             </div>
-        </div>
+        </header>
 
-        <div class="info-panel">
+        <section class="info-panel">
             <div class="date-box">
                 <div class="date-label">Gregorian</div>
                 <div class="date-val" id="greg-date">--/--/----</div>
@@ -302,9 +346,9 @@
                 <div class="date-label">Hijri</div>
                 <div class="date-val" id="hijri-date">-- -- ----</div>
             </div>
-        </div>
+        </section>
 
-        <div class="card prayer-hero">
+        <section class="card prayer-hero">
             <div class="date-label" id="status-label">Current Prayer</div>
             <div class="prayer-name-display" id="curr-name">Loading...</div>
             <div class="prayer-time-display" id="curr-time">--:--</div>
@@ -316,9 +360,9 @@
                     <div class="progress-bar" id="progress-fill"></div>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <div class="card night-widget">
+        <section class="card night-widget">
             <div class="widget-title" style="color: #fff; border-bottom: 1px solid var(--gold-dim);">Night Prayers (Qiyam)</div>
             <div class="night-row">
                 <div class="night-item">
@@ -333,39 +377,48 @@
             <div style="margin-top:15px; font-size: 0.8rem; color: #888; font-style:italic;">
                 "The Lord descends to the lowest heaven in the last third of the night..."
             </div>
-        </div>
+        </section>
 
-        <div class="card names-widget">
+        <article class="card names-widget">
             <div class="widget-title">Name of Allah</div>
             <div id="names-container">
                 <div class="allah-name-ar" id="allah-ar">--</div>
                 <div class="allah-name-en" id="allah-en">--</div>
                 <div class="allah-name-meaning" id="allah-meaning">--</div>
             </div>
-        </div>
+        </article>
 
-        <div class="card ramadan-widget">
+        <article class="card ramadan-widget">
             <div class="widget-title">Days until Ramadan</div>
             <div class="ramadan-days" id="ramadan-val">--</div>
-        </div>
+        </article>
 
-        <div class="card text-widget">
+        <article class="card text-widget">
             <div class="widget-title">Daily Quran Verse</div>
+            <a href="https://quran.com" target="_blank" class="btn-quran" title="Read Full Quran Online">Read Quran</a>
+            
             <div class="quote-text" id="quran-text">Loading Verse...</div>
             <div class="quote-ref" id="quran-ref">--</div>
-        </div>
+        </article>
 
-        <div class="card video-card">
+        <section class="card video-card">
             <a href="https://www.youtube.com/watch?v=yH_PIhe-I0s" target="_blank" class="btn-live">
                 <span class="live-indicator"></span>
                 Watch Makkah Live
             </a>
-        </div>
+        </section>
 
-    </div>
+    </main>
+
+    <footer>
+        <img src="images/adhan display muslim prayer times dashboard logo.jpg" alt="Adhan Display Logo - Muslim Prayer Times Dashboard" class="footer-logo">
+        <p style="font-size: 0.8rem; color: #666; margin-top: 10px;">&copy; 2024 Adhan Display. Serving the Ummah.</p>
+    </footer>
 
     <audio id="adhan-audio" src="audio/adhan.mp3" preload="auto"></audio>
     <button class="audio-control" id="audio-btn" onclick="enableAudio()">Unmute Adhan</button>
+
+    <script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="kmni" data-description="Support me on Buy me a coffee!" data-message="As-salaamu alaykum wa rahmatullaahi wa barakaatuh. Thank you for visiting. Your small donation keeps AdhanDisplay ad-free and helpful for the ummah." data-color="#40DCA5" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
 
     <script>
         // --- STATE & CONFIG ---
@@ -431,7 +484,6 @@
                     calcRamadan(h);
                     
                     // Update Tahajjud / Midnight
-                    // Note: The API returns Lastthird/Midnight for the night OF this date.
                     if (state.prayers.Lastthird) document.getElementById('last-third-time').innerText = state.prayers.Lastthird;
                     if (state.prayers.Midnight) document.getElementById('midnight-time').innerText = state.prayers.Midnight;
 
@@ -490,7 +542,6 @@
 
         function determinePrayerState() {
             const now = new Date();
-            // We only track the obligatory + sunrise
             const sequence = ["Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha"];
             let found = false;
 
@@ -500,18 +551,15 @@
                 
                 if(pTime > now) {
                     state.nextPrayer = { name: pName, time: pTime };
-                    // Current is previous
                     let prevName = (i===0) ? "Isha" : sequence[i-1];
                     document.getElementById('curr-name').innerText = prevName;
                     document.getElementById('curr-time').innerText = state.prayers[prevName] || "--:--";
-                    
                     found = true;
                     break;
                 }
             }
 
             if(!found) {
-                // Next is Fajr Tomorrow
                 const fTime = parseTime(state.prayers.Fajr);
                 fTime.setDate(fTime.getDate() + 1);
                 state.nextPrayer = { name: "Fajr", time: fTime };
@@ -529,7 +577,6 @@
                 document.getElementById('status-label').innerText = "Current Prayer";
             }
 
-            // Audio reset
             const diff = state.nextPrayer.time - now;
             if(diff > 60000 * 2) state.adhanPlayed = false;
         }
@@ -547,7 +594,6 @@
                 return;
             }
 
-            // Format Text
             const h = Math.floor(diff / 3600000);
             const m = Math.floor((diff % 3600000) / 60000);
             const s = Math.floor((diff % 60000) / 1000);
@@ -555,7 +601,6 @@
                 `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
             document.getElementById('next-label').innerText = `Next: ${state.nextPrayer.name}`;
 
-            // Progress Bar (Visual 2hr window)
             const window = 7200000;
             let pct = 100 - ((diff / window) * 100);
             document.getElementById('progress-fill').style.width = `${Math.min(Math.max(pct,0),100)}%`;
