@@ -1,27 +1,32 @@
 # 🌙 Adhan Display - Luxury Islamic Dashboard (2026)
 
+
+
 **Adhan Display** is a professional-grade, high-aesthetic Islamic command center designed for the modern Muslim home. It transforms any screen—tablet, smart TV, or monitor—into a luxury prayer clock, spiritual reminder hub, and live weather station.
 
-[🔗 View the Live Dashboard](https://iamkhomani.github.io/adhan-display/)  
+[🔗 View the Live Adhan Display](https://adhandisplay.com/)  
 
 ---
 
-## ✨ Features at a Glance
+## ✨ Features
 
 * **🏆 Luxury Aesthetic:** Deep charcoal and gold theme designed for high-end digital signage.
 * **📍 Location-Aware:** Automatically detects your city to provide localized prayer times and weather data.
-* **🌦️ Real-Time Weather & Clock:** Live temperature and weather conditions alongside a precise digital clock.
+* **🌦️ Real-Time Weather & Clock:** Live temperature and weather conditions alongside a large, clear digital clock.
 * **🕋 Prayer Command Center:**
     * Real-time countdown to the next prayer.
-    * Visual progress bars for current prayer windows.
-    * Automatic **Adhan audio** notifications (requires user unmute).
+    * **Visual Progress Bar:** Tracks the elapsed time between prayers.
+    * Automatic **Adhan audio** notifications.
+* **🌙 Ramadan Mode (Smart):**
+    * Automatically activates during the holy month.
+    * **Iftar/Suhoor Timer:** Switches between "Time until Suhoor" and "Time until Iftar" automatically.
+    * **Ashra Tracker:** Visual progress bar for Mercy, Forgiveness, and Protection stages.
 * **🌌 Nightly Worship (Qiyam):** Automated calculation of **Islamic Midnight** and the **Last Third of the Night** (Tahajjud).
 * **📖 Spiritual Feed:**
     * **Ayah of the Day:** Randomly selected verses from the Quran.
     * **99 Names of Allah:** Rotating display of the Asma-ul-Husna with meanings.
     * **Quick Quran Access:** Direct button to read the full Quran on Quran.com.
-* **⏳ Smart Ramadan Countdown:** A dynamic counter that switches to **Days, Hours, and Minutes** as the blessed month approaches.
-* **📲 PWA Ready:** Can be "installed" on any iPhone or Android home screen for a full-screen, app-like experience without browser bars.
+* **📲 PWA Ready:** Can be "installed" on any iPhone or Android home screen for a full-screen, app-like experience.
 
 ---
 
