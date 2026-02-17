@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="Adhan Display is a free, beautiful Islamic dashboard for Muslim prayer times, Qibla direction, daily Quran verses, and Adhan audio. Perfect for home screens, mosques, and digital signage.">
-    <meta name="keywords" content="Adhan Display, Muslim Prayer Times, Islamic Dashboard, Prayer Clock, Adhan Audio, Quran Verse of the Day, Mosque Signage, Salah Times Netherlands">
+    <meta name="description" content="Adhan Display is a free, beautiful Islamic dashboard for Muslim prayer times, Qibla direction, daily Quran verses, and Adhan audio.">
+    <meta name="keywords" content="Adhan Display, Muslim Prayer Times, Islamic Dashboard, Prayer Clock, Adhan Audio, Quran Verse of the Day, Mosque Signage">
     <meta name="author" content="Adhan Display">
     <meta name="robots" content="index, follow">
 
@@ -39,7 +39,6 @@
         }
 
         body {
-            /* Updated Background Filename */
             background-image: url('images/adhan display muslim prayer times dashboard background.jpg');
             background-size: cover;
             background-position: center;
@@ -50,7 +49,7 @@
             margin: 0;
             min-height: 100vh;
             overflow-y: auto;
-            padding-bottom: 80px; /* Space for scrolling & footer */
+            padding-bottom: 80px;
             display: flex;
             flex-direction: column;
             -webkit-tap-highlight-color: transparent;
@@ -65,7 +64,7 @@
             grid-template-columns: repeat(12, 1fr);
             gap: 20px;
             box-sizing: border-box;
-            flex: 1; /* Pushes footer down */
+            flex: 1;
         }
 
         /* Generic Card Style */
@@ -85,7 +84,7 @@
 
         /* --- SECTIONS --- */
         
-        /* 1. HEADER (Improved Readability) */
+        /* 1. HEADER */
         .header-section {
             grid-column: span 12;
             text-align: center;
@@ -121,7 +120,7 @@
             text-shadow: 0 2px 4px rgba(0,0,0,1);
         }
 
-        /* 2. DATE & LOCATION */
+        /* 2. DATE, TIME & WEATHER BAR */
         .info-panel {
             grid-column: span 12;
             display: flex;
@@ -139,6 +138,7 @@
         .date-label { color: var(--gold-dim); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
         .date-val { font-size: 1.2rem; font-weight: bold; }
         .location-val { font-size: 1rem; color: var(--text-muted); }
+        .weather-val { font-size: 1.1rem; color: #fff; display: flex; align-items: center; justify-content: center; gap: 5px; }
 
         /* 3. HERO: PRAYER TIMER */
         .prayer-hero {
@@ -156,39 +156,7 @@
         .progress-container { width: 100%; height: 6px; background: #333; margin-top: 20px; border-radius: 3px; overflow: hidden; }
         .progress-bar { height: 100%; background: var(--gold); width: 0%; transition: width 1s linear; }
 
-        /* 4. NIGHT PRAYERS (TAHAJJUD) */
-        .night-widget {
-            grid-column: span 12;
-            text-align: center;
-            border: 1px solid #444;
-        }
-
-        .night-row {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 10px;
-        }
-        .night-item { display: flex; flex-direction: column; gap: 5px; }
-        .night-time { font-size: 1.4rem; color: var(--gold); font-weight: bold; }
-        .night-desc { font-size: 0.8rem; color: #888; }
-
-        /* 5. SIDE WIDGETS */
-        .names-widget {
-            grid-column: span 12;
-            text-align: center;
-        }
-
-        .allah-name-ar { font-size: 2.5rem; color: var(--gold); margin-bottom: 5px; font-family: serif; }
-        .allah-name-en { font-size: 1.1rem; font-weight: bold; }
-        .allah-name-meaning { font-size: 0.9rem; color: var(--text-muted); font-style: italic; }
-
-        .ramadan-widget {
-            grid-column: span 12;
-            text-align: center;
-        }
-        .ramadan-days { font-size: 2.5rem; color: var(--text-main); font-weight: bold; }
-
-        /* 6. BOTTOM CONTENT */
+        /* 4. AYAH OF THE DAY (Swapped Position) */
         .text-widget {
             grid-column: span 12;
             min-height: 140px;
@@ -207,7 +175,6 @@
         .quote-text { font-size: 1rem; line-height: 1.5; font-style: italic; color: #e0e0e0; }
         .quote-ref { font-size: 0.8rem; color: var(--gold); margin-top: 10px; text-align: right; }
 
-        /* NEW: Quran Button inside Text Widget */
         .btn-quran {
             position: absolute;
             top: 15px;
@@ -222,6 +189,39 @@
             transition: 0.2s;
         }
         .btn-quran:hover { background: var(--gold); color: #000; }
+
+        /* 5. SIDE WIDGETS */
+        .names-widget {
+            grid-column: span 12;
+            text-align: center;
+        }
+
+        .allah-name-ar { font-size: 2.5rem; color: var(--gold); margin-bottom: 5px; font-family: serif; }
+        .allah-name-en { font-size: 1.1rem; font-weight: bold; }
+        .allah-name-meaning { font-size: 0.9rem; color: var(--text-muted); font-style: italic; }
+
+        .ramadan-widget {
+            grid-column: span 12;
+            text-align: center;
+        }
+        .ramadan-days { font-size: 2.5rem; color: var(--text-main); font-weight: bold; }
+        .ramadan-sub { font-size: 0.9rem; color: var(--gold-dim); }
+
+        /* 6. NIGHT PRAYERS (Swapped Position) */
+        .night-widget {
+            grid-column: span 12;
+            text-align: center;
+            border: 1px solid #444;
+        }
+
+        .night-row {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+        }
+        .night-item { display: flex; flex-direction: column; gap: 5px; }
+        .night-time { font-size: 1.4rem; color: var(--gold); font-weight: bold; }
+        .night-desc { font-size: 0.8rem; color: #888; }
 
         /* 7. YOUTUBE BUTTON CARD */
         .video-card {
@@ -271,7 +271,7 @@
             background: rgba(0,0,0,0.8);
         }
         .footer-logo {
-            width: 80px; /* Small Logo */
+            width: 80px; 
             height: auto;
             opacity: 0.8;
             transition: 0.3s;
@@ -282,20 +282,26 @@
         @media (min-width: 768px) {
             h1 { font-size: 3rem; }
             .prayer-hero { grid-column: span 12; } 
-            .night-widget { grid-column: span 6; }
+            .text-widget { grid-column: span 6; } /* Ayah Left/Top */
+            .night-widget { grid-column: span 6; } /* Night Right/Bottom */
             .names-widget { grid-column: span 6; }
             .ramadan-widget { grid-column: span 6; }
             .video-card { grid-column: span 6; }
-            .text-widget { grid-column: span 6; }
         }
 
         @media (min-width: 1024px) {
             .prayer-hero { grid-column: span 6; grid-row: span 2; } 
-            .night-widget { grid-column: span 6; } 
+            
+            /* Swapped Order for Desktop */
+            .text-widget { grid-column: span 6; } 
+            .night-widget { grid-column: span 6; }
+
             .names-widget { grid-column: span 3; }
             .ramadan-widget { grid-column: span 3; }
-            .text-widget { grid-column: span 4; }
             .video-card { grid-column: span 4; }
+            
+            /* Fix Grid Flow for bottom elements */
+            .night-widget { grid-column: span 6; }
         }
 
         @keyframes pulse {
@@ -304,10 +310,11 @@
             100% { opacity: 1; }
         }
 
+        /* --- AUDIO CONTROL (Fixed Position Bottom-Left) --- */
         .audio-control {
             position: fixed;
             bottom: 20px;
-            right: 20px; /* Avoids BMC widget on right */
+            left: 20px; /* MOVED TO LEFT TO FIX OVERLAP */
             background: var(--gold);
             color: black;
             border: none;
@@ -318,10 +325,6 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.5);
             z-index: 100;
             font-size: 0.9rem;
-        }
-        /* Move audio button slightly left so it doesn't overlap BMC widget */
-        @media (min-width: 768px) {
-            .audio-control { right: 100px; } 
         }
 
     </style>
@@ -341,6 +344,14 @@
             <div class="date-box">
                 <div class="date-label">Gregorian</div>
                 <div class="date-val" id="greg-date">--/--/----</div>
+            </div>
+
+            <div class="date-box">
+                <div class="date-label">Current Time</div>
+                <div class="date-val" id="live-clock">--:--:--</div>
+                <div class="weather-val" id="weather-display" style="font-size: 0.85rem; color:var(--gold-dim); margin-top:2px;">
+                    Loading Weather...
+                </div>
             </div>
             
             <div class="date-box">
@@ -370,6 +381,14 @@
             </div>
         </section>
 
+        <article class="card text-widget">
+            <div class="widget-title">Ayah of the Day</div>
+            <a href="https://quran.com" target="_blank" class="btn-quran" title="Read Full Quran Online">Read Quran</a>
+            
+            <div class="quote-text" id="quran-text">Loading Verse...</div>
+            <div class="quote-ref" id="quran-ref">--</div>
+        </article>
+
         <section class="card night-widget">
             <div class="widget-title" style="color: #fff; border-bottom: 1px solid var(--gold-dim);">Night Prayers (Qiyam)</div>
             <div class="night-row">
@@ -397,16 +416,9 @@
         </article>
 
         <article class="card ramadan-widget">
-            <div class="widget-title">Days until Ramadan</div>
+            <div class="widget-title">Ramadan Countdown</div>
             <div class="ramadan-days" id="ramadan-val">--</div>
-        </article>
-
-        <article class="card text-widget">
-            <div class="widget-title">Daily Quran Verse</div>
-            <a href="https://quran.com" target="_blank" class="btn-quran" title="Read Full Quran Online">Read Quran</a>
-            
-            <div class="quote-text" id="quran-text">Loading Verse...</div>
-            <div class="quote-ref" id="quran-ref">--</div>
+            <div class="ramadan-sub" id="ramadan-sub">Days Remaining</div>
         </article>
 
         <section class="card video-card">
@@ -433,7 +445,7 @@
         let config = {
             lat: 52.0907, // Default: Utrecht
             lon: 5.1214,
-            city: 'Netherlands (Default)',
+            city: 'Netherlands',
             method: 3 // MWL
         };
 
@@ -441,20 +453,25 @@
             prayers: {},
             nextPrayer: null,
             adhanPlayed: false,
-            namesList: []
+            namesList: [],
+            weatherInterval: null
         };
 
         // --- INIT ---
         async function init() {
             updateGregorian();
             await detectLocation(); 
+            // Fetch Weather after location is set
+            fetchWeather();
             await fetchPrayerData();
             await fetchContent(); 
             
             // Start Loops
-            setInterval(tickTimer, 1000); 
-            setInterval(rotateNames, 10000); 
-            setInterval(fetchPrayerData, 1000 * 60 * 60); 
+            setInterval(tickTimer, 1000); // Prayer Countdown
+            setInterval(updateClock, 1000); // Live Clock
+            setInterval(rotateNames, 10000); // 99 Names
+            setInterval(fetchPrayerData, 1000 * 60 * 60); // Refresh Prayers Hourly
+            setInterval(fetchWeather, 1000 * 60 * 30); // Refresh Weather every 30m
         }
 
         // --- 1. LOCATION LOGIC ---
@@ -473,7 +490,39 @@
             }
         }
 
-        // --- 2. PRAYER & TAHAJJUD DATA ---
+        // --- 2. WEATHER API (Open-Meteo) ---
+        async function fetchWeather() {
+            try {
+                // Fetch current weather
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${config.lat}&longitude=${config.lon}&current_weather=true`;
+                const res = await fetch(url);
+                const data = await res.json();
+                
+                if (data.current_weather) {
+                    const temp = Math.round(data.current_weather.temperature);
+                    // Determine simplified text based on WMO code
+                    const code = data.current_weather.weathercode;
+                    let condition = "Clear";
+                    if (code > 2) condition = "Cloudy";
+                    if (code > 40) condition = "Fog";
+                    if (code > 50) condition = "Rain";
+                    if (code > 70) condition = "Snow";
+                    if (code > 90) condition = "Storm";
+
+                    document.getElementById('weather-display').innerText = `${temp}°C | ${condition}`;
+                }
+            } catch (e) {
+                console.error("Weather fetch error", e);
+            }
+        }
+
+        // --- 3. CLOCK LOGIC ---
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('live-clock').innerText = now.toLocaleTimeString('en-US', { hour12: false });
+        }
+
+        // --- 4. PRAYER & TAHAJJUD DATA ---
         async function fetchPrayerData() {
             try {
                 const now = new Date();
@@ -500,7 +549,7 @@
             } catch (e) { console.error("Prayer fetch error", e); }
         }
 
-        // --- 3. CONTENT FETCHING ---
+        // --- 5. CONTENT FETCHING ---
         async function fetchContent() {
             // Quran
             try {
@@ -520,17 +569,36 @@
             } catch(e) {}
         }
 
-        // --- 4. LOGIC HANDLERS ---
+        // --- 6. LOGIC HANDLERS ---
         function calcRamadan(hijri) {
             const m = parseInt(hijri.month.number);
             const d = parseInt(hijri.day);
+            const sub = document.getElementById('ramadan-sub');
+            const val = document.getElementById('ramadan-val');
+
             if(m === 9) {
-                document.getElementById('ramadan-val').innerText = "RAMADAN!";
-                document.getElementById('ramadan-val').style.color = "var(--success)";
+                val.innerText = "RAMADAN!";
+                val.style.color = "var(--success)";
+                sub.innerText = "Mubarak";
             } else {
                 let months = m < 9 ? (9 - m - 1) : (12 - m + 8);
                 let totalDays = (months * 29.5) + (30 - d);
-                document.getElementById('ramadan-val').innerText = Math.floor(totalDays);
+                totalDays = Math.floor(totalDays);
+
+                if (totalDays <= 7 && totalDays > 0) {
+                    // Show extended countdown logic for < 7 days
+                    // Estimating remaining hours based on current time
+                    const hoursLeft = 23 - new Date().getHours();
+                    const minsLeft = 59 - new Date().getMinutes();
+                    
+                    val.innerText = `${totalDays}d ${hoursLeft}h ${minsLeft}m`;
+                    val.style.fontSize = "1.8rem"; // Make text slightly smaller to fit
+                    sub.innerText = "Approaching Fast!";
+                } else {
+                    val.innerText = totalDays;
+                    val.style.fontSize = "2.5rem";
+                    sub.innerText = "Days Remaining";
+                }
             }
         }
 
@@ -636,13 +704,6 @@
             const audio = document.getElementById('adhan-audio');
             audio.play().catch(e => console.log("Autoplay blocked"));
             state.adhanPlayed = true;
-        }
-
-        // Service Worker Registration for PWA (Optional but recommended for offline)
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                for(let registration of registrations) { registration.unregister() } 
-            });
         }
 
         // Boot
