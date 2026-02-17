@@ -1,71 +1,81 @@
-# 🌙 Adhan Display - Muslim Prayer Times Dashboard
+# 🌙 Adhan Display - Luxury Islamic Dashboard (2026)
 
-**Adhan Display** is a beautiful, luxury-themed Islamic spiritual command center. Designed with a high-end Black & Gold aesthetic, it transforms any screen—be it a tablet, a wall-mounted monitor, or a smartphone—into a professional prayer clock and spiritual reminder hub.
+**Adhan Display** is a professional-grade, high-aesthetic Islamic command center designed for the modern Muslim home. It transforms any screen—tablet, smart TV, or monitor—into a luxury prayer clock, spiritual reminder hub, and live weather station.
 
-[Live Demo Placeholder](https://iamkhomani.github.io/adhan-display/) 
-
----
-
-## ✨ Features
-
-* **📍 Smart Location Detection:** Automatically fetches prayer times based on your IP address, ensuring accuracy wherever you are.
-* **🕋 Prayer Times & Countdown:** Real-time tracking of Fajr, Dhuhr, Asr, Maghrib, and Isha with a visual progress bar.
-* **✨ Tahajjud Tracker:** Dedicated countdowns for **Islamic Midnight** and the **Last Third of the Night** (Tahajjud).
-* **📜 Daily Spiritual Content:** * Dynamic **Asma-ul-Husna** (99 Names of Allah) rotation.
-    * Randomly selected **Quran Verses** and **Hadiths**.
-    * Direct link to read the full Quran on Quran.com.
-* **📅 Hijri Calendar:** Accurate Hijri date display with a **Ramadan Countdown**.
-* **🔊 Adhan Audio:** Optional audio notifications for prayer times (requires one-click activation).
-* **🎥 Makkah Live:** Quick access button to the 24/7 Masjid al-Haram livestream.
-* **📱 Fully Responsive:** Optimized for PC, Tablet (Kiosk Mode), and Mobile views.
+[🔗 View the Live Dashboard](https://iamkhomani.github.io/adhan-display/)  
 
 ---
 
-## 🚀 Quick Setup (Self-Hosting)
+## ✨ Features at a Glance
 
-Since this is a lightweight, frontend-only project, you can host it anywhere in seconds:
-
-1.  **Download** the `index.html`, `images/`, and `audio/` folders.
-2.  **Upload** them to your server (Proxmox, Ubuntu, GitHub Pages, etc.).
-3.  **Open** `index.html` in any modern web browser.
-
-### Hosting on GitHub Pages:
-1.  Go to your Repository **Settings**.
-2.  Navigate to **Pages** on the left sidebar.
-3.  Select the **Main** branch and click **Save**.
-4.  Your dashboard will be live at `https://your-username.github.io/repository-name/`.
-
----
-
-## 🖥️ Pro Tip: Kiosk Mode
-
-To turn an old tablet or monitor into a dedicated **Adhan Display** device:
-
-### For PC/Mac (Chrome/Edge):
-Run the browser with the `--kiosk` flag to hide all browser UI:
-`chrome.exe --kiosk https://your-link-here.com`
-
-### For Tablets (iOS/Android):
-1.  Open the site in your mobile browser.
-2.  Tap **"Add to Home Screen"**.
-3.  Open the app from your home screen for a full-screen, app-like experience.
+* **🏆 Luxury Aesthetic:** Deep charcoal and gold theme designed for high-end digital signage.
+* **📍 Location-Aware:** Automatically detects your city to provide localized prayer times and weather data.
+* **🌦️ Real-Time Weather & Clock:** Live temperature and weather conditions alongside a precise digital clock.
+* **🕋 Prayer Command Center:**
+    * Real-time countdown to the next prayer.
+    * Visual progress bars for current prayer windows.
+    * Automatic **Adhan audio** notifications (requires user unmute).
+* **🌌 Nightly Worship (Qiyam):** Automated calculation of **Islamic Midnight** and the **Last Third of the Night** (Tahajjud).
+* **📖 Spiritual Feed:**
+    * **Ayah of the Day:** Randomly selected verses from the Quran.
+    * **99 Names of Allah:** Rotating display of the Asma-ul-Husna with meanings.
+    * **Quick Quran Access:** Direct button to read the full Quran on Quran.com.
+* **⏳ Smart Ramadan Countdown:** A dynamic counter that switches to **Days, Hours, and Minutes** as the blessed month approaches.
+* **📲 PWA Ready:** Can be "installed" on any iPhone or Android home screen for a full-screen, app-like experience without browser bars.
 
 ---
 
-## 🎨 Credits & Customization
+## 🚀 Quick Setup
 
-* **Design:** Luxury Black & Gold theme.
-* **APIs Used:** [AlAdhan API](https://aladhan.com/prayer-times-api) for prayer timings and names of Allah, [Al Quran Cloud](https://alquran.cloud/api) for daily verses.
-* **Background:** Custom background located in `images/`.
+To host this yourself on GitHub Pages:
+
+1.  **Fork or Download** this repository.
+2.  Ensure your folder structure looks like this:
+    ```text
+    ├── index.html
+    ├── manifest.json
+    ├── audio/
+    │   └── adhan.mp3
+    └── images/
+        ├── adhan display muslim prayer times dashboard background.jpg
+        └── adhan display muslim prayer times dashboard logo.jpg
+    ```
+3.  Go to your GitHub **Settings > Pages** and enable hosting for the `Main` branch.
 
 ---
 
-## ☕ Support the Project
+## 📱 Mobile Installation
 
-If this dashboard helps your daily worship, please consider supporting the development to keep the project ad-free and updated.
+This dashboard is built as a **Progressive Web App (PWA)**.
 
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://www.buymeacoffee.com/kmni)
+### For iPhone (iOS):
+1.  Open your link in Safari.
+2.  Tap the **Share** button.
+3.  Select **"Add to Home Screen"**.
+
+### For Android:
+1.  Open the link in Chrome.
+2.  Tap the **Three Dots** menu.
+3.  Select **"Install App"** or **"Add to Home Screen"**.
 
 ---
 
-**"The best of deeds is the prayer at its earliest time."** (Sunan Tirmidhi)
+## 🛠️ Built With
+
+* **APIs:** [AlAdhan](https://aladhan.com/) (Prayer Times), [Al Quran Cloud](https://alquran.cloud/) (Quran Content), and [Open-Meteo](https://open-meteo.com/) (Weather).
+* **Design:** Custom CSS3 with glassmorphism and gold-foil effects.
+* **Hosting:** GitHub Pages.
+
+---
+
+## ☕ Support the Ummah
+
+If this dashboard helps your daily worship, please consider supporting the project to keep it ad-free and maintained.
+
+> "As-salaamu alaykum. Your small donation keeps AdhanDisplay ad-free and helpful for the ummah."
+
+[Support on Buy Me A Coffee](https://www.buymeacoffee.com/kmni)
+
+---
+
+**© 2026 Adhan Display. Serving the Ummah.** *"The best of deeds is the prayer at its earliest time."* (Sunan Tirmidhi)
