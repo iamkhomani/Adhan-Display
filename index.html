@@ -2,11 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="Adhan Display is a free, beautiful Islamic dashboard for Muslim prayer times, Qibla direction, daily Quran verses, and Adhan audio. Perfect for home screens, mosques, and digital signage.">
     <meta name="keywords" content="Adhan Display, Muslim Prayer Times, Islamic Dashboard, Prayer Clock, Adhan Audio, Quran Verse of the Day, Mosque Signage, Salah Times Netherlands">
     <meta name="author" content="Adhan Display">
     <meta name="robots" content="index, follow">
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#050505">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Adhan Display">
 
     <meta property="og:title" content="Adhan Display - Muslim Prayer Times Dashboard">
     <meta property="og:description" content="Turn any screen into a beautiful Islamic prayer clock with Adhan audio, Quran verses, and live Makkah stream.">
@@ -15,6 +21,7 @@
     <meta property="og:type" content="website">
 
     <link rel="icon" type="image/jpg" href="images/adhan display muslim prayer times dashboard logo.jpg">
+    <link rel="apple-touch-icon" href="images/adhan display muslim prayer times dashboard logo.jpg">
 
     <title>Adhan Display - Muslim Prayer Times Dashboard</title>
     
@@ -46,6 +53,7 @@
             padding-bottom: 80px; /* Space for scrolling & footer */
             display: flex;
             flex-direction: column;
+            -webkit-tap-highlight-color: transparent;
         }
 
         /* --- LAYOUT GRID --- */
@@ -628,6 +636,13 @@
             const audio = document.getElementById('adhan-audio');
             audio.play().catch(e => console.log("Autoplay blocked"));
             state.adhanPlayed = true;
+        }
+
+        // Service Worker Registration for PWA (Optional but recommended for offline)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) { registration.unregister() } 
+            });
         }
 
         // Boot
