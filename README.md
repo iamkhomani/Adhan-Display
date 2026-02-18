@@ -12,6 +12,7 @@
 
 * **🏆 Luxury Aesthetic:** Deep charcoal and gold theme designed for high-end digital signage.
 * **📍 Location-Aware:** Automatically detects your city to provide localized prayer times and weather data.
+* **🧭 Qibla Compass:** A dedicated compass that visually points to Makkah based on your exact latitude and longitude (relative to North).
 * **🌦️ Real-Time Weather & Clock:** Live temperature and weather conditions alongside a large, clear digital clock.
 * **🕋 Prayer Command Center:**
     * Real-time countdown to the next prayer.
