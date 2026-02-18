@@ -1,15 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-BEKQEF4RR5"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-BEKQEF4RR5');
+    </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#050505">
-    
+
     <title>Adhan Display - Free Muslim Prayer Times Dashboard & Qibla Clock</title>
-    
-    <meta name="description" content="Turn any screen into a beautiful Islamic prayer clock. Adhan Display is a free, ad-free dashboard featuring accurate prayer times, Qibla direction, Quran verses, and live Makkah streaming. Perfect for Smart TVs and home displays.">
-    
-    <meta name="keywords" content="Adhan Display, Prayer Times Dashboard, Digital Masjid Clock, Smart TV Prayer App, Qibla Finder, Makkah Live Stream, Islamic Home Screen, Adhan Clock Online">
+    <meta name="description" content="Turn any screen into a beautiful Islamic prayer clock. Adhan Display is a free, ad-free dashboard featuring accurate prayer times, Qibla direction, Quran verses, and live Makkah streaming.">
+    <meta name="keywords" content="Adhan Display, Prayer Times Dashboard, Digital Masjid Clock, Smart TV Prayer App, Qibla Finder, Makkah Live Stream">
     <meta name="author" content="Adhan Display">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://adhandisplay.com/">
@@ -18,7 +25,8 @@
     <meta property="og:title" content="Adhan Display - Beautiful Prayer Times Dashboard">
     <meta property="og:description" content="Free, ad-free Islamic clock for your home or office. Includes Adhan audio, Qibla, and Live Makkah stream.">
     <meta property="og:url" content="https://adhandisplay.com/">
-    <meta property="og:image" content="images/adhan-display-preview.jpg"> 
+    <meta property="og:image" content="images/adhan-display-preview.jpg">
+
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -152,7 +160,8 @@
         .allah-name-meaning { font-size: 0.9rem; color: var(--text-muted); font-style: italic; }
 
         .ramadan-widget { grid-column: span 12; text-align: center; }
-        .ramadan-days { font-size: 2.5rem; color: var(--text-main); font-weight: bold; }
+        /* FIX FOR RAMADAN TEXT OVERFLOW: Responsive sizing */
+        .ramadan-days { font-size: clamp(1.8rem, 5vw, 2.5rem); color: var(--text-main); font-weight: bold; line-height: 1.2; }
         .ramadan-sub { font-size: 0.9rem; color: var(--gold-dim); }
 
         /* Active Ramadan Panel */
@@ -196,16 +205,6 @@
             .names-widget, .ramadan-widget, .video-card, .qibla-card { grid-column: span 3; }
         }
     </style>
-
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-BEKQEF4RR5"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-BEKQEF4RR5');
-</script>
 </head>
 <body>
 
@@ -401,7 +400,12 @@
 
         function activateRamadanMode(day) {
             document.getElementById('ramadan-panel').style.display = 'block';
-            document.getElementById('ramadan-val').innerText = "RAMADAN!";
+            
+            // FIX: Set text to Green when active
+            const rVal = document.getElementById('ramadan-val');
+            rVal.innerText = "RAMADAN!";
+            rVal.style.color = "var(--success)"; // Green
+            
             document.getElementById('ramadan-sub').innerText = "Mubarak";
             let name = day<=10 ? "First Ashra (Mercy)" : (day<=20 ? "Second Ashra (Forgiveness)" : "Third Ashra (Protection)");
             let color = day<=10 ? "var(--ashra-mercy)" : (day<=20 ? "var(--ashra-forgive)" : "var(--ashra-protect)");
@@ -432,9 +436,12 @@
             let months = m < 9 ? (9 - m - 1) : (12 - m + 8);
             let totalDays = Math.floor((months * 29.5) + (30 - d));
             const val = document.getElementById('ramadan-val');
+            
+            // Reset color to normal for countdown
+            val.style.color = "var(--text-main)";
+
             if (totalDays <= 7 && totalDays > 0) {
                 val.innerText = `${totalDays} Days Left`;
-                val.style.fontSize = "1.8rem";
             } else {
                 val.innerText = totalDays;
             }
