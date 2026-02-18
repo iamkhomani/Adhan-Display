@@ -216,7 +216,7 @@
 
         /* RAMADAN SPECIFIC STYLES */
         .ramadan-active-panel {
-            display: none; /* Hidden by default, shown via JS during Ramadan */
+            display: none; 
             grid-column: span 12;
             background: rgba(20, 40, 30, 0.9);
             border: 1px solid var(--success);
@@ -239,37 +239,28 @@
             font-size: 0.8rem;
         }
 
-        /* UPDATED ASHRA PROGRESS BAR (Fixed Visibility) */
+        /* UPDATED ASHRA PROGRESS BAR */
         .ashra-container {
             margin-top: 10px;
             background: #222;
-            height: 24px; /* Slightly taller for mobile visibility */
+            height: 24px;
             border-radius: 12px;
             overflow: hidden;
-            position: relative; /* Essential for overlay */
+            position: relative;
         }
         
         .ashra-bar {
             height: 100%;
             width: 0%;
             transition: width 0.5s ease-in-out;
-            /* Text removed from here to prevent clipping */
         }
 
-        /* New overlay class to ensure text is always visible */
         .ashra-text-overlay {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.85rem;
-            font-weight: bold;
-            color: #fff;
-            text-shadow: 0 1px 4px rgba(0,0,0,0.9); /* Heavy shadow for legibility on all colors */
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; font-weight: bold; color: #fff;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.9);
             z-index: 2;
         }
 
@@ -289,7 +280,7 @@
         .night-time { font-size: 1.4rem; color: var(--gold); font-weight: bold; }
         .night-desc { font-size: 0.8rem; color: #888; }
 
-        /* 7. YOUTUBE BUTTON CARD */
+        /* 7. YOUTUBE BUTTON CARD & QIBLA */
         .video-card {
             grid-column: span 12;
             text-align: center;
@@ -299,12 +290,21 @@
             padding: 30px;
         }
 
+        .qibla-card {
+            grid-column: span 12;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
         .btn-live {
             background: transparent;
             border: 2px solid var(--gold);
             color: var(--gold);
-            padding: 15px 30px;
-            font-size: 1.1rem;
+            padding: 15px 25px;
+            font-size: 1rem;
             text-transform: uppercase;
             letter-spacing: 2px;
             cursor: pointer;
@@ -322,10 +322,62 @@
             box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
         }
         .live-indicator {
-            height: 10px; width: 10px; 
+            height: 8px; width: 8px; 
             background-color: red; 
             border-radius: 50%;
             animation: pulse 1.5s infinite;
+        }
+
+        /* COMPASS STYLES */
+        .compass-ring {
+            width: 80px; height: 80px;
+            border: 2px solid var(--gold-dim);
+            border-radius: 50%;
+            position: relative;
+            background: rgba(0,0,0,0.3);
+            margin: 10px 0;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+        .compass-needle {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 4px; height: 40px;
+            background: transparent;
+            transform: translate(-50%, -50%);
+            /* The parent will be rotated via JS */
+            transition: transform 1s ease-out; 
+        }
+        .compass-needle::after {
+            /* The actual arrow head pointing to Qibla */
+            content: '';
+            position: absolute;
+            top: -5px; /* Stick out slightly */
+            left: -3px;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-bottom: 15px solid var(--gold); /* Gold arrow */
+        }
+        .compass-needle::before {
+            /* The tail pointing opposite */
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: -3px;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 15px solid #555; /* Grey tail */
+        }
+        .compass-label {
+            position: absolute;
+            top: 5px; left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.6rem; color: #888;
+            font-weight: bold;
+        }
+        .qibla-degree-text {
+            font-size: 1.2rem;
+            color: var(--gold);
+            font-weight: bold;
         }
 
         /* --- FOOTER & LOGO --- */
@@ -353,7 +405,9 @@
             .night-widget { grid-column: span 6; } 
             .names-widget { grid-column: span 6; }
             .ramadan-widget { grid-column: span 6; }
+            /* Split the bottom row */
             .video-card { grid-column: span 6; }
+            .qibla-card { grid-column: span 6; }
         }
 
         @media (min-width: 1024px) {
@@ -362,8 +416,10 @@
             .night-widget { grid-column: span 6; }
             .names-widget { grid-column: span 3; }
             .ramadan-widget { grid-column: span 3; }
-            .video-card { grid-column: span 4; }
             .night-widget { grid-column: span 6; }
+            /* Split the bottom row */
+            .video-card { grid-column: span 3; }
+            .qibla-card { grid-column: span 3; }
         }
 
         @keyframes pulse {
@@ -501,8 +557,18 @@
         <section class="card video-card">
             <a href="https://www.youtube.com/watch?v=yH_PIhe-I0s" target="_blank" class="btn-live">
                 <span class="live-indicator"></span>
-                Watch Makkah Live
+                Makkah Live
             </a>
+        </section>
+
+        <section class="card qibla-card">
+            <div class="widget-title">Qibla Direction</div>
+            <div class="compass-ring">
+                <div class="compass-label">N</div>
+                <div class="compass-needle" id="compass-needle"></div>
+            </div>
+            <div class="qibla-degree-text" id="qibla-degree">--°</div>
+            <div class="ramadan-sub" style="font-size: 0.75rem;">From North</div>
         </section>
 
     </main>
@@ -543,6 +609,7 @@
             fetchWeather();
             await fetchPrayerData();
             await fetchContent(); 
+            calculateQibla(); // Run Qibla calc once location is set
             
             // Start Loops
             setInterval(tickTimer, 1000); 
@@ -566,6 +633,27 @@
             } catch (e) {
                 document.getElementById('location-name').innerText = config.city;
             }
+        }
+
+        // --- QIBLA CALCULATION ---
+        function calculateQibla() {
+            // Formula to calculate Qibla direction from True North
+            const lat1 = config.lat * (Math.PI / 180);
+            const lon1 = config.lon * (Math.PI / 180);
+            const lat2 = 21.4225 * (Math.PI / 180); // Makkah Lat
+            const lon2 = 39.8262 * (Math.PI / 180); // Makkah Lon
+
+            const y = Math.sin(lon2 - lon1) * Math.cos(lat2);
+            const x = Math.cos(lat1) * Math.sin(lat2) -
+                      Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
+            
+            let bearing = Math.atan2(y, x);
+            bearing = (bearing * 180) / Math.PI;
+            bearing = (bearing + 360) % 360; // Normalize to 0-360
+
+            // Update UI
+            document.getElementById('qibla-degree').innerText = Math.round(bearing) + "°";
+            document.getElementById('compass-needle').style.transform = `translate(-50%, -50%) rotate(${bearing}deg)`;
         }
 
         // --- 2. WEATHER API ---
