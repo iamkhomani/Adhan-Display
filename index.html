@@ -14,6 +14,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#050505">
 
+    <link rel="icon" type="image/png" href="images/adhan display muslim prayer times dashboard logo.png">
+
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&display=swap" rel="stylesheet">
+
     <title>Adhan Display - Free Muslim Prayer Times Dashboard & Qibla Clock</title>
     <meta name="description" content="Turn any screen into a beautiful Islamic prayer clock. Adhan Display is a free, ad-free dashboard featuring accurate prayer times, Qibla direction, Quran verses, and live Makkah streaming.">
     <meta name="keywords" content="Adhan Display, Prayer Times Dashboard, Digital Masjid Clock, Smart TV Prayer App, Qibla Finder, Makkah Live Stream">
@@ -97,6 +101,17 @@
             gap: 20px;
             box-sizing: border-box;
             flex: 1;
+            position: relative;
+        }
+
+        /* Top Left Logo */
+        .top-left-logo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 80px;
+            height: auto;
+            z-index: 10;
         }
 
         /* Generic Card Style */
@@ -116,10 +131,13 @@
         .card:hover { border-color: var(--gold-dim); transform: translateY(-2px); }
 
         /* Header */
-        .header-section { grid-column: span 12; text-align: center; margin-bottom: 20px; display: flex; justify-content: center; }
+        .header-section { grid-column: span 12; text-align: center; margin-bottom: 20px; display: flex; justify-content: center; margin-top: 10px; }
         .title-wrapper { background: var(--glass-header); backdrop-filter: blur(8px); padding: 20px 40px; border-radius: 20px; border: 1px solid rgba(212, 175, 55, 0.2); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h1 { color: var(--gold); font-size: 2.5rem; margin: 0; text-transform: uppercase; letter-spacing: 3px; text-shadow: 0 2px 10px rgba(0,0,0,1); }
-        .shahada { font-family: 'Times New Roman', serif; font-style: italic; color: var(--text-main); font-size: 1.1rem; margin-top: 10px; text-shadow: 0 2px 4px rgba(0,0,0,1); }
+        
+        /* Typography Updates */
+        h1 { font-family: 'Cinzel', serif; color: var(--gold); font-size: 2.8rem; margin: 0; text-transform: uppercase; letter-spacing: 3px; text-shadow: 0 2px 10px rgba(0,0,0,1); }
+        h2 { font-size: 0.95rem; color: var(--text-muted); font-weight: 400; margin: 5px 0 10px 0; letter-spacing: 0.5px; }
+        .shahada { font-family: 'Times New Roman', serif; font-style: italic; color: var(--text-main); font-size: 1.1rem; text-shadow: 0 2px 4px rgba(0,0,0,1); border-top: 1px solid #333; padding-top: 10px; }
 
         /* Info Panel */
         .info-panel { grid-column: span 12; display: flex; flex-wrap: wrap; justify-content: space-around; align-items: center; background: rgba(0,0,0,0.7); border-radius: 12px; padding: 15px; border: 1px solid #333; gap: 15px; }
@@ -135,7 +153,9 @@
         .prayer-name-display { font-size: 3.5rem; color: var(--gold); font-weight: 800; line-height: 1.1; margin: 10px 0; }
         .prayer-time-display { font-size: 1.5rem; color: #ccc; margin-bottom: 20px; }
         .countdown-display { font-size: 2.2rem; font-family: 'Courier New', monospace; color: #fff; }
-        .progress-container { width: 100%; height: 6px; background: #333; margin-top: 20px; border-radius: 3px; overflow: hidden; }
+        
+        /* Thicker Progress Bar */
+        .progress-container { width: 100%; height: 12px; background: #222; margin-top: 20px; border-radius: 6px; overflow: hidden; border: 1px solid #444; }
         .progress-bar { height: 100%; background: var(--gold); width: 0%; transition: width 1s linear; }
 
         /* Quran Widget */
@@ -160,7 +180,6 @@
         .allah-name-meaning { font-size: 0.9rem; color: var(--text-muted); font-style: italic; }
 
         .ramadan-widget { grid-column: span 12; text-align: center; }
-        /* FIX FOR RAMADAN TEXT OVERFLOW: Responsive sizing */
         .ramadan-days { font-size: clamp(1.8rem, 5vw, 2.5rem); color: var(--text-main); font-weight: bold; line-height: 1.2; }
         .ramadan-sub { font-size: 0.9rem; color: var(--gold-dim); }
 
@@ -179,7 +198,7 @@
         .qibla-sub { font-size: 0.75rem; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 1px; }
 
         /* Buttons & Indicators */
-        .btn-gold { background: transparent; border: 2px solid var(--gold); color: var(--gold); padding: 10px 20px; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; text-decoration: none; transition: 0.3s; border-radius: 6px; font-weight: bold; display: inline-flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; width: 80%; }
+        .btn-gold { background: transparent; border: 2px solid var(--gold); color: var(--gold); padding: 10px 20px; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; text-decoration: none; transition: 0.3s; border-radius: 6px; font-weight: bold; display: inline-flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; width: 80%; max-width: 300px; }
         .btn-gold:hover { background: var(--gold); color: #000; box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
         .live-indicator { height: 8px; width: 8px; background-color: red; border-radius: 50%; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
@@ -192,9 +211,15 @@
         .footer-logo { width: 80px; height: auto; opacity: 0.8; transition: 0.3s; }
         .footer-logo:hover { opacity: 1; }
 
+        /* Buy Me A Coffee Scale Fix */
+        #bmc-wbtn { transform: scale(0.8) !important; transform-origin: bottom right !important; }
+
         /* Responsive */
+        @media (max-width: 768px) {
+            .top-left-logo { position: relative; top: 0; left: 0; display: block; margin: 0 auto 10px auto; width: 60px; }
+            h1 { font-size: 2.2rem; }
+        }
         @media (min-width: 768px) {
-            h1 { font-size: 3rem; }
             .prayer-hero, .ramadan-active-panel { grid-column: span 12; } 
             .text-widget, .night-widget, .names-widget, .ramadan-widget { grid-column: span 6; }
             .video-card, .qibla-card { grid-column: span 6; }
@@ -209,9 +234,13 @@
 <body>
 
     <main class="dashboard-container">
+        
+        <img src="images/adhan display muslim prayer times dashboard logo.png" alt="Adhan Display Logo" class="top-left-logo">
+
         <header class="header-section">
             <div class="title-wrapper">
                 <h1>Adhan Display</h1>
+                <h2>Your Free Islamic Prayer Times & Qibla Dashboard</h2>
                 <div class="shahada">La ilaha illa Allah, Muhammadur Rasul Allah</div>
             </div>
         </header>
@@ -300,7 +329,7 @@
 
         <section class="card video-card">
             <div class="widget-title">Live Stream</div>
-            <div style="flex:1; display:flex; align-items:center;">
+            <div style="flex:1; display:flex; align-items:center; width:100%; justify-content:center;">
                 <a href="https://www.youtube.com/watch?v=yH_PIhe-I0s" target="_blank" class="btn-gold">
                     <span class="live-indicator"></span> Makkah Live
                 </a>
@@ -310,13 +339,20 @@
         <section class="card qibla-card">
             <div class="widget-title">Qibla Direction</div>
             <div class="qibla-degree-text" id="qibla-degree">--°</div>
-            <div class="qibla-sub">From True North</div>
-            <a href="https://qiblafinder.withgoogle.com/" target="_blank" class="btn-gold" style="border-color: #fff; color: #fff;">Open AR Finder</a>
+            <div class="qibla-sub" style="margin-bottom:10px;">From True North</div>
+            <a href="https://qiblafinder.withgoogle.com/" target="_blank" class="btn-gold">Open AR Finder</a>
         </section>
+
+        <div style="grid-column: span 12; text-align: center; margin-top: 10px;">
+            <button id="install-btn" class="btn-gold" style="width: auto; padding: 12px 30px;">
+                Install App on Phone / Tablet
+            </button>
+        </div>
+
     </main>
 
     <footer>
-        <img src="images/adhan display muslim prayer times dashboard logo.jpg" alt="Adhan Display Logo" class="footer-logo">
+        <img src="images/adhan display muslim prayer times dashboard logo.png" alt="Adhan Display Logo" class="footer-logo">
         <p style="font-size: 0.8rem; color: #666; margin-top: 10px;">&copy; 2026 Adhan Display. Serving the Ummah.</p>
     </footer>
 
@@ -400,12 +436,9 @@
 
         function activateRamadanMode(day) {
             document.getElementById('ramadan-panel').style.display = 'block';
-            
-            // FIX: Set text to Green when active
             const rVal = document.getElementById('ramadan-val');
             rVal.innerText = "RAMADAN!";
-            rVal.style.color = "var(--success)"; // Green
-            
+            rVal.style.color = "var(--success)"; 
             document.getElementById('ramadan-sub').innerText = "Mubarak";
             let name = day<=10 ? "First Ashra (Mercy)" : (day<=20 ? "Second Ashra (Forgiveness)" : "Third Ashra (Protection)");
             let color = day<=10 ? "var(--ashra-mercy)" : (day<=20 ? "var(--ashra-forgive)" : "var(--ashra-protect)");
@@ -436,10 +469,7 @@
             let months = m < 9 ? (9 - m - 1) : (12 - m + 8);
             let totalDays = Math.floor((months * 29.5) + (30 - d));
             const val = document.getElementById('ramadan-val');
-            
-            // Reset color to normal for countdown
             val.style.color = "var(--text-main)";
-
             if (totalDays <= 7 && totalDays > 0) {
                 val.innerText = `${totalDays} Days Left`;
             } else {
@@ -544,6 +574,31 @@
             document.getElementById('adhan-audio').play().catch(e => console.log("Autoplay blocked"));
             state.adhanPlayed = true;
         }
+
+        // --- INSTALL APP LOGIC ---
+        let deferredPrompt;
+        const installBtn = document.getElementById('install-btn');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+            } else {
+                // Check if iOS
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                if (isIOS) {
+                    alert("To install on iPhone/iPad: \n\n1. Tap the 'Share' icon at the bottom of Safari (the square with an arrow pointing up).\n2. Scroll down and tap 'Add to Home Screen'.");
+                } else {
+                    alert("To install: Open your browser menu (usually three dots in the top right) and select 'Add to Home screen' or 'Install app'.");
+                }
+            }
+        });
 
         init();
     </script>
