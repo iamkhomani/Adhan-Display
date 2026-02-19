@@ -104,7 +104,7 @@ Contributions are welcome! If you have ideas for new features (like different Ad
 
 If this project helps you or your local Masjid, please consider supporting the development:
 
-* **Buy Me A Coffee:** [kmni](https://www.google.com/search?q=https://www.buymeacoffee.com/kmni)
+* **Buy Me A Coffee:** [kmni](https://www.buymeacoffee.com/kmni)
 
 ---
 
