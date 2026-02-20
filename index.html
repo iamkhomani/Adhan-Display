@@ -77,6 +77,7 @@
             padding-bottom: 80px;
             display: flex;
             flex-direction: column;
+            overflow-x: hidden;
         }
 
         .dashboard-container {
@@ -89,13 +90,14 @@
             box-sizing: border-box;
             flex: 1;
             position: relative;
+            width: 100%;
         }
 
         .top-left-logo {
             position: absolute;
             top: 20px;
             left: 20px;
-            width: 70px;
+            width: clamp(50px, 8vw, 70px);
             height: auto;
             z-index: 10;
         }
@@ -112,6 +114,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            grid-column: span 12; /* Mobile-first: cards take full width */
         }
         .card:hover { border-color: var(--gold-dim); transform: translateY(-2px); }
 
@@ -127,30 +130,30 @@
             letter-spacing: 1px;
         }
 
-        .header-section { grid-column: span 12; text-align: center; margin-bottom: 20px; display: flex; justify-content: center; margin-top: 10px; }
-        .title-wrapper { background: var(--glass-header); backdrop-filter: blur(8px); padding: 20px 40px; border-radius: 20px; border: 1px solid rgba(212, 175, 55, 0.2); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .header-section { grid-column: span 12; text-align: center; margin-bottom: 20px; display: flex; justify-content: center; margin-top: 10px; width: 100%; }
+        .title-wrapper { background: var(--glass-header); backdrop-filter: blur(8px); padding: clamp(15px, 4vw, 20px) clamp(20px, 5vw, 40px); border-radius: 20px; border: 1px solid rgba(212, 175, 55, 0.2); box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 100%; max-width: 800px; box-sizing: border-box; }
         
-        h1 { font-family: 'Cinzel', serif; color: var(--gold); font-size: 2.8rem; margin: 0; text-transform: uppercase; letter-spacing: 3px; text-shadow: 0 2px 10px rgba(0,0,0,1); }
-        h2 { font-size: 0.9rem; color: var(--text-muted); font-weight: 400; margin: 5px 0 10px 0; letter-spacing: 0.5px; text-transform: uppercase; }
-        .shahada { font-family: 'Times New Roman', serif; font-style: italic; color: var(--text-main); font-size: 1.1rem; border-top: 1px solid #333; padding-top: 10px; }
+        h1 { font-family: 'Cinzel', serif; color: var(--gold); font-size: clamp(1.8rem, 5vw, 2.8rem); margin: 0; text-transform: uppercase; letter-spacing: clamp(1px, 2vw, 3px); text-shadow: 0 2px 10px rgba(0,0,0,1); }
+        h2 { font-size: clamp(0.75rem, 2vw, 0.9rem); color: var(--text-muted); font-weight: 400; margin: 5px 0 10px 0; letter-spacing: 0.5px; text-transform: uppercase; }
+        .shahada { font-family: 'Times New Roman', serif; font-style: italic; color: var(--text-main); font-size: clamp(0.9rem, 2vw, 1.1rem); border-top: 1px solid #333; padding-top: 10px; }
 
         .info-panel { grid-column: span 12; display: flex; flex-wrap: wrap; justify-content: space-around; align-items: center; background: rgba(0,0,0,0.7); border-radius: 12px; padding: 15px; border: 1px solid #333; gap: 15px; }
-        .date-box { text-align: center; min-width: 100px; }
-        .date-label { color: var(--gold-dim); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
-        .date-val { font-size: 1.2rem; font-weight: bold; }
-        #live-clock { font-size: 1.8rem; font-family: 'Courier New', monospace; }
+        .date-box { text-align: center; min-width: 100px; flex: 1; }
+        .date-label { color: var(--gold-dim); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+        .date-val { font-size: clamp(1rem, 3vw, 1.2rem); font-weight: bold; }
+        #live-clock { font-size: clamp(1.4rem, 4vw, 1.8rem); font-family: 'Courier New', monospace; }
 
-        .prayer-hero { grid-column: span 12; text-align: center; border: 2px solid var(--gold); background: linear-gradient(145deg, rgba(30,30,30,0.95), rgba(10,10,10,0.95)); min-height: 250px; }
-        .prayer-name-display { font-size: 3.5rem; color: var(--gold); font-weight: 800; line-height: 1.1; margin: 10px 0; }
-        .countdown-display { font-size: 2.2rem; font-family: 'Courier New', monospace; color: #fff; }
+        .prayer-hero { text-align: center; border: 2px solid var(--gold); background: linear-gradient(145deg, rgba(30,30,30,0.95), rgba(10,10,10,0.95)); min-height: 250px; }
+        .prayer-name-display { font-size: clamp(2.5rem, 8vw, 3.5rem); color: var(--gold); font-weight: 800; line-height: 1.1; margin: 10px 0; }
+        .countdown-display { font-size: clamp(1.8rem, 6vw, 2.2rem); font-family: 'Courier New', monospace; color: #fff; }
         
         .progress-container { width: 100%; height: 12px; background: #222; margin-top: 20px; border-radius: 6px; overflow: hidden; border: 1px solid #444; }
         .progress-bar { height: 100%; background: var(--gold); width: 0%; transition: width 1s linear; }
 
-        .ramadan-widget { grid-column: span 12; text-align: center; }
+        .ramadan-widget { text-align: center; }
         .ramadan-days { font-size: clamp(1.8rem, 5vw, 2.5rem); color: var(--text-main); font-weight: bold; }
         .ramadan-active-panel { display: none; grid-column: span 12; background: rgba(20, 40, 30, 0.9); border: 1px solid var(--success); padding: 15px; border-radius: 12px; text-align: center; }
-        .fasting-timer { font-size: 2rem; font-weight: bold; color: #fff; }
+        .fasting-timer { font-size: clamp(1.5rem, 5vw, 2rem); font-weight: bold; color: #fff; }
 
         .btn-gold { 
             background: transparent; border: 2px solid var(--gold); color: var(--gold); 
@@ -158,27 +161,37 @@
             letter-spacing: 1px; cursor: pointer; text-decoration: none; 
             transition: 0.3s; border-radius: 6px; font-weight: bold; 
             display: inline-flex; align-items: center; justify-content: center; 
-            gap: 10px; margin-top: 10px; width: 80%; max-width: 300px; 
+            gap: 10px; margin-top: 10px; width: 100%; max-width: 300px; 
+            box-sizing: border-box; text-align: center;
         }
         .btn-gold:hover { background: var(--gold); color: #000; box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
 
         #bmc-wbtn { transform: scale(0.8) !important; transform-origin: bottom right !important; }
 
-        footer { margin-top: auto; text-align: center; padding: 20px; border-top: 1px solid #222; background: rgba(0,0,0,0.8); }
+        footer { margin-top: auto; text-align: center; padding: 20px; border-top: 1px solid #222; background: rgba(0,0,0,0.8); width: 100%; box-sizing: border-box; }
         .footer-logo { width: 80px; height: auto; opacity: 0.8; }
 
-        @media (max-width: 768px) {
-            .top-left-logo { position: relative; top: 0; left: 0; display: block; margin: 0 auto 10px auto; }
-            h1 { font-size: 2.1rem; }
-        }
+        /* Tablet Adjustments */
         @media (min-width: 768px) {
+            .top-left-logo { position: absolute; top: 20px; left: 20px; display: block; margin: 0; }
             .text-widget, .night-widget, .names-widget, .ramadan-widget { grid-column: span 6; }
-            .video-card, .qibla-card, .install-card { grid-column: span 6; }
+            .video-card, .qibla-card { grid-column: span 6; }
+            .install-card { grid-column: span 12; }
         }
+
+        /* Desktop Adjustments */
         @media (min-width: 1024px) {
             .prayer-hero { grid-column: span 6; grid-row: span 2; } 
             .names-widget, .ramadan-widget, .video-card, .qibla-card { grid-column: span 3; }
             .install-card { grid-column: span 12; }
+        }
+
+        /* Mobile specific header adjustments */
+        @media (max-width: 767px) {
+            .top-left-logo { position: relative; top: 0; left: 0; display: block; margin: 0 auto 15px auto; }
+            .info-panel { flex-direction: column; }
+            .date-box { width: 100%; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+            .date-box:last-child { border-bottom: none; }
         }
     </style>
 </head>
