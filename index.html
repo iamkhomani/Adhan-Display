@@ -151,7 +151,7 @@
         .progress-bar { height: 100%; background: var(--gold); width: 0%; transition: width 1s linear; }
 
         .ramadan-widget { text-align: center; }
-        .ramadan-days { font-size: clamp(1.8rem, 5vw, 2.5rem); color: var(--text-main); font-weight: bold; }
+        .ramadan-days { font-size: clamp(1.8rem, 5vw, 2.5rem); color: var(--text-main); font-weight: bold; transition: color 0.3s; }
         .ramadan-active-panel { display: none; grid-column: span 12; background: rgba(20, 40, 30, 0.9); border: 1px solid var(--success); padding: 15px; border-radius: 12px; text-align: center; }
         .fasting-timer { font-size: clamp(1.5rem, 5vw, 2rem); font-weight: bold; color: #fff; }
 
@@ -296,6 +296,9 @@
 
         <section class="card video-card">
             <div class="widget-title">Makkah Live</div>
+            
+            <img src="images/qibla.png" alt="Qibla Indicator" style="width: 50px; height: auto; margin: 10px 0;">
+            
             <a href="https://www.youtube.com/watch?v=yH_PIhe-I0s" target="_blank" class="btn-gold">
                 <span class="live-dot"></span> Watch Stream
             </a>
@@ -437,7 +440,10 @@
 
         function activateRamadanMode(day) {
             document.getElementById('ramadan-panel').style.display = 'block';
+            
+            // Set text to RAMADAN! and color to green
             document.getElementById('ramadan-val').innerText = "RAMADAN!";
+            document.getElementById('ramadan-val').style.color = "var(--success)";
             
             let ashraName = day <= 10 ? "Ashra of Mercy" : (day <= 20 ? "Ashra of Forgiveness" : "Ashra of Protection");
             document.getElementById('ashra-name').innerText = ashraName;
@@ -476,7 +482,10 @@
         function calcRamadanCountdown(m, d) {
             let months = m < 9 ? (9 - m - 1) : (12 - m + 8);
             let totalDays = Math.floor((months * 29.5) + (30 - d));
+            
+            // Show standard countdown and ensure color is white
             document.getElementById('ramadan-val').innerText = totalDays;
+            document.getElementById('ramadan-val').style.color = "var(--text-main)";
         }
 
         function calculateQibla() {
