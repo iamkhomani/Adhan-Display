@@ -1,21 +1,24 @@
 {
-    "name": "Adhan Display",
-    "short_name": "Adhan",
-    "start_url": "./index.html",
-    "display": "standalone",
-    "background_color": "#050505",
-    "theme_color": "#050505",
-    "orientation": "any",
-    "icons": [
-        {
-            "src": "images/adhan display muslim prayer times dashboard logo.jpg",
-            "sizes": "192x192",
-            "type": "image/jpg"
-        },
-        {
-            "src": "images/adhan display muslim prayer times dashboard logo.jpg",
-            "sizes": "512x512",
-            "type": "image/jpg"
-        }
-    ]
+  "name": "Adhan Display Dashboard",
+  "short_name": "Adhan Display",
+  "description": "The Ultimate Free Islamic Prayer Times & Qibla Dashboard.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#050505",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "images/adhan display muslim prayer times dashboard logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "images/adhan display muslim prayer times dashboard logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
 }
