@@ -166,6 +166,18 @@
         }
         .btn-gold:hover { background: var(--gold); color: #000; box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
 
+        /* Glowing Live Dot */
+        .live-dot {
+            height: 10px; width: 10px; background-color: var(--danger);
+            border-radius: 50%; display: inline-block;
+            box-shadow: 0 0 8px var(--danger); animation: pulse-red 1.5s infinite;
+        }
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0); }
+        }
+
         #bmc-wbtn { transform: scale(0.8) !important; transform-origin: bottom right !important; }
 
         footer { margin-top: auto; text-align: center; padding: 20px; border-top: 1px solid #222; background: rgba(0,0,0,0.8); width: 100%; box-sizing: border-box; }
@@ -278,12 +290,15 @@
 
         <section class="card video-card">
             <div class="widget-title">Makkah Live</div>
-            <a href="https://www.youtube.com/watch?v=yH_PIhe-I0s" target="_blank" class="btn-gold">Watch Stream</a>
+            <a href="https://www.youtube.com/watch?v=yH_PIhe-I0s" target="_blank" class="btn-gold">
+                <span class="live-dot"></span> Watch Stream
+            </a>
         </section>
 
         <section class="card qibla-card">
             <div class="widget-title">Qibla Direction</div>
             <div id="qibla-degree" style="font-size:2rem; font-weight:bold;">--°</div>
+            <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom: 10px;">from true North</div>
             <a href="https://qiblafinder.withgoogle.com/" target="_blank" class="btn-gold">Open AR Finder</a>
         </section>
 
