@@ -30,14 +30,11 @@
         /* === THEME VARIABLES === */
         :root {
             --bg-image: url('images/adhan display muslim prayer times dashboard background.jpg');
-            --gold: #D4AF37;
-            --gold-dim: #997d26;
+            --gold: #D4AF37; --gold-dim: #997d26;
             --glass-bg: rgba(20, 20, 20, 0.85);
             --glass-header: rgba(0, 0, 0, 0.65);
-            --text-main: #f0f0f0;
-            --text-muted: #aaaaaa;
-            --border-color: #333333;
-            --progress-bg: #222222;
+            --text-main: #f0f0f0; --text-muted: #aaaaaa;
+            --border-color: #333333; --progress-bg: #222222;
             --shadow-color: rgba(0,0,0,0.5);
             --danger: #ff4444; --success: #2ecc71;
         }
@@ -78,24 +75,38 @@
         html[dir="rtl"] body { font-family: 'Tajawal', 'Segoe UI', sans-serif; }
         html[dir="rtl"] .top-left-logo { left: auto; right: 20px; }
         html[dir="rtl"] .settings-toggle { right: auto; left: 20px; }
+        html[dir="rtl"] .focus-toggle { right: auto; left: 75px; }
         html[dir="rtl"] .close-btn { right: auto; left: 20px; }
 
         .dashboard-container {
             max-width: 1400px; margin: 0 auto; padding: 20px;
             display: grid; grid-template-columns: repeat(12, 1fr);
             gap: 20px; flex: 1; position: relative; width: 100%; box-sizing: border-box;
+            transition: all 0.5s ease;
         }
+
+        /* Focus Mode Styles */
+        body.focus-mode .dashboard-container > *:not(.prayer-hero) { display: none !important; }
+        body.focus-mode header, body.focus-mode footer, body.focus-mode .top-left-logo { display: none !important; }
+        body.focus-mode .prayer-hero { 
+            grid-column: span 12 !important; height: 80vh; 
+            background: transparent; border: none; box-shadow: none; 
+            transform: scale(1.3); justify-content: center;
+        }
+        body.focus-mode .focus-toggle { border-color: var(--gold); background: var(--gold); color: #050505; }
+        .focus-toggle { right: 75px; } /* Positioned next to settings */
 
         .top-left-logo { position: absolute; top: 20px; left: 20px; width: clamp(50px, 8vw, 70px); height: auto; z-index: 10; }
 
-        .settings-toggle {
-            position: absolute; top: 20px; right: 20px; background: var(--glass-bg);
+        .settings-toggle, .focus-toggle {
+            position: absolute; top: 20px; background: var(--glass-bg);
             border: 1px solid var(--border-color); color: var(--text-main); font-size: 1.5rem;
             width: 45px; height: 45px; border-radius: 50%; cursor: pointer; z-index: 100;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 10px var(--shadow-color); transition: transform 0.3s, border-color 0.3s;
+            box-shadow: 0 4px 10px var(--shadow-color); transition: transform 0.3s, border-color 0.3s, background 0.3s;
         }
-        .settings-toggle:hover { transform: rotate(90deg); border-color: var(--gold); }
+        .settings-toggle { right: 20px; }
+        .settings-toggle:hover, .focus-toggle:hover { transform: scale(1.1); border-color: var(--gold); }
 
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -105,16 +116,18 @@
         .modal-overlay.active { display: flex; opacity: 1; }
         .settings-panel {
             background: var(--glass-bg); border: 1px solid var(--border-color); padding: 30px;
-            border-radius: 12px; width: 90%; max-width: 400px; position: relative;
-            color: var(--text-main); box-shadow: 0 10px 30px var(--shadow-color);
+            border-radius: 12px; width: 90%; max-width: 450px; position: relative;
+            color: var(--text-main); box-shadow: 0 10px 30px var(--shadow-color); max-height: 90vh; overflow-y: auto;
         }
         .close-btn { position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 1.8rem; color: var(--text-main); cursor: pointer; }
+        
         .setting-group { margin-bottom: 25px; }
         .setting-group label { display: block; margin-bottom: 10px; font-weight: bold; color: var(--gold); text-transform: uppercase; font-size: 0.9rem; letter-spacing: 1px; }
         .flex-options { display: flex; gap: 8px; flex-wrap: wrap; }
         .opt-btn { flex: 1; min-width: 40px; padding: 10px; background: transparent; border: 1px solid var(--border-color); color: var(--text-main); border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; text-align: center; }
         .opt-btn:hover { border-color: var(--gold); }
         .opt-btn.active { background: var(--gold); color: #050505; border-color: var(--gold); }
+        .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 8px; }
 
         /* Cards & Components */
         .card { background: var(--glass-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; backdrop-filter: blur(10px); box-shadow: 0 4px 20px var(--shadow-color); transition: all 0.3s ease; display: flex; flex-direction: column; justify-content: center; align-items: center; grid-column: span 12; }
@@ -132,13 +145,16 @@
         .date-val { font-size: clamp(1rem, 3vw, 1.2rem); font-weight: bold; color: var(--text-main); }
         #live-clock { font-size: clamp(1.4rem, 4vw, 1.8rem); font-family: 'Courier New', monospace; color: var(--text-main); }
 
-        .prayer-hero { text-align: center; border: 2px solid var(--gold); position: relative; }
+        /* Sunnah Fasting Banner */
+        #sunnah-banner { display: none; grid-column: span 12; background: rgba(46, 204, 113, 0.15); border: 1px solid var(--success); padding: 10px 20px; border-radius: 12px; text-align: center; color: var(--success); font-weight: bold; letter-spacing: 1px; box-shadow: 0 4px 10px var(--shadow-color); animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(46, 204, 113, 0); } 100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); } }
+
+        .prayer-hero { text-align: center; border: 2px solid var(--gold); position: relative; transition: all 0.5s ease; }
         .prayer-name-display { font-size: clamp(2.5rem, 8vw, 3.5rem); color: var(--gold); font-weight: 800; line-height: 1.1; margin: 10px 0; }
         .countdown-display { font-size: clamp(1.8rem, 6vw, 2.2rem); font-family: 'Courier New', monospace; color: var(--text-main); }
         .progress-container { width: 100%; height: 12px; background: var(--progress-bg); margin-top: 20px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color); }
         .progress-bar { height: 100%; background: var(--gold); width: 0%; transition: width 1s linear; }
 
-        /* Shuruq Warning */
         #shuruq-warning { color: var(--danger); font-size: 0.9rem; font-weight: bold; display: none; margin-bottom: 10px; letter-spacing: 1px; }
 
         .btn-gold { background: transparent; border: 2px solid var(--gold); color: var(--gold); padding: 12px 20px; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; text-decoration: none; transition: 0.3s; border-radius: 6px; font-weight: bold; display: inline-flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; width: 100%; max-width: 300px; box-sizing: border-box; text-align: center; }
@@ -160,6 +176,7 @@
         @media (max-width: 767px) {
             .top-left-logo { position: relative; top: 0; left: 0; display: block; margin: 0 auto 15px auto; }
             .settings-toggle { top: 15px; right: 15px; width: 40px; height: 40px; }
+            .focus-toggle { top: 15px; right: 65px; width: 40px; height: 40px; }
             .info-panel { flex-direction: column; }
             .date-box { width: 100%; padding: 5px 0; border-bottom: 1px solid var(--border-color); }
             .date-box:last-child { border-bottom: none; }
@@ -168,7 +185,15 @@
 </head>
 <body>
 
+    <audio id="audio-chime" src="audio/chime.mp3" preload="auto"></audio>
+    <audio id="audio-default" src="audio/adhan.mp3" preload="auto"></audio>
+    <audio id="audio-makkah" src="audio/makkah.mp3" preload="auto"></audio>
+    <audio id="audio-madinah" src="audio/madinah.mp3" preload="auto"></audio>
+    <audio id="audio-alafasy" src="audio/alafasy.mp3" preload="auto"></audio>
+
+    <button id="focus-btn" class="focus-toggle" aria-label="Focus Mode">🎯</button>
     <button id="settings-btn" class="settings-toggle" aria-label="Settings">⚙️</button>
+    
     <div id="settings-modal" class="modal-overlay">
         <div class="settings-panel">
             <button id="close-settings" class="close-btn">&times;</button>
@@ -178,6 +203,7 @@
                 <label data-i18n="lang">Language</label>
                 <div class="flex-options">
                     <button class="opt-btn lang-btn" data-lang-val="en">EN</button>
+                    <button class="opt-btn lang-btn" data-lang-val="tr">TR</button>
                     <button class="opt-btn lang-btn" data-lang-val="nl">NL</button>
                     <button class="opt-btn lang-btn" data-lang-val="fr">FR</button>
                     <button class="opt-btn lang-btn" data-lang-val="de">DE</button>
@@ -196,11 +222,27 @@
             </div>
 
             <div class="setting-group">
-                <label data-i18n="size">Text Size</label>
+                <label data-i18n="audio_pref">Audio & Alerts</label>
+                <div class="flex-options" style="margin-bottom: 10px;">
+                    <button class="opt-btn adhan-btn" data-adhan-val="default">Default</button>
+                    <button class="opt-btn adhan-btn" data-adhan-val="makkah">Makkah</button>
+                    <button class="opt-btn adhan-btn" data-adhan-val="madinah">Madinah</button>
+                    <button class="opt-btn adhan-btn" data-adhan-val="alafasy">Alafasy</button>
+                    <button class="opt-btn adhan-btn" data-adhan-val="none">None</button>
+                </div>
+                <div class="toggle-row">
+                    <span data-i18n="wudu_alert" style="font-size: 0.9rem;">10-Min Wudu Alert</span>
+                    <label class="switch" style="cursor: pointer; color: var(--gold); font-weight: bold;">
+                        <input type="checkbox" id="wudu-toggle" style="accent-color: var(--gold); transform: scale(1.3);">
+                    </label>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label data-i18n="daily_source">Daily Inspiration</label>
                 <div class="flex-options">
-                    <button class="opt-btn text-btn" data-size-val="small">A-</button>
-                    <button class="opt-btn text-btn" data-size-val="normal">A</button>
-                    <button class="opt-btn text-btn" data-size-val="large">A+</button>
+                    <button class="opt-btn text-source-btn" data-source-val="quran">Ayah (Quran)</button>
+                    <button class="opt-btn text-source-btn" data-source-val="hadith">Hadith</button>
                 </div>
             </div>
         </div>
@@ -237,6 +279,8 @@
             </div>
         </section>
 
+        <div id="sunnah-banner">🌙 <span id="sunnah-text">Sunnah Fasting Today</span></div>
+
         <section id="ramadan-panel" style="display: none; grid-column: span 12; background: var(--glass-bg); border: 1px solid var(--success); padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 4px 10px var(--shadow-color);">
             <div id="fasting-label" style="color:var(--success); text-transform:uppercase; font-size:0.8rem; letter-spacing: 1px;">Fasting Timer</div>
             <div id="fasting-timer" style="font-size: clamp(1.8rem, 5vw, 2.5rem); font-family: 'Courier New', monospace; font-weight: bold; color: var(--text-main); margin-top: 5px;">--:--:--</div>
@@ -255,9 +299,12 @@
         </section>
 
         <article class="card text-widget">
-            <div class="widget-title" data-i18n="ayah">Ayah of the Day</div>
-            <div id="quran-text" style="font-style:italic; text-align:center; color:var(--text-main); font-size: 1.1rem;">Loading...</div>
-            <div id="quran-ref" style="color:var(--gold); font-size:0.8rem; margin-top:10px; width:100%; text-align:right;"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; margin-bottom: 15px;">
+                <span style="width: 24px;"></span> <span class="widget-title" id="daily-title" data-i18n="ayah" style="border: none; margin: 0; padding: 0;">Ayah of the Day</span>
+                <a href="https://quran.com" target="_blank" style="text-decoration: none; font-size: 1.2rem; transition: transform 0.2s; color: var(--gold);" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Read on Quran.com">📖</a>
+            </div>
+            <div id="daily-text" style="font-style:italic; text-align:center; color:var(--text-main); font-size: 1.1rem; line-height: 1.5;">Loading...</div>
+            <div id="daily-ref" style="color:var(--gold); font-size:0.8rem; margin-top:10px; width:100%; text-align:right;"></div>
         </article>
 
         <section class="card night-widget">
@@ -277,15 +324,12 @@
 
         <article class="card ramadan-widget">
             <div class="widget-title" data-i18n="ramadan">Ramadan</div>
-            
             <div id="ramadan-countdown-container" style="text-align: center; width: 100%;">
                 <div id="ramadan-val" style="font-size: clamp(1.8rem, 5vw, 2.5rem); font-weight: bold;">--</div>
                 <div style="font-size:0.8rem; color:var(--gold-dim);" data-i18n="days">Days Remaining</div>
             </div>
-
             <div id="ramadan-active-container" style="display: none; width: 100%; text-align: center;">
                 <div style="font-size: clamp(1.8rem, 5vw, 2.5rem); font-weight: bold; color: var(--success); text-transform: uppercase; margin-bottom: 10px;">Ramadan!</div>
-                
                 <div style="font-size: 0.85rem; color: var(--gold-dim); margin-bottom: 5px;" id="ashra-label">Ashra: Mercy (Days 1-10)</div>
                 <div class="progress-container" style="height: 10px; margin-top: 5px;">
                     <div class="progress-bar" id="ashra-progress-fill" style="background: var(--success); width: 0%;"></div>
@@ -297,7 +341,7 @@
         <section class="card video-card">
             <div class="widget-title" data-i18n="makkah">Makkah Live</div>
             <img src="images/qibla.png" alt="Qibla Indicator" style="width: 50px; height: auto; margin: 10px 0;">
-            <a href="https://www.youtube.com/watch?v=dmBlblTFcKE" target="_blank" class="btn-gold">
+            <a href="https://www.youtube.com/watch?v=Qv7B4BtVirs" target="_blank" class="btn-gold">
                 <span style="height: 10px; width: 10px; background-color: var(--danger); border-radius: 50%; display: inline-block; box-shadow: 0 0 8px var(--danger);"></span> 
                 <span data-i18n="watch">Watch Stream</span>
             </a>
@@ -307,7 +351,7 @@
             <div class="widget-title" data-i18n="qibla">Qibla Direction</div>
             <div id="qibla-degree" style="font-size:2rem; font-weight:bold; color:var(--text-main);">--°</div>
             <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom: 10px;" data-i18n="north">from true North</div>
-            <a href="https://qiblafinder.withgoogle.com/" target="_blank" class="btn-gold" data-i18n="ar">Open AR Finder</a>
+            <a href="https://qiblafinder.withgoogle.com/" target="_blank" class="btn-gold" data-i18n="ar_find">Open AR Finder</a>
         </section>
 
         <section class="card install-card" style="padding: 30px;">
@@ -323,20 +367,30 @@
     </footer>
 
     <script>
-        // === MEERTALIGHEID (Woordenboek) ===
+        // === TRANSLATIONS (i18n) ===
         const i18n = {
-            en: { subtitle: "The Ultimate Free Islamic Prayer Times & Qibla Dashboard", greg: "Gregorian", time: "Current Time", loc: "Location", hijri: "Hijri", curr: "Current Prayer", next: "Next Prayer In", ayah: "Ayah of the Day", qiyam: "Night Prayers", mid: "Midnight", tahajjud: "Tahajjud", allah: "Name of Allah", ramadan: "Ramadan", days: "Days Remaining", makkah: "Makkah Live", watch: "Watch Stream", qibla: "Qibla Direction", north: "from true North", ar: "Open AR Finder", getapp: "Get the App", install: "Install App", pref: "Preferences", theme: "Theme", size: "Text Size", lang: "Language", nopray: "* Not permissible to pray *" },
-            nl: { subtitle: "Het Ultieme Islamitische Gebedstijden Dashboard", greg: "Gregoriaans", time: "Huidige Tijd", loc: "Locatie", hijri: "Hidzjra", curr: "Huidig Gebed", next: "Volgend Gebed In", ayah: "Vers van de Dag", qiyam: "Nachtgebeden", mid: "Middernacht", tahajjud: "Tahajjud", allah: "Naam van Allah", ramadan: "Ramadan", days: "Dagen Te Gaan", makkah: "Mekka Live", watch: "Bekijk Stream", qibla: "Qibla Richting", north: "van ware noorden", ar: "Open AR Zoeker", getapp: "Download de App", install: "Installeer App", pref: "Instellingen", theme: "Thema", size: "Tekstgrootte", lang: "Taal", nopray: "* Bidden is niet toegestaan *" },
-            fr: { subtitle: "Le Tableau de Bord Islamique Ultime", greg: "Grégorien", time: "Heure Actuelle", loc: "Emplacement", hijri: "Hégire", curr: "Prière Actuelle", next: "Prochaine Prière", ayah: "Verset du Jour", qiyam: "Prières Nocturnes", mid: "Minuit", tahajjud: "Tahajjud", allah: "Nom d'Allah", ramadan: "Ramadan", days: "Jours Restants", makkah: "Mecque en Direct", watch: "Regarder le Stream", qibla: "Direction de la Qibla", north: "du vrai nord", ar: "Ouvrir AR Finder", getapp: "Obtenir l'App", install: "Installer l'App", pref: "Préférences", theme: "Thème", size: "Taille du Texte", lang: "Langue", nopray: "* Prière non permise *" },
-            de: { subtitle: "Das Ultimative Islamische Dashboard", greg: "Gregorianisch", time: "Aktuelle Zeit", loc: "Ort", hijri: "Hidschra", curr: "Aktuelles Gebet", next: "Nächstes Gebet In", ayah: "Vers des Tages", qiyam: "Nachtgebete", mid: "Mitternacht", tahajjud: "Tahajjud", allah: "Name Allahs", ramadan: "Ramadan", days: "Verbleibende Tage", makkah: "Mekka Live", watch: "Stream Ansehen", qibla: "Qibla-Richtung", north: "vom wahren Norden", ar: "AR-Finder Öffnen", getapp: "App Holen", install: "App Installieren", pref: "Einstellungen", theme: "Thema", size: "Textgröße", lang: "Sprache", nopray: "* Beten ist nicht erlaubt *" },
-            es: { subtitle: "El Panel de Oración Islámica Definitivo", greg: "Gregoriano", time: "Hora Actual", loc: "Ubicación", hijri: "Hégira", curr: "Oración Actual", next: "Próxima Oración En", ayah: "Versículo del Día", qiyam: "Oraciones Nocturnas", mid: "Medianoche", tahajjud: "Tahajjud", allah: "Nombre de Alá", ramadan: "Ramadán", days: "Días Restantes", makkah: "La Meca en Vivo", watch: "Ver Transmisión", qibla: "Dirección Qibla", north: "desde el norte", ar: "Abrir Buscador AR", getapp: "Obtener App", install: "Instalar App", pref: "Preferencias", theme: "Tema", size: "Tamaño", lang: "Idioma", nopray: "* No está permitido orar *" },
-            ar: { subtitle: "لوحة أوقات الصلاة الإسلامية المطلقة", greg: "ميلادي", time: "الوقت الحالي", loc: "الموقع", hijri: "هجري", curr: "الصلاة الحالية", next: "الصلاة القادمة في", ayah: "آية اليوم", qiyam: "قيام الليل", mid: "منتصف الليل", tahajjud: "تهجد", allah: "اسم الله", ramadan: "رمضان", days: "أيام متبقية", makkah: "مكة مباشر", watch: "شاهد البث", qibla: "اتجاه القبلة", north: "من الشمال الحقيقي", ar: "فتح باحث الواقع المعزز", getapp: "احصل على التطبيق", install: "تثبيت التطبيق", pref: "الإعدادات", theme: "السمة", size: "حجم النص", lang: "اللغة", nopray: "* الصلاة غير جائزة *" }
+            en: { subtitle: "The Ultimate Free Islamic Prayer Times & Qibla Dashboard", greg: "Gregorian", time: "Current Time", loc: "Location", hijri: "Hijri", curr: "Current Prayer", next: "Next Prayer In", ayah: "Ayah of the Day", hadith: "Hadith of the Day", qiyam: "Night Prayers", mid: "Midnight", tahajjud: "Tahajjud", allah: "Name of Allah", ramadan: "Ramadan", days: "Days Remaining", makkah: "Makkah Live", watch: "Watch Stream", qibla: "Qibla Direction", north: "from true North", ar_find: "Open AR Finder", getapp: "Get the App", install: "Install App", pref: "Preferences", theme: "Theme", size: "Text Size", lang: "Language", nopray: "* Not permissible to pray *", audio_pref: "Audio & Alerts", wudu_alert: "10-Min Wudu Alert", daily_source: "Daily Inspiration", sunnah_mon: "Sunnah Fasting: Monday", sunnah_thu: "Sunnah Fasting: Thursday", sunnah_white: "Sunnah Fasting: Ayyam al-Bid (White Days)" },
+            tr: { subtitle: "En İyi Ücretsiz İslami Namaz Vakitleri Panosu", greg: "Miladi", time: "Şu Anki Saat", loc: "Konum", hijri: "Hicri", curr: "Mevcut Namaz", next: "Sonraki Namaz", ayah: "Günün Ayeti", hadith: "Günün Hadisi", qiyam: "Gece Namazları", mid: "Gece Yarısı", tahajjud: "Teheccüd", allah: "Allah'ın İsmi", ramadan: "Ramazan", days: "Kalan Gün", makkah: "Mekke Canlı", watch: "Yayını İzle", qibla: "Kıble Yönü", north: "Gerçek Kuzeyden", ar_find: "AR Bulucuyu Aç", getapp: "Uygulamayı Al", install: "Uygulamayı Yükle", pref: "Tercihler", theme: "Tema", size: "Metin Boyutu", lang: "Dil", nopray: "* Namaz Kılmak Mekruhtur *", audio_pref: "Ses ve Uyarılar", wudu_alert: "10-Dk Abdest Uyarısı", daily_source: "Günlük İlham", sunnah_mon: "Sünnet Orucu: Pazartesi", sunnah_thu: "Sünnet Orucu: Perşembe", sunnah_white: "Sünnet Orucu: Eyyam-ı Bîd (Beyaz Günler)" },
+            nl: { subtitle: "Het Ultieme Islamitische Gebedstijden Dashboard", greg: "Gregoriaans", time: "Huidige Tijd", loc: "Locatie", hijri: "Hidzjra", curr: "Huidig Gebed", next: "Volgend Gebed In", ayah: "Vers van de Dag", hadith: "Hadith van de Dag", qiyam: "Nachtgebeden", mid: "Middernacht", tahajjud: "Tahajjud", allah: "Naam van Allah", ramadan: "Ramadan", days: "Dagen Te Gaan", makkah: "Mekka Live", watch: "Bekijk Stream", qibla: "Qibla Richting", north: "van ware noorden", ar_find: "Open AR Zoeker", getapp: "Download de App", install: "Installeer App", pref: "Instellingen", theme: "Thema", size: "Tekstgrootte", lang: "Taal", nopray: "* Bidden is niet toegestaan *", audio_pref: "Audio & Meldingen", wudu_alert: "10-Min Wudu Melding", daily_source: "Dagelijkse Inspiratie", sunnah_mon: "Sunnah Vasten: Maandag", sunnah_thu: "Sunnah Vasten: Donderdag", sunnah_white: "Sunnah Vasten: Witte Dagen" },
+            fr: { subtitle: "Le Tableau de Bord Islamique Ultime", greg: "Grégorien", time: "Heure Actuelle", loc: "Emplacement", hijri: "Hégire", curr: "Prière Actuelle", next: "Prochaine Prière", ayah: "Verset du Jour", hadith: "Hadith du Jour", qiyam: "Prières Nocturnes", mid: "Minuit", tahajjud: "Tahajjud", allah: "Nom d'Allah", ramadan: "Ramadan", days: "Jours Restants", makkah: "Mecque en Direct", watch: "Regarder le Stream", qibla: "Direction de la Qibla", north: "du vrai nord", ar_find: "Ouvrir AR Finder", getapp: "Obtenir l'App", install: "Installer l'App", pref: "Préférences", theme: "Thème", size: "Taille du Texte", lang: "Langue", nopray: "* Prière non permise *", audio_pref: "Audio & Alertes", wudu_alert: "Alerte Wudu 10-Min", daily_source: "Inspiration Quotidienne", sunnah_mon: "Jeûne Sunnah : Lundi", sunnah_thu: "Jeûne Sunnah : Jeudi", sunnah_white: "Jeûne Sunnah : Jours Blancs" },
+            de: { subtitle: "Das Ultimative Islamische Dashboard", greg: "Gregorianisch", time: "Aktuelle Zeit", loc: "Ort", hijri: "Hidschra", curr: "Aktuelles Gebet", next: "Nächstes Gebet In", ayah: "Vers des Tages", hadith: "Hadith des Tages", qiyam: "Nachtgebete", mid: "Mitternacht", tahajjud: "Tahajjud", allah: "Name Allahs", ramadan: "Ramadan", days: "Verbleibende Tage", makkah: "Mekka Live", watch: "Stream Ansehen", qibla: "Qibla-Richtung", north: "vom wahren Norden", ar_find: "AR-Finder Öffnen", getapp: "App Holen", install: "App Installieren", pref: "Einstellungen", theme: "Thema", size: "Textgröße", lang: "Sprache", nopray: "* Beten ist nicht erlaubt *", audio_pref: "Audio & Warnungen", wudu_alert: "10-Min Wudu-Alarm", daily_source: "Tägliche Inspiration", sunnah_mon: "Sunnah Fasten: Montag", sunnah_thu: "Sunnah Fasten: Donnerstag", sunnah_white: "Sunnah Fasten: Weiße Tage" },
+            es: { subtitle: "El Panel de Oración Islámica Definitivo", greg: "Gregoriano", time: "Hora Actual", loc: "Ubicación", hijri: "Hégira", curr: "Oración Actual", next: "Próxima Oración En", ayah: "Versículo del Día", hadith: "Hadiz del Día", qiyam: "Oraciones Nocturnas", mid: "Medianoche", tahajjud: "Tahajjud", allah: "Nombre de Alá", ramadan: "Ramadán", days: "Días Restantes", makkah: "La Meca en Vivo", watch: "Ver Transmisión", qibla: "Dirección Qibla", north: "desde el norte", ar_find: "Abrir Buscador AR", getapp: "Obtener App", install: "Instalar App", pref: "Preferencias", theme: "Tema", size: "Tamaño", lang: "Idioma", nopray: "* No está permitido orar *", audio_pref: "Audio y Alertas", wudu_alert: "Alerta Wudu 10-Min", daily_source: "Inspiración Diaria", sunnah_mon: "Ayuno Sunnah: Lunes", sunnah_thu: "Ayuno Sunnah: Jueves", sunnah_white: "Ayuno Sunnah: Días Blancos" },
+            ar: { subtitle: "لوحة أوقات الصلاة الإسلامية المطلقة", greg: "ميلادي", time: "الوقت الحالي", loc: "الموقع", hijri: "هجري", curr: "الصلاة الحالية", next: "الصلاة القادمة في", ayah: "آية اليوم", hadith: "حديث اليوم", qiyam: "قيام الليل", mid: "منتصف الليل", tahajjud: "تهجد", allah: "اسم الله", ramadan: "رمضان", days: "أيام متبقية", makkah: "مكة مباشر", watch: "شاهد البث", qibla: "اتجاه القبلة", north: "من الشمال الحقيقي", ar_find: "فتح باحث الواقع المعزز", getapp: "احصل على التطبيق", install: "تثبيت التطبيق", pref: "الإعدادات", theme: "السمة", size: "حجم النص", lang: "اللغة", nopray: "* الصلاة غير جائزة *", audio_pref: "الصوت والتنبيهات", wudu_alert: "تنبيه الوضوء 10 دقائق", daily_source: "إلهام يومي", sunnah_mon: "صيام السنة: الإثنين", sunnah_thu: "صيام السنة: الخميس", sunnah_white: "صيام السنة: الأيام البيض" }
         };
 
-        let config = { lat: 52.0907, lon: 5.1214, city: 'Netherlands', method: 3 };
-        let state = { prayers: {}, nextPrayer: null, prevPrayerTime: null, namesList: [], isRamadan: false };
+        // Small built-in array of beautiful authentic Hadiths (English fallback used if translated not available)
+        const dailyHadiths = [
+            { text: "He who does not show mercy to people, Allah will not show mercy to him.", ref: "Sahih Muslim 2319" },
+            { text: "The most beloved of deeds to Allah are those that are most consistent, even if it is small.", ref: "Sahih al-Bukhari 6464" },
+            { text: "Make things easy for the people, and do not make it difficult for them...", ref: "Sahih al-Bukhari 69" },
+            { text: "A good word is charity.", ref: "Sahih al-Bukhari 2989" },
+            { text: "Richness is not having many possessions, but richness is being content with oneself.", ref: "Sahih al-Bukhari 6446" }
+        ];
 
-        // === SLIMME CACHE FUNCTIE ===
+        let config = { lat: 52.0907, lon: 5.1214, city: 'Netherlands', method: 3 };
+        let state = { prayers: {}, nextPrayer: null, prevPrayerTime: null, namesList: [], isRamadan: false, chimePlayed: false, adhanPlayed: false };
+
+        // === SMART CACHE ===
         async function fetchCached(key, url, ttlHours) {
             const cached = localStorage.getItem(key);
             if (cached) {
@@ -349,29 +403,33 @@
                 localStorage.setItem(key, JSON.stringify({ timestamp: Date.now(), data }));
                 return data;
             } catch (e) {
-                console.error('Fetch error:', e);
                 if (cached) return JSON.parse(cached).data;
                 throw e;
             }
         }
 
-        // === INSTELLINGEN & VERTALINGEN ===
+        // === SETTINGS & UI ===
         const settingsModal = document.getElementById('settings-modal');
         document.getElementById('settings-btn').addEventListener('click', () => settingsModal.classList.add('active'));
         document.getElementById('close-settings').addEventListener('click', () => settingsModal.classList.remove('active'));
+        
+        // Focus Mode Toggle
+        document.getElementById('focus-btn').addEventListener('click', () => {
+            document.body.classList.toggle('focus-mode');
+        });
 
         function applySettings() {
             const theme = localStorage.getItem('adhan_theme') || 'dark';
             const textSize = localStorage.getItem('adhan_size') || 'normal';
             const lang = localStorage.getItem('adhan_lang') || 'en';
+            const adhanSound = localStorage.getItem('adhan_sound') || 'default'; // Updated Default Fallback
+            const wuduAlert = localStorage.getItem('adhan_wudu') === 'true';
+            const dailySource = localStorage.getItem('adhan_daily') || 'quran';
             
             document.documentElement.setAttribute('data-theme', theme);
             document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.themeVal === theme));
 
-            let fontSize = '16px';
-            if (textSize === 'small') fontSize = '14px';
-            if (textSize === 'large') fontSize = '19px';
-            document.documentElement.style.fontSize = fontSize;
+            document.documentElement.style.fontSize = textSize === 'small' ? '14px' : (textSize === 'large' ? '19px' : '16px');
             document.querySelectorAll('.text-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.sizeVal === textSize));
 
             document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
@@ -380,24 +438,29 @@
                 if(i18n[lang] && i18n[lang][key]) el.innerText = i18n[lang][key];
             });
             document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.langVal === lang));
+
+            document.querySelectorAll('.adhan-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.adhanVal === adhanSound));
+            document.getElementById('wudu-toggle').checked = wuduAlert;
+
+            document.querySelectorAll('.text-source-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.sourceVal === dailySource));
+            
+            document.getElementById('daily-title').innerText = i18n[lang][dailySource === 'quran' ? 'ayah' : 'hadith'];
         }
 
         document.querySelectorAll('.theme-btn').forEach(btn => btn.addEventListener('click', (e) => { localStorage.setItem('adhan_theme', e.target.dataset.themeVal); applySettings(); }));
         document.querySelectorAll('.text-btn').forEach(btn => btn.addEventListener('click', (e) => { localStorage.setItem('adhan_size', e.target.dataset.sizeVal); applySettings(); }));
-        document.querySelectorAll('.lang-btn').forEach(btn => btn.addEventListener('click', (e) => { 
-            localStorage.setItem('adhan_lang', e.target.dataset.langVal); 
-            applySettings(); 
-            fetchContent(); 
-        }));
+        document.querySelectorAll('.lang-btn').forEach(btn => btn.addEventListener('click', (e) => { localStorage.setItem('adhan_lang', e.target.dataset.langVal); applySettings(); fetchContent(); checkSunnahFasting(); }));
+        document.querySelectorAll('.adhan-btn').forEach(btn => btn.addEventListener('click', (e) => { localStorage.setItem('adhan_sound', e.target.dataset.adhanVal); applySettings(); }));
+        document.getElementById('wudu-toggle').addEventListener('change', (e) => { localStorage.setItem('adhan_wudu', e.target.checked); applySettings(); });
+        document.querySelectorAll('.text-source-btn').forEach(btn => btn.addEventListener('click', (e) => { localStorage.setItem('adhan_daily', e.target.dataset.sourceVal); applySettings(); fetchContent(); }));
 
-        // === INITIALISATIE (PARALLEL LADEN) ===
+        // === INITIALIZATION ===
         async function init() {
             applySettings(); updateGregorian(); 
             await detectLocation(); 
-            
             await Promise.all([ fetchWeather(), fetchPrayerData(), fetchContent() ]);
-            
             calculateQibla();
+            
             setInterval(tickTimer, 1000); 
             setInterval(() => { document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('en-US', { hour12: false }); }, 1000);
             setInterval(rotateNames, 10000); 
@@ -414,8 +477,7 @@
 
         async function fetchWeather() {
             try {
-                const cacheKey = `weather_${config.lat}_${config.lon}`;
-                const data = await fetchCached(cacheKey, `https://api.open-meteo.com/v1/forecast?latitude=${config.lat}&longitude=${config.lon}&current_weather=true`, 1);
+                const data = await fetchCached(`weather_${config.lat}_${config.lon}`, `https://api.open-meteo.com/v1/forecast?latitude=${config.lat}&longitude=${config.lon}&current_weather=true`, 1);
                 document.getElementById('weather-display').innerText = `${Math.round(data.current_weather.temperature)}°C | ${data.current_weather.weathercode < 3 ? 'Clear' : 'Cloudy'}`;
             } catch (e) {}
         }
@@ -423,48 +485,72 @@
         async function fetchPrayerData() {
             const now = new Date();
             const dateStr = `${now.getDate()}-${now.getMonth()+1}-${now.getFullYear()}`;
-            const cacheKey = `prayers_${config.lat}_${config.lon}_${dateStr}`;
-            
-            const data = await fetchCached(cacheKey, `https://api.aladhan.com/v1/timings/${dateStr}?latitude=${config.lat}&longitude=${config.lon}&method=${config.method}`, 24);
+            const data = await fetchCached(`prayers_${config.lat}_${config.lon}_${dateStr}`, `https://api.aladhan.com/v1/timings/${dateStr}?latitude=${config.lat}&longitude=${config.lon}&method=${config.method}`, 24);
             
             if(data.code === 200) {
                 state.prayers = data.data.timings;
                 const h = data.data.date.hijri;
                 document.getElementById('hijri-date').innerText = `${h.day} ${h.month.en} ${h.year}`;
                 
-                // RAMADAN CHECK
-                if(parseInt(h.month.number) === 9) { 
-                    state.isRamadan = true; 
-                    activateRamadanMode(parseInt(h.day)); 
-                } else { 
-                    state.isRamadan = false; 
-                    calcRamadanCountdown(parseInt(h.month.number), parseInt(h.day)); 
-                }
+                if(parseInt(h.month.number) === 9) { state.isRamadan = true; activateRamadanMode(parseInt(h.day)); } 
+                else { state.isRamadan = false; calcRamadanCountdown(parseInt(h.month.number), parseInt(h.day)); }
                 
                 document.getElementById('midnight-time').innerText = state.prayers.Midnight;
                 document.getElementById('last-third-time').innerText = state.prayers.Lastthird;
+                
+                checkSunnahFasting(now.getDay(), parseInt(h.day));
                 determinePrayerState();
+            }
+        }
+
+        function checkSunnahFasting(gregDay = new Date().getDay(), hijriDay = 1) {
+            if (state.isRamadan) { document.getElementById('sunnah-banner').style.display = 'none'; return; }
+            
+            const lang = localStorage.getItem('adhan_lang') || 'en';
+            let reason = null;
+            
+            if (gregDay === 1) reason = i18n[lang].sunnah_mon || i18n['en'].sunnah_mon;
+            else if (gregDay === 4) reason = i18n[lang].sunnah_thu || i18n['en'].sunnah_thu;
+            else if ([13, 14, 15].includes(hijriDay)) reason = i18n[lang].sunnah_white || i18n['en'].sunnah_white;
+            
+            if (reason) {
+                document.getElementById('sunnah-text').innerText = reason;
+                document.getElementById('sunnah-banner').style.display = 'block';
+            } else {
+                document.getElementById('sunnah-banner').style.display = 'none';
             }
         }
 
         async function fetchContent() {
             const lang = localStorage.getItem('adhan_lang') || 'en';
-            const quranEditions = { en: 'en.asad', nl: 'nl.leemhuis', fr: 'fr.hamidullah', de: 'de.aburida', es: 'es.cortes', ar: 'ar.alafasy' };
-            const edition = quranEditions[lang] || 'en.asad';
-            const todayStr = new Date().toDateString();
+            const dailySource = localStorage.getItem('adhan_daily') || 'quran';
             
+            if (dailySource === 'quran') {
+                const quranEditions = { en: 'en.asad', tr: 'tr.diyanet', nl: 'nl.leemhuis', fr: 'fr.hamidullah', de: 'de.aburida', es: 'es.cortes', ar: 'ar.alafasy' };
+                const edition = quranEditions[lang] || 'en.asad';
+                const todayStr = new Date().toDateString();
+                try {
+                    const ayahData = await fetchCached(`quran_${edition}_${todayStr}`, `https://api.alquran.cloud/v1/ayah/${Math.floor(Math.random()*6236)+1}/${edition}`, 24);
+                    document.getElementById('daily-text').innerText = `"${ayahData.data.text}"`;
+                    let surahName = lang === 'ar' ? ayahData.data.surah.name : ayahData.data.surah.englishName;
+                    document.getElementById('daily-ref').innerText = surahName + " " + ayahData.data.surah.number + ":" + ayahData.data.numberInSurah;
+                } catch(e) {}
+            } else {
+                // Use built-in Hadith array
+                const todayIndex = new Date().getDate() % dailyHadiths.length;
+                const dailyH = dailyHadiths[todayIndex];
+                document.getElementById('daily-text').innerText = `"${dailyH.text}"`;
+                document.getElementById('daily-ref').innerText = dailyH.ref;
+            }
+
+            // Fetch Allah Names
             try {
-                const ayahData = await fetchCached(`quran_${edition}_${todayStr}`, `https://api.alquran.cloud/v1/ayah/${Math.floor(Math.random()*6236)+1}/${edition}`, 24);
-                document.getElementById('quran-text').innerText = `"${ayahData.data.text}"`;
-                let surahName = lang === 'ar' ? ayahData.data.surah.name : ayahData.data.surah.englishName;
-                document.getElementById('quran-ref').innerText = surahName + " " + ayahData.data.surah.number + ":" + ayahData.data.numberInSurah;
-                
                 const namesData = await fetchCached('allah_names_v1', 'https://api.aladhan.com/v1/asmaAlHusna', 720);
                 state.namesList = namesData.data; rotateNames();
             } catch(e) {}
         }
 
-        // === TIMERS, CALCULATIONS & STATE ===
+        // === TIMERS, CALCULATIONS & AUDIO PLAYBACK ===
         function determinePrayerState() {
             const now = new Date();
             const seq = ["Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha"];
@@ -480,14 +566,7 @@
                     document.getElementById('curr-name').innerText = prevName;
                     document.getElementById('curr-time').innerText = state.prayers[prevName];
                     document.getElementById('curr-name').style.color = prevName === "Sunrise" ? "var(--danger)" : "var(--gold)";
-                    
-                    // SHURUQ WARNING CHECK
-                    if (prevName === "Sunrise") {
-                        document.getElementById('shuruq-warning').style.display = 'block';
-                    } else {
-                        document.getElementById('shuruq-warning').style.display = 'none';
-                    }
-
+                    document.getElementById('shuruq-warning').style.display = prevName === "Sunrise" ? 'block' : 'none';
                     return;
                 }
             }
@@ -498,15 +577,39 @@
             document.getElementById('shuruq-warning').style.display = 'none';
         }
 
+        function playAudio(type) {
+            if (type === 'chime') {
+                const chime = document.getElementById('audio-chime');
+                if(chime) chime.play().catch(e=>console.log("Audio play prevented by browser"));
+            } else if (type === 'adhan' && state.nextPrayer.name !== "Sunrise") { 
+                const soundPref = localStorage.getItem('adhan_sound') || 'default';
+                if(soundPref !== 'none') {
+                    const adhanAudio = document.getElementById(`audio-${soundPref}`);
+                    if(adhanAudio) adhanAudio.play().catch(e=>console.log("Audio play prevented by browser"));
+                }
+            }
+        }
+
         function tickTimer() {
             if(!state.nextPrayer) return;
             const now = new Date();
-            const diff = state.nextPrayer.time - now;
-            if(diff <= 0) { determinePrayerState(); return; }
+            const diffMs = state.nextPrayer.time - now;
             
-            const h = Math.floor(diff/3600000).toString().padStart(2,'0');
-            const m = Math.floor((diff%3600000)/60000).toString().padStart(2,'0');
-            const s = Math.floor((diff%60000)/1000).toString().padStart(2,'0');
+            // Audio Logic
+            if (diffMs <= 600000 && diffMs > 599000 && !state.chimePlayed) { 
+                if(localStorage.getItem('adhan_wudu') === 'true' && state.nextPrayer.name !== "Sunrise") { playAudio('chime'); }
+                state.chimePlayed = true; 
+            }
+            if (diffMs <= 0) { 
+                if(!state.adhanPlayed) { playAudio('adhan'); state.adhanPlayed = true; }
+                determinePrayerState(); 
+                state.chimePlayed = false; state.adhanPlayed = false; 
+                return; 
+            }
+            
+            const h = Math.floor(diffMs/3600000).toString().padStart(2,'0');
+            const m = Math.floor((diffMs%3600000)/60000).toString().padStart(2,'0');
+            const s = Math.floor((diffMs%60000)/1000).toString().padStart(2,'0');
             document.getElementById('timer-display').innerText = `${h}:${m}:${s}`;
             
             if(state.prevPrayerTime) {
@@ -515,26 +618,22 @@
                 document.getElementById('progress-fill').style.width = `${(elapsed/total)*100}%`;
             }
 
-            // RAMADAN FASTING TIMER LOGIC (Top Panel)
+            // Ramadan Fasting Timer
             if(state.isRamadan) {
                 const fajrTime = parseTime(state.prayers.Fajr);
                 const maghribTime = parseTime(state.prayers.Maghrib);
-                
                 let targetTime, label;
                 if(now >= fajrTime && now < maghribTime) {
-                    targetTime = maghribTime;
-                    label = "Time until Iftar (Maghrib)";
+                    targetTime = maghribTime; label = "Time until Iftar (Maghrib)";
                 } else {
                     targetTime = parseTime(state.prayers.Fajr);
                     if (now >= maghribTime) targetTime.setDate(targetTime.getDate() + 1);
                     label = "Time until Imsak (Fajr)";
                 }
-                
                 const fastDiff = targetTime - now;
                 const fh = Math.floor(fastDiff/3600000).toString().padStart(2,'0');
                 const fm = Math.floor((fastDiff%3600000)/60000).toString().padStart(2,'0');
                 const fs = Math.floor((fastDiff%60000)/1000).toString().padStart(2,'0');
-                
                 document.getElementById('fasting-label').innerText = label;
                 document.getElementById('fasting-timer').innerText = `${fh}:${fm}:${fs}`;
             }
@@ -544,13 +643,10 @@
         function activateRamadanMode(hijriDay) { 
             document.getElementById('ramadan-countdown-container').style.display = 'none';
             document.getElementById('ramadan-active-container').style.display = 'block';
-            document.getElementById('ramadan-panel').style.display = 'block'; // Toon de Vasten Timer bovenin
-
-            // Ashra Progress Logic
+            document.getElementById('ramadan-panel').style.display = 'block'; 
             let ashraName = "Mercy (Days 1-10)";
             if (hijriDay > 10 && hijriDay <= 20) ashraName = "Forgiveness (Days 11-20)";
             if (hijriDay > 20) ashraName = "Refuge (Days 21-30)";
-            
             document.getElementById('ashra-label').innerText = `Ashra: ${ashraName}`;
             document.getElementById('ramadan-day-label').innerText = `Day ${hijriDay} of 30`;
             document.getElementById('ashra-progress-fill').style.width = `${(hijriDay / 30) * 100}%`;
@@ -560,21 +656,13 @@
             document.getElementById('ramadan-countdown-container').style.display = 'block'; 
             document.getElementById('ramadan-active-container').style.display = 'none'; 
             document.getElementById('ramadan-panel').style.display = 'none'; 
-            
-            let daysLeft;
-            if (m < 9) {
-                daysLeft = Math.floor(((9 - m - 1) * 29.5) + (30 - d));
-            } else {
-                daysLeft = Math.floor(((12 - m + 8) * 29.5) + (30 - d));
-            }
+            let daysLeft = m < 9 ? Math.floor(((9 - m - 1) * 29.5) + (30 - d)) : Math.floor(((12 - m + 8) * 29.5) + (30 - d));
             document.getElementById('ramadan-val').innerText = daysLeft > 0 ? daysLeft : 0;
         }
 
         function calculateQibla() {
-            const lat1 = config.lat * (Math.PI/180), lon1 = config.lon * (Math.PI/180);
-            const lat2 = 21.4225 * (Math.PI/180), lon2 = 39.8262 * (Math.PI/180);
-            const y = Math.sin(lon2 - lon1) * Math.cos(lat2);
-            const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
+            const lat1 = config.lat * (Math.PI/180), lon1 = config.lon * (Math.PI/180), lat2 = 21.4225 * (Math.PI/180), lon2 = 39.8262 * (Math.PI/180);
+            const y = Math.sin(lon2 - lon1) * Math.cos(lat2), x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
             document.getElementById('qibla-degree').innerText = Math.round(((Math.atan2(y, x) * 180/Math.PI) + 360) % 360) + "°";
         }
 
@@ -592,22 +680,11 @@
         // === PWA & INSTALLATION LOGIC ===
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
-        
-        // Detect iOS
-        const isIos = () => {
-          const userAgent = window.navigator.userAgent.toLowerCase();
-          return /iphone|ipad|ipod/.test( userAgent );
-        }
-
+        const isIos = () => { return /iphone|ipad|ipod/.test( window.navigator.userAgent.toLowerCase() ); }
         document.getElementById('install-btn').addEventListener('click', async () => {
-            if (deferredPrompt) { 
-                deferredPrompt.prompt(); 
-                deferredPrompt = null; 
-            } else if (isIos()) {
-                alert("To install on iOS: Tap the 'Share' icon at the bottom of Safari, scroll down, and select 'Add to Home Screen'.");
-            } else { 
-                alert("Tap your browser's menu (⋮) and select 'Install' or 'Add to Home Screen'."); 
-            }
+            if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; } 
+            else if (isIos()) { alert("To install on iOS: Tap the 'Share' icon at the bottom of Safari, scroll down, and select 'Add to Home Screen'."); } 
+            else { alert("Tap your browser's menu (⋮) and select 'Install' or 'Add to Home Screen'."); }
         });
 
         init();
