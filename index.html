@@ -59,6 +59,7 @@
             --shadow-color: rgba(0,0,0,0.6);
         }
 
+        /* Accessibility Root Font Size */
         html { font-size: 16px; transition: font-size 0.3s ease; }
 
         body {
@@ -85,29 +86,48 @@
             transition: all 0.5s ease;
         }
 
-        /* Focus Mode Styles */
-        body.focus-mode .dashboard-container > *:not(.prayer-hero) { display: none !important; }
-        body.focus-mode header, body.focus-mode footer, body.focus-mode .top-left-logo { display: none !important; }
-        body.focus-mode .prayer-hero { 
-            grid-column: span 12 !important; height: 80vh; 
-            background: transparent; border: none; box-shadow: none; 
-            transform: scale(1.3); justify-content: center;
-        }
-        body.focus-mode .focus-toggle { border-color: var(--gold); background: var(--gold); color: #050505; }
-        .focus-toggle { right: 75px; } /* Positioned next to settings */
-
+        /* Top Bar Controls */
         .top-left-logo { position: absolute; top: 20px; left: 20px; width: clamp(50px, 8vw, 70px); height: auto; z-index: 10; }
 
-        .settings-toggle, .focus-toggle {
-            position: absolute; top: 20px; background: var(--glass-bg);
+        .settings-toggle {
+            position: absolute; top: 20px; right: 20px; background: var(--glass-bg);
             border: 1px solid var(--border-color); color: var(--text-main); font-size: 1.5rem;
             width: 45px; height: 45px; border-radius: 50%; cursor: pointer; z-index: 100;
             display: flex; align-items: center; justify-content: center;
             box-shadow: 0 4px 10px var(--shadow-color); transition: transform 0.3s, border-color 0.3s, background 0.3s;
         }
-        .settings-toggle { right: 20px; }
-        .settings-toggle:hover, .focus-toggle:hover { transform: scale(1.1); border-color: var(--gold); }
+        
+        .focus-toggle {
+            position: absolute; top: 20px; right: 75px; background: var(--glass-bg);
+            border: 1px solid var(--border-color); color: var(--text-main); font-size: 0.95rem; font-weight: bold;
+            height: 45px; padding: 0 15px; border-radius: 25px; cursor: pointer; z-index: 100;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            box-shadow: 0 4px 10px var(--shadow-color); transition: transform 0.3s, border-color 0.3s, background 0.3s;
+        }
 
+        .settings-toggle:hover, .focus-toggle:hover { transform: scale(1.05); border-color: var(--gold); }
+
+        /* Focus Mode Styles (Fixed Viewport) */
+        body.focus-mode .dashboard-container > *:not(.prayer-hero) { display: none !important; }
+        body.focus-mode header, body.focus-mode footer, body.focus-mode .top-left-logo { display: none !important; }
+        
+        body.focus-mode .dashboard-container { display: flex; align-items: center; justify-content: center; height: 100vh; padding: 0; }
+        
+        body.focus-mode .prayer-hero { 
+            width: 100%; max-width: 1000px; padding: 40px;
+            background: transparent; border: none; box-shadow: none; 
+            justify-content: center; align-items: center; min-height: auto;
+        }
+        
+        body.focus-mode .prayer-name-display { font-size: clamp(3.5rem, 12vw, 6rem); margin: 15px 0; }
+        body.focus-mode .countdown-display { font-size: clamp(2.5rem, 10vw, 5rem); margin-bottom: 30px; }
+        body.focus-mode .progress-container { height: 16px; margin-top: 30px; }
+        body.focus-mode #status-label, body.focus-mode #next-label { font-size: clamp(1rem, 3vw, 1.5rem); }
+        body.focus-mode #curr-time { font-size: clamp(1.8rem, 5vw, 2.5rem); margin-bottom: 20px; }
+        
+        body.focus-mode .focus-toggle { border-color: var(--gold); background: var(--gold); color: #050505; }
+
+        /* Modal / Settings */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center;
@@ -134,7 +154,8 @@
         .card:hover { border-color: var(--gold-dim); transform: translateY(-2px); }
         .widget-title { color: var(--gold-dim); text-transform: uppercase; font-size: 0.8rem; border-bottom: 1px solid var(--border-color); width: 100%; text-align: center; padding-bottom: 5px; margin-bottom: 15px; letter-spacing: 1px; }
         
-        .header-section { grid-column: span 12; text-align: center; margin-bottom: 20px; display: flex; justify-content: center; margin-top: 10px; width: 100%; }
+        /* Header pushed down to prevent absolute button overlap when text scales */
+        .header-section { grid-column: span 12; text-align: center; margin-bottom: 20px; display: flex; justify-content: center; margin-top: 70px; width: 100%; }
         .title-wrapper { background: var(--glass-header); backdrop-filter: blur(8px); padding: clamp(15px, 4vw, 20px) clamp(20px, 5vw, 40px); border-radius: 20px; border: 1px solid var(--border-color); box-shadow: 0 10px 30px var(--shadow-color); width: 100%; max-width: 800px; box-sizing: border-box; }
         h1 { font-family: 'Cinzel', serif; color: var(--gold); font-size: clamp(1.8rem, 5vw, 2.8rem); margin: 0; text-transform: uppercase; letter-spacing: clamp(1px, 2vw, 3px); text-shadow: 0 2px 10px var(--shadow-color); }
         h2 { font-size: clamp(0.75rem, 2vw, 0.9rem); color: var(--text-muted); font-weight: 400; margin: 5px 0 10px 0; letter-spacing: 0.5px; text-transform: uppercase; }
@@ -149,7 +170,8 @@
         #sunnah-banner { display: none; grid-column: span 12; background: rgba(46, 204, 113, 0.15); border: 1px solid var(--success); padding: 10px 20px; border-radius: 12px; text-align: center; color: var(--success); font-weight: bold; letter-spacing: 1px; box-shadow: 0 4px 10px var(--shadow-color); animation: pulse 2s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(46, 204, 113, 0); } 100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); } }
 
-        .prayer-hero { text-align: center; border: 2px solid var(--gold); position: relative; transition: all 0.5s ease; }
+        /* Fixed Prayer Hero Layout to prevent Overlapping */
+        .prayer-hero { text-align: center; border: 2px solid var(--gold); position: relative; transition: all 0.5s ease; width: 100%; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 30px 20px; box-sizing: border-box; min-height: 320px; }
         .prayer-name-display { font-size: clamp(2.5rem, 8vw, 3.5rem); color: var(--gold); font-weight: 800; line-height: 1.1; margin: 10px 0; }
         .countdown-display { font-size: clamp(1.8rem, 6vw, 2.2rem); font-family: 'Courier New', monospace; color: var(--text-main); }
         .progress-container { width: 100%; height: 12px; background: var(--progress-bg); margin-top: 20px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color); }
@@ -160,7 +182,7 @@
         .btn-gold { background: transparent; border: 2px solid var(--gold); color: var(--gold); padding: 12px 20px; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; text-decoration: none; transition: 0.3s; border-radius: 6px; font-weight: bold; display: inline-flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; width: 100%; max-width: 300px; box-sizing: border-box; text-align: center; }
         .btn-gold:hover { background: var(--gold); color: #050505; box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
 
-        footer { margin-top: auto; text-align: center; padding: 20px; border-top: 1px solid var(--border-color); background: var(--glass-header); width: 100%; box-sizing: border-box; }
+        footer { margin-top: auto; text-align: center; padding: 30px 20px; border-top: 1px solid var(--border-color); background: var(--glass-header); width: 100%; box-sizing: border-box; }
         .footer-logo { width: 80px; height: auto; opacity: 0.8; }
 
         @media (min-width: 768px) {
@@ -170,13 +192,16 @@
             .install-card { grid-column: span 12; }
         }
         @media (min-width: 1024px) {
-            .prayer-hero { grid-column: span 6; grid-row: span 2; } 
+            .prayer-hero { grid-column: span 6; } /* Removed grid-row: span 2 to cleanly auto-flow without overlap */
             .names-widget, .ramadan-widget, .video-card, .qibla-card { grid-column: span 3; }
         }
         @media (max-width: 767px) {
-            .top-left-logo { position: relative; top: 0; left: 0; display: block; margin: 0 auto 15px auto; }
+            /* Mobile header clearance to prevent overlap */
+            .top-left-logo { position: absolute; top: 15px; left: 15px; width: 50px; }
             .settings-toggle { top: 15px; right: 15px; width: 40px; height: 40px; }
-            .focus-toggle { top: 15px; right: 65px; width: 40px; height: 40px; }
+            .focus-toggle { top: 15px; right: 65px; height: 40px; padding: 0 10px; font-size: 0.85rem; }
+            .header-section { margin-top: 60px; }
+            
             .info-panel { flex-direction: column; }
             .date-box { width: 100%; padding: 5px 0; border-bottom: 1px solid var(--border-color); }
             .date-box:last-child { border-bottom: none; }
@@ -191,7 +216,7 @@
     <audio id="audio-madinah" src="audio/madinah.mp3" preload="auto"></audio>
     <audio id="audio-alafasy" src="audio/alafasy.mp3" preload="auto"></audio>
 
-    <button id="focus-btn" class="focus-toggle" aria-label="Focus Mode">🎯</button>
+    <button id="focus-btn" class="focus-toggle" aria-label="Focus Mode">👁️ Focus Mode</button>
     <button id="settings-btn" class="settings-toggle" aria-label="Settings">⚙️</button>
     
     <div id="settings-modal" class="modal-overlay">
@@ -218,6 +243,15 @@
                     <button class="opt-btn theme-btn" data-theme-val="dark">Dark</button>
                     <button class="opt-btn theme-btn" data-theme-val="light">Light</button>
                     <button class="opt-btn theme-btn" data-theme-val="green">Green</button>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label data-i18n="size">Text Size</label>
+                <div class="flex-options">
+                    <button class="opt-btn text-btn" data-size-val="small">A-</button>
+                    <button class="opt-btn text-btn" data-size-val="normal">A</button>
+                    <button class="opt-btn text-btn" data-size-val="large">A+</button>
                 </div>
             </div>
 
@@ -301,7 +335,7 @@
         <article class="card text-widget">
             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; margin-bottom: 15px;">
                 <span style="width: 24px;"></span> <span class="widget-title" id="daily-title" data-i18n="ayah" style="border: none; margin: 0; padding: 0;">Ayah of the Day</span>
-                <a href="https://quran.com" target="_blank" style="text-decoration: none; font-size: 1.2rem; transition: transform 0.2s; color: var(--gold);" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Read on Quran.com">📖</a>
+                <a href="https://quran.com" target="_blank" style="text-decoration: none; font-size: 0.95rem; font-weight: bold; display: flex; align-items: center; gap: 5px; transition: transform 0.2s; color: var(--gold);" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" title="Read on Quran.com">📖 [Quran.com]</a>
             </div>
             <div id="daily-text" style="font-style:italic; text-align:center; color:var(--text-main); font-size: 1.1rem; line-height: 1.5;">Loading...</div>
             <div id="daily-ref" style="color:var(--gold); font-size:0.8rem; margin-top:10px; width:100%; text-align:right;"></div>
@@ -341,7 +375,7 @@
         <section class="card video-card">
             <div class="widget-title" data-i18n="makkah">Makkah Live</div>
             <img src="images/qibla.png" alt="Qibla Indicator" style="width: 50px; height: auto; margin: 10px 0;">
-            <a href="https://www.youtube.com/watch?v=Qv7B4BtVirs" target="_blank" class="btn-gold">
+            <a href="https://www.youtube.com/results?search_query=makkah+live" target="_blank" class="btn-gold">
                 <span style="height: 10px; width: 10px; background-color: var(--danger); border-radius: 50%; display: inline-block; box-shadow: 0 0 8px var(--danger);"></span> 
                 <span data-i18n="watch">Watch Stream</span>
             </a>
@@ -364,6 +398,14 @@
     <footer>
         <img src="images/adhan display muslim prayer times dashboard logo.png" alt="Logo" class="footer-logo">
         <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 10px;">&copy; 2026 Adhan Display. Serving the Ummah.</p>
+        
+        <div style="margin-top: 20px;">
+            <a href="https://buymeacoffee.com/kmni" target="_blank" style="text-decoration: none;">
+                <button class="btn-gold" style="padding: 10px 25px; font-size: 0.85rem; border-radius: 50px; text-transform: none; display: inline-flex; width: auto; font-weight: bold; box-shadow: 0 4px 10px var(--shadow-color);">
+                    ☕ Support & Keep Ad-Free
+                </button>
+            </a>
+        </div>
     </footer>
 
     <script>
@@ -378,7 +420,7 @@
             ar: { subtitle: "لوحة أوقات الصلاة الإسلامية المطلقة", greg: "ميلادي", time: "الوقت الحالي", loc: "الموقع", hijri: "هجري", curr: "الصلاة الحالية", next: "الصلاة القادمة في", ayah: "آية اليوم", hadith: "حديث اليوم", qiyam: "قيام الليل", mid: "منتصف الليل", tahajjud: "تهجد", allah: "اسم الله", ramadan: "رمضان", days: "أيام متبقية", makkah: "مكة مباشر", watch: "شاهد البث", qibla: "اتجاه القبلة", north: "من الشمال الحقيقي", ar_find: "فتح باحث الواقع المعزز", getapp: "احصل على التطبيق", install: "تثبيت التطبيق", pref: "الإعدادات", theme: "السمة", size: "حجم النص", lang: "اللغة", nopray: "* الصلاة غير جائزة *", audio_pref: "الصوت والتنبيهات", wudu_alert: "تنبيه الوضوء 10 دقائق", daily_source: "إلهام يومي", sunnah_mon: "صيام السنة: الإثنين", sunnah_thu: "صيام السنة: الخميس", sunnah_white: "صيام السنة: الأيام البيض" }
         };
 
-        // Small built-in array of beautiful authentic Hadiths (English fallback used if translated not available)
+        // Small built-in array of beautiful authentic Hadiths
         const dailyHadiths = [
             { text: "He who does not show mercy to people, Allah will not show mercy to him.", ref: "Sahih Muslim 2319" },
             { text: "The most beloved of deeds to Allah are those that are most consistent, even if it is small.", ref: "Sahih al-Bukhari 6464" },
@@ -422,16 +464,19 @@
             const theme = localStorage.getItem('adhan_theme') || 'dark';
             const textSize = localStorage.getItem('adhan_size') || 'normal';
             const lang = localStorage.getItem('adhan_lang') || 'en';
-            const adhanSound = localStorage.getItem('adhan_sound') || 'default'; // Updated Default Fallback
+            const adhanSound = localStorage.getItem('adhan_sound') || 'default';
             const wuduAlert = localStorage.getItem('adhan_wudu') === 'true';
             const dailySource = localStorage.getItem('adhan_daily') || 'quran';
             
+            // Apply Theme
             document.documentElement.setAttribute('data-theme', theme);
             document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.themeVal === theme));
 
+            // Apply Text Size (Accessibility feature)
             document.documentElement.style.fontSize = textSize === 'small' ? '14px' : (textSize === 'large' ? '19px' : '16px');
             document.querySelectorAll('.text-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.sizeVal === textSize));
 
+            // Apply Language
             document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
@@ -439,14 +484,16 @@
             });
             document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.langVal === lang));
 
+            // Apply Audio Settings
             document.querySelectorAll('.adhan-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.adhanVal === adhanSound));
             document.getElementById('wudu-toggle').checked = wuduAlert;
 
+            // Apply Daily Inspiration Setting
             document.querySelectorAll('.text-source-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.sourceVal === dailySource));
-            
             document.getElementById('daily-title').innerText = i18n[lang][dailySource === 'quran' ? 'ayah' : 'hadith'];
         }
 
+        // Event Listeners for Settings Panel
         document.querySelectorAll('.theme-btn').forEach(btn => btn.addEventListener('click', (e) => { localStorage.setItem('adhan_theme', e.target.dataset.themeVal); applySettings(); }));
         document.querySelectorAll('.text-btn').forEach(btn => btn.addEventListener('click', (e) => { localStorage.setItem('adhan_size', e.target.dataset.sizeVal); applySettings(); }));
         document.querySelectorAll('.lang-btn').forEach(btn => btn.addEventListener('click', (e) => { localStorage.setItem('adhan_lang', e.target.dataset.langVal); applySettings(); fetchContent(); checkSunnahFasting(); }));
@@ -536,14 +583,12 @@
                     document.getElementById('daily-ref').innerText = surahName + " " + ayahData.data.surah.number + ":" + ayahData.data.numberInSurah;
                 } catch(e) {}
             } else {
-                // Use built-in Hadith array
                 const todayIndex = new Date().getDate() % dailyHadiths.length;
                 const dailyH = dailyHadiths[todayIndex];
                 document.getElementById('daily-text').innerText = `"${dailyH.text}"`;
                 document.getElementById('daily-ref').innerText = dailyH.ref;
             }
 
-            // Fetch Allah Names
             try {
                 const namesData = await fetchCached('allah_names_v1', 'https://api.aladhan.com/v1/asmaAlHusna', 720);
                 state.namesList = namesData.data; rotateNames();
