@@ -221,15 +221,17 @@
             .top-left-logo { position: absolute; top: 20px; left: 20px; display: block; margin: 0; }
             html[dir="rtl"] .top-left-logo { left: auto; right: 20px; }
             .prayer-hero, .history-card { grid-column: span 12; }
-            .times-card, .tasbih-card, .qibla-card, .tools-card, .text-widget, .night-widget, .names-widget, .ramadan-widget, .video-card { grid-column: span 6; }
+            .times-card, .tasbih-card, .qibla-card, .tools-card, .text-widget, .dua-widget, .night-widget, .names-widget, .ramadan-widget, .video-card { grid-column: span 6; }
             #install-card-section { grid-column: span 12; }
         }
         @media (min-width: 1024px) {
+            /* Perfectly spaced 12-column Grid */
             .prayer-hero { grid-column: span 6; } 
             .times-card { grid-column: span 6; }
             .history-card { grid-column: span 12; }
             .tasbih-card, .qibla-card, .text-widget { grid-column: span 4; } 
-            .night-widget, .names-widget, .ramadan-widget { grid-column: span 4; } 
+            .night-widget, .names-widget, .dua-widget { grid-column: span 4; } 
+            .ramadan-widget { grid-column: span 12; } 
             .tools-card, .video-card { grid-column: span 6; } 
             #install-card-section { grid-column: span 12; }
         }
@@ -328,10 +330,17 @@
                     <button class="opt-btn adhan-btn" data-adhan-val="none" style="width: 100%;">None</button>
                 </div>
                 
-                <div class="toggle-row">
+                <div class="toggle-row" style="margin-bottom: 8px;">
                     <span data-i18n="wudu_alert" style="font-size: 0.9rem;">10-Min Wudu Alert & Push</span>
                     <label class="switch" style="cursor: pointer; color: var(--gold); font-weight: bold;">
                         <input type="checkbox" id="wudu-toggle" style="accent-color: var(--gold); transform: scale(1.3);">
+                    </label>
+                </div>
+
+                <div class="toggle-row">
+                    <span data-i18n="wakelock" style="font-size: 0.9rem;">Keep Screen Awake</span>
+                    <label class="switch" style="cursor: pointer; color: var(--gold); font-weight: bold;">
+                        <input type="checkbox" id="wakelock-toggle" style="accent-color: var(--gold); transform: scale(1.3);">
                     </label>
                 </div>
             </div>
@@ -341,7 +350,6 @@
                 <div class="flex-options">
                     <button class="opt-btn text-source-btn" data-source-val="quran">Ayah</button>
                     <button class="opt-btn text-source-btn" data-source-val="hadith">Hadith</button>
-                    <button class="opt-btn text-source-btn" data-source-val="dua">Dua</button>
                 </div>
             </div>
         </div>
@@ -476,6 +484,14 @@
             <div id="allah-meaning" style="font-size:0.8rem; font-style:italic; color:var(--text-muted); text-align: center;">--</div>
         </article>
 
+        <article class="card dua-widget">
+            <div style="display: flex; justify-content: center; align-items: center; width: 100%; border-bottom: 1px solid var(--gold); padding-bottom: 5px; margin-bottom: 15px;">
+                <span class="widget-title" data-i18n="dua" style="border: none; margin: 0; padding: 0;">Dua of the Day</span>
+            </div>
+            <div id="dua-text" style="font-style:italic; text-align:center; color:var(--text-main); font-size: 1.1rem; line-height: 1.5; padding: 10px 0;">Loading...</div>
+            <div id="dua-ref" style="color:var(--gold); font-size:0.8rem; margin-top:10px; width:100%; text-align:right;"></div>
+        </article>
+
         <article class="card ramadan-widget" id="ramadan-countdown-container">
             <div class="widget-title" data-i18n="ramadan">Ramadan</div>
             <div id="ramadan-val" style="font-size: clamp(1.8rem, 5vw, 2.5rem); font-weight: bold;">--</div>
@@ -528,22 +544,55 @@
 
     <script>
         // === TRANSLATIONS (i18n) ===
-        // Restored full dictionary!
         const i18n = {
-            en: { subtitle: "The Ultimate Free Islamic Prayer Times & Qibla Dashboard", greg: "Gregorian", time: "Current Time", loc: "Location", hijri: "Hijri", curr: "Current Prayer", next: "Next Prayer In", ayah: "Ayah of the Day", hadith: "Hadith of the Day", dua: "Dua of the Day", qiyam: "Night Prayers", mid: "Midnight", tahajjud: "Tahajjud", allah: "Name of Allah", ramadan: "Ramadan", days: "Days Remaining", makkah: "Makkah Live", live_stream: "Holy Sites Live", watch: "Watch Stream", qibla: "Qibla Direction", north: "from true North", ar_find: "Open AR Finder", getapp: "Get the App", install: "Install App", pref: "Preferences", theme: "Theme", dynamic: "Dynamic", size: "Text Size", lang: "Language", nopray: "* Not permissible to pray *", audio_pref: "Audio & Alerts", wudu_alert: "10-Min Wudu Alert & Push", daily_source: "Daily Inspiration", sunnah_mon: "Sunnah Fasting: Monday", sunnah_thu: "Sunnah Fasting: Thursday", sunnah_white: "Sunnah Fasting: Ayyam al-Bid (White Days)", daily_times: "Daily Prayer Times", tracker_title: "Prayer Tracker & History", last_7: "Last 7 Days:", last_30: "Last 30 Days:", past_days: "Past Days", no_data: "No past data yet.", tasbih: "Digital Tasbih", resources: "Tools & Resources", revert_guide: "Step-by-Step Prayer Guide", zakat_calc: "Zakat Calculator" },
-            tr: { subtitle: "En İyi Ücretsiz İslami Namaz Vakitleri Panosu", greg: "Miladi", time: "Şu Anki Saat", loc: "Konum", hijri: "Hicri", curr: "Mevcut Namaz", next: "Sonraki Namaz", ayah: "Günün Ayeti", hadith: "Günün Hadisi", dua: "Günün Duası", qiyam: "Gece Namazları", mid: "Gece Yarısı", tahajjud: "Teheccüd", allah: "Allah'ın İsmi", ramadan: "Ramazan", days: "Kalan Gün", makkah: "Mekke Canlı", live_stream: "Kutsal Yerler Canlı", watch: "Yayını İzle", qibla: "Kıble Yönü", north: "Gerçek Kuzeyden", ar_find: "AR Bulucuyu Aç", getapp: "Uygulamayı Al", install: "Uygulamayı Yükle", pref: "Tercihler", theme: "Tema", dynamic: "Dinamik", size: "Metin Boyutu", lang: "Dil", nopray: "* Namaz Kılmak Mekruhtur *", audio_pref: "Ses ve Uyarılar", wudu_alert: "10-Dk Abdest Uyarısı", daily_source: "Günlük İlham", sunnah_mon: "Sünnet Orucu: Pazartesi", sunnah_thu: "Sünnet Orucu: Perşembe", sunnah_white: "Sünnet Orucu: Eyyam-ı Bîd (Beyaz Günler)", daily_times: "Günlük Namaz Vakitleri", tracker_title: "Namaz Takibi ve Geçmiş", last_7: "Son 7 Gün:", last_30: "Son 30 Gün:", past_days: "Geçmiş Günler", no_data: "Henüz veri yok.", tasbih: "Dijital Tesbih", resources: "Araçlar ve Kaynaklar", revert_guide: "Adım Adım Namaz Rehberi", zakat_calc: "Zekat Hesaplayıcı" },
-            nl: { subtitle: "Het Ultieme Islamitische Gebedstijden Dashboard", greg: "Gregoriaans", time: "Huidige Tijd", loc: "Locatie", hijri: "Hidzjra", curr: "Huidig Gebed", next: "Volgend Gebed In", ayah: "Vers van de Dag", hadith: "Hadith van de Dag", dua: "Smeekbede van de Dag", qiyam: "Nachtgebeden", mid: "Middernacht", tahajjud: "Tahajjud", allah: "Naam van Allah", ramadan: "Ramadan", days: "Dagen Te Gaan", makkah: "Mekka Live", live_stream: "Heilige Plaatsen Live", watch: "Bekijk Stream", qibla: "Qibla Richting", north: "van ware noorden", ar_find: "Open AR Zoeker", getapp: "Download de App", install: "Installeer App", pref: "Instellingen", theme: "Thema", dynamic: "Dynamisch", size: "Tekstgrootte", lang: "Taal", nopray: "* Bidden is niet toegestaan *", audio_pref: "Audio & Meldingen", wudu_alert: "10-Min Wudu Melding", daily_source: "Dagelijkse Inspiratie", sunnah_mon: "Sunnah Vasten: Maandag", sunnah_thu: "Sunnah Vasten: Donderdag", sunnah_white: "Sunnah Vasten: Witte Dagen", daily_times: "Dagelijkse Gebedstijden", tracker_title: "Gebedstracker & Geschiedenis", last_7: "Laatste 7 Dagen:", last_30: "Laatste 30 Dagen:", past_days: "Verleden Dagen", no_data: "Nog geen data.", tasbih: "Digitale Tasbih", resources: "Tools & Hulpbronnen", revert_guide: "Stap-voor-Stap Gebedsgids", zakat_calc: "Zakat Calculator" },
-            fr: { subtitle: "Le Tableau de Bord Islamique Ultime", greg: "Grégorien", time: "Heure Actuelle", loc: "Emplacement", hijri: "Hégire", curr: "Prière Actuelle", next: "Prochaine Prière", ayah: "Verset du Jour", hadith: "Hadith du Jour", dua: "Dua du Jour", qiyam: "Prières Nocturnes", mid: "Minuit", tahajjud: "Tahajjud", allah: "Nom d'Allah", ramadan: "Ramadan", days: "Jours Restants", makkah: "Mecque en Direct", live_stream: "Lieux Saints en Direct", watch: "Regarder le Stream", qibla: "Direction de la Qibla", north: "du vrai nord", ar_find: "Ouvrir AR Finder", getapp: "Obtenir l'App", install: "Installer l'App", pref: "Préférences", theme: "Thème", dynamic: "Dynamique", size: "Taille du Texte", lang: "Langue", nopray: "* Prière non permise *", audio_pref: "Audio & Alertes", wudu_alert: "Alerte Wudu 10-Min", daily_source: "Inspiration Quotidienne", sunnah_mon: "Jeûne Sunnah : Lundi", sunnah_thu: "Jeûne Sunnah : Jeudi", sunnah_white: "Jeûne Sunnah : Jours Blancs", daily_times: "Heures de Prière", tracker_title: "Suivi des Prières", last_7: "7 Derniers Jours:", last_30: "30 Derniers Jours:", past_days: "Jours Passés", no_data: "Aucune donnée.", tasbih: "Tasbih Numérique", resources: "Outils et Ressources", revert_guide: "Guide de Prière Étape par Étape", zakat_calc: "Calculatrice de Zakat" },
-            de: { subtitle: "Das Ultimative Islamische Dashboard", greg: "Gregorianisch", time: "Aktuelle Zeit", loc: "Ort", hijri: "Hidschra", curr: "Aktuelles Gebet", next: "Nächstes Gebet In", ayah: "Vers des Tages", hadith: "Hadith des Tages", dua: "Dua des Tages", qiyam: "Nachtgebete", mid: "Mitternacht", tahajjud: "Tahajjud", allah: "Name Allahs", ramadan: "Ramadan", days: "Verbleibende Tage", makkah: "Mekka Live", live_stream: "Heilige Stätten Live", watch: "Stream Ansehen", qibla: "Qibla-Richtung", north: "vom wahren Norden", ar_find: "AR-Finder Öffnen", getapp: "App Holen", install: "App Installieren", pref: "Einstellungen", theme: "Thema", dynamic: "Dynamisch", size: "Textgröße", lang: "Sprache", nopray: "* Beten ist nicht erlaubt *", audio_pref: "Audio & Warnungen", wudu_alert: "10-Min Wudu-Alarm", daily_source: "Tägliche Inspiration", sunnah_mon: "Sunnah Fasten: Montag", sunnah_thu: "Sunnah Fasten: Donnerstag", sunnah_white: "Sunnah Fasten: Weiße Tage", daily_times: "Tägliche Gebetszeiten", tracker_title: "Gebets-Tracker", last_7: "Letzte 7 Tage:", last_30: "Letzte 30 Tage:", past_days: "Vergangene Tage", no_data: "Noch keine Daten.", tasbih: "Digitaler Tasbih", resources: "Werkzeuge & Ressourcen", revert_guide: "Schritt-für-Schritt Gebetsanleitung", zakat_calc: "Zakat Rechner" },
-            es: { subtitle: "El Panel de Oración Islámica Definitivo", greg: "Gregoriano", time: "Hora Actual", loc: "Ubicación", hijri: "Hégira", curr: "Oración Actual", next: "Próxima Oración En", ayah: "Versículo del Día", hadith: "Hadiz del Día", dua: "Dua del Día", qiyam: "Oraciones Nocturnas", mid: "Medianoche", tahajjud: "Tahajjud", allah: "Nombre de Alá", ramadan: "Ramadán", days: "Días Restantes", makkah: "La Meca en Vivo", live_stream: "Lugares Santos en Vivo", watch: "Ver Transmisión", qibla: "Dirección Qibla", north: "desde el norte", ar_find: "Abrir Buscador AR", getapp: "Obtener App", install: "Instalar App", pref: "Preferencias", theme: "Tema", dynamic: "Dinámico", size: "Tamaño", lang: "Idioma", nopray: "* No está permitido orar *", audio_pref: "Audio y Alertas", wudu_alert: "Alerta Wudu 10-Min", daily_source: "Inspiración Diaria", sunnah_mon: "Ayuno Sunnah: Lunes", sunnah_thu: "Ayuno Sunnah: Jueves", sunnah_white: "Ayuno Sunnah: Días Blancos", daily_times: "Horarios de Oración", tracker_title: "Rastreador de Oraciones", last_7: "Últimos 7 Días:", last_30: "Últimos 30 Días:", past_days: "Días Pasados", no_data: "Aún no hay datos.", tasbih: "Tasbih Digital", resources: "Herramientas y Recursos", revert_guide: "Guía de Oración Paso a Paso", zakat_calc: "Calculadora de Zakat" },
-            ar: { subtitle: "لوحة أوقات الصلاة الإسلامية المطلقة", greg: "ميلادي", time: "الوقت الحالي", loc: "الموقع", hijri: "هجري", curr: "الصلاة الحالية", next: "الصلاة القادمة في", ayah: "آية اليوم", hadith: "حديث اليوم", dua: "دعاء اليوم", qiyam: "قيام الليل", mid: "منتصف الليل", tahajjud: "تهجد", allah: "اسم الله", ramadan: "رمضان", days: "أيام متبقية", makkah: "مكة مباشر", live_stream: "البث المباشر للأماكن المقدسة", watch: "شاهد البث", qibla: "اتجاه القبلة", north: "من الشمال الحقيقي", ar_find: "فتح باحث الواقع المعزز", getapp: "احصل على التطبيق", install: "تثبيت التطبيق", pref: "الإعدادات", theme: "السمة", dynamic: "ديناميكي", size: "حجم النص", lang: "اللغة", nopray: "* الصلاة غير جائزة *", audio_pref: "الصوت والتنبيهات", wudu_alert: "تنبيه الوضوء 10 دقائق", daily_source: "إلهام يومي", sunnah_mon: "صيام السنة: الإثنين", sunnah_thu: "صيام السنة: الخميس", sunnah_white: "صيام السنة: الأيام البيض", daily_times: "مواقيت الصلاة اليومية", tracker_title: "متتبع الصلاة", last_7: "آخر 7 أيام:", last_30: "آخر 30 يوم:", past_days: "الأيام الماضية", no_data: "لا توجد بيانات بعد.", tasbih: "مسبحة رقمية", resources: "الأدوات والموارد", revert_guide: "دليل الصلاة خطوة بخطوة", zakat_calc: "حاسبة الزكاة" }
+            en: { subtitle: "The Ultimate Free Islamic Prayer Times & Qibla Dashboard", greg: "Gregorian", time: "Current Time", loc: "Location", hijri: "Hijri", curr: "Current Prayer", next: "Next Prayer In", ayah: "Ayah of the Day", hadith: "Hadith of the Day", dua: "Dua of the Day", qiyam: "Night Prayers", mid: "Midnight", tahajjud: "Tahajjud", allah: "Name of Allah", ramadan: "Ramadan", days: "Days Remaining", makkah: "Makkah Live", live_stream: "Holy Sites Live", watch: "Watch Stream", qibla: "Qibla Direction", north: "from true North", ar_find: "Open AR Finder", getapp: "Get the App", install: "Install App", pref: "Preferences", theme: "Theme", dynamic: "Dynamic", size: "Text Size", lang: "Language", nopray: "* Not permissible to pray *", audio_pref: "Audio & Alerts", wudu_alert: "10-Min Wudu Alert & Push", wakelock: "Keep Screen Awake", daily_source: "Daily Inspiration", sunnah_mon: "Sunnah Fasting: Monday", sunnah_thu: "Sunnah Fasting: Thursday", sunnah_white: "Sunnah Fasting: Ayyam al-Bid (White Days)", daily_times: "Daily Prayer Times", tracker_title: "Prayer Tracker & History", last_7: "Last 7 Days:", last_30: "Last 30 Days:", past_days: "Past Days", no_data: "No past data yet.", tasbih: "Digital Tasbih", resources: "Tools & Resources", revert_guide: "Step-by-Step Prayer Guide", zakat_calc: "Zakat Calculator" },
+            tr: { subtitle: "En İyi Ücretsiz İslami Namaz Vakitleri Panosu", greg: "Miladi", time: "Şu Anki Saat", loc: "Konum", hijri: "Hicri", curr: "Mevcut Namaz", next: "Sonraki Namaz", ayah: "Günün Ayeti", hadith: "Günün Hadisi", dua: "Günün Duası", qiyam: "Gece Namazları", mid: "Gece Yarısı", tahajjud: "Teheccüd", allah: "Allah'ın İsmi", ramadan: "Ramazan", days: "Kalan Gün", makkah: "Mekke Canlı", live_stream: "Kutsal Yerler Canlı", watch: "Yayını İzle", qibla: "Kıble Yönü", north: "Gerçek Kuzeyden", ar_find: "AR Bulucuyu Aç", getapp: "Uygulamayı Al", install: "Uygulamayı Yükle", pref: "Tercihler", theme: "Tema", dynamic: "Dinamik", size: "Metin Boyutu", lang: "Dil", nopray: "* Namaz Kılmak Mekruhtur *", audio_pref: "Ses ve Uyarılar", wudu_alert: "10-Dk Abdest Uyarısı", wakelock: "Ekranı Açık Tut", daily_source: "Günlük İlham", sunnah_mon: "Sünnet Orucu: Pazartesi", sunnah_thu: "Sünnet Orucu: Perşembe", sunnah_white: "Sünnet Orucu: Eyyam-ı Bîd (Beyaz Günler)", daily_times: "Günlük Namaz Vakitleri", tracker_title: "Namaz Takibi ve Geçmiş", last_7: "Son 7 Gün:", last_30: "Son 30 Gün:", past_days: "Geçmiş Günler", no_data: "Henüz veri yok.", tasbih: "Dijital Tesbih", resources: "Araçlar ve Kaynaklar", revert_guide: "Adım Adım Namaz Rehberi", zakat_calc: "Zekat Hesaplayıcı" },
+            nl: { subtitle: "Het Ultieme Islamitische Gebedstijden Dashboard", greg: "Gregoriaans", time: "Huidige Tijd", loc: "Locatie", hijri: "Hidzjra", curr: "Huidig Gebed", next: "Volgend Gebed In", ayah: "Vers van de Dag", hadith: "Hadith van de Dag", dua: "Smeekbede van de Dag", qiyam: "Nachtgebeden", mid: "Middernacht", tahajjud: "Tahajjud", allah: "Naam van Allah", ramadan: "Ramadan", days: "Dagen Te Gaan", makkah: "Mekka Live", live_stream: "Heilige Plaatsen Live", watch: "Bekijk Stream", qibla: "Qibla Richting", north: "van ware noorden", ar_find: "Open AR Zoeker", getapp: "Download de App", install: "Installeer App", pref: "Instellingen", theme: "Thema", dynamic: "Dynamisch", size: "Tekstgrootte", lang: "Taal", nopray: "* Bidden is niet toegestaan *", audio_pref: "Audio & Meldingen", wudu_alert: "10-Min Wudu Melding", wakelock: "Scherm Aan Laten", daily_source: "Dagelijkse Inspiratie", sunnah_mon: "Sunnah Vasten: Maandag", sunnah_thu: "Sunnah Vasten: Donderdag", sunnah_white: "Sunnah Vasten: Witte Dagen", daily_times: "Dagelijkse Gebedstijden", tracker_title: "Gebedstracker & Geschiedenis", last_7: "Laatste 7 Dagen:", last_30: "Laatste 30 Dagen:", past_days: "Verleden Dagen", no_data: "Nog geen data.", tasbih: "Digitale Tasbih", resources: "Tools & Hulpbronnen", revert_guide: "Stap-voor-Stap Gebedsgids", zakat_calc: "Zakat Calculator" },
+            fr: { subtitle: "Le Tableau de Bord Islamique Ultime", greg: "Grégorien", time: "Heure Actuelle", loc: "Emplacement", hijri: "Hégire", curr: "Prière Actuelle", next: "Prochaine Prière", ayah: "Verset du Jour", hadith: "Hadith du Jour", dua: "Dua du Jour", qiyam: "Prières Nocturnes", mid: "Minuit", tahajjud: "Tahajjud", allah: "Nom d'Allah", ramadan: "Ramadan", days: "Jours Restants", makkah: "Mecque en Direct", live_stream: "Lieux Saints en Direct", watch: "Regarder le Stream", qibla: "Direction de la Qibla", north: "du vrai nord", ar_find: "Ouvrir AR Finder", getapp: "Obtenir l'App", install: "Installer l'App", pref: "Préférences", theme: "Thème", dynamic: "Dynamique", size: "Taille du Texte", lang: "Langue", nopray: "* Prière non permise *", audio_pref: "Audio & Alertes", wudu_alert: "Alerte Wudu 10-Min", wakelock: "Garder l'Écran Allumé", daily_source: "Inspiration Quotidienne", sunnah_mon: "Jeûne Sunnah : Lundi", sunnah_thu: "Jeûne Sunnah : Jeudi", sunnah_white: "Jeûne Sunnah : Jours Blancs", daily_times: "Heures de Prière", tracker_title: "Suivi des Prières", last_7: "7 Derniers Jours:", last_30: "30 Derniers Jours:", past_days: "Jours Passés", no_data: "Aucune donnée.", tasbih: "Tasbih Numérique", resources: "Outils et Ressources", revert_guide: "Guide de Prière Étape par Étape", zakat_calc: "Calculatrice de Zakat" },
+            de: { subtitle: "Das Ultimative Islamische Dashboard", greg: "Gregorianisch", time: "Aktuelle Zeit", loc: "Ort", hijri: "Hidschra", curr: "Aktuelles Gebet", next: "Nächstes Gebet In", ayah: "Vers des Tages", hadith: "Hadith des Tages", dua: "Dua des Tages", qiyam: "Nachtgebete", mid: "Mitternacht", tahajjud: "Tahajjud", allah: "Name Allahs", ramadan: "Ramadan", days: "Verbleibende Tage", makkah: "Mekka Live", live_stream: "Heilige Stätten Live", watch: "Stream Ansehen", qibla: "Qibla-Richtung", north: "vom wahren Norden", ar_find: "AR-Finder Öffnen", getapp: "App Holen", install: "App Installieren", pref: "Einstellungen", theme: "Thema", dynamic: "Dynamisch", size: "Textgröße", lang: "Sprache", nopray: "* Beten ist nicht erlaubt *", audio_pref: "Audio & Warnungen", wudu_alert: "10-Min Wudu-Alarm", wakelock: "Bildschirm Eingeschaltet Lassen", daily_source: "Tägliche Inspiration", sunnah_mon: "Sunnah Fasten: Montag", sunnah_thu: "Sunnah Fasten: Donnerstag", sunnah_white: "Sunnah Fasten: Weiße Tage", daily_times: "Tägliche Gebetszeiten", tracker_title: "Gebets-Tracker", last_7: "Letzte 7 Tage:", last_30: "Letzte 30 Tage:", past_days: "Vergangene Tage", no_data: "Noch keine Daten.", tasbih: "Digitaler Tasbih", resources: "Werkzeuge & Ressourcen", revert_guide: "Schritt-für-Schritt Gebetsanleitung", zakat_calc: "Zakat Rechner" },
+            es: { subtitle: "El Panel de Oración Islámica Definitivo", greg: "Gregoriano", time: "Hora Actual", loc: "Ubicación", hijri: "Hégira", curr: "Oración Actual", next: "Próxima Oración En", ayah: "Versículo del Día", hadith: "Hadiz del Día", dua: "Dua del Día", qiyam: "Oraciones Nocturnas", mid: "Medianoche", tahajjud: "Tahajjud", allah: "Nombre de Alá", ramadan: "Ramadán", days: "Días Restantes", makkah: "La Meca en Vivo", live_stream: "Lugares Santos en Vivo", watch: "Ver Transmisión", qibla: "Dirección Qibla", north: "desde el norte", ar_find: "Abrir Buscador AR", getapp: "Obtener App", install: "Instalar App", pref: "Preferencias", theme: "Tema", dynamic: "Dinámico", size: "Tamaño", lang: "Idioma", nopray: "* No está permitido orar *", audio_pref: "Audio y Alertas", wudu_alert: "Alerta Wudu 10-Min", wakelock: "Mantener Pantalla Encendida", daily_source: "Inspiración Diaria", sunnah_mon: "Ayuno Sunnah: Lunes", sunnah_thu: "Ayuno Sunnah: Jueves", sunnah_white: "Ayuno Sunnah: Días Blancos", daily_times: "Horarios de Oración", tracker_title: "Rastreador de Oraciones", last_7: "Últimos 7 Días:", last_30: "Últimos 30 Días:", past_days: "Días Pasados", no_data: "Aún no hay datos.", tasbih: "Tasbih Digital", resources: "Herramientas y Recursos", revert_guide: "Guía de Oración Paso a Paso", zakat_calc: "Calculadora de Zakat" },
+            ar: { subtitle: "لوحة أوقات الصلاة الإسلامية المطلقة", greg: "ميلادي", time: "الوقت الحالي", loc: "الموقع", hijri: "هجري", curr: "الصلاة الحالية", next: "الصلاة القادمة في", ayah: "آية اليوم", hadith: "حديث اليوم", dua: "دعاء اليوم", qiyam: "قيام الليل", mid: "منتصف الليل", tahajjud: "تهجد", allah: "اسم الله", ramadan: "رمضان", days: "أيام متبقية", makkah: "مكة مباشر", live_stream: "البث المباشر للأماكن المقدسة", watch: "شاهد البث", qibla: "اتجاه القبلة", north: "من الشمال الحقيقي", ar_find: "فتح باحث الواقع المعزز", getapp: "احصل على التطبيق", install: "تثبيت التطبيق", pref: "الإعدادات", theme: "السمة", dynamic: "ديناميكي", size: "حجم النص", lang: "اللغة", nopray: "* الصلاة غير جائزة *", audio_pref: "الصوت والتنبيهات", wudu_alert: "تنبيه الوضوء 10 دقائق", wakelock: "إبقاء الشاشة قيد التشغيل", daily_source: "إلهام يومي", sunnah_mon: "صيام السنة: الإثنين", sunnah_thu: "صيام السنة: الخميس", sunnah_white: "صيام السنة: الأيام البيض", daily_times: "مواقيت الصلاة اليومية", tracker_title: "متتبع الصلاة", last_7: "آخر 7 أيام:", last_30: "آخر 30 يوم:", past_days: "الأيام الماضية", no_data: "لا توجد بيانات بعد.", tasbih: "مسبحة رقمية", resources: "الأدوات والموارد", revert_guide: "دليل الصلاة خطوة بخطوة", zakat_calc: "حاسبة الزكاة" }
         };
 
-        const dailyHadiths = [ { text: "He who does not show mercy to people, Allah will not show mercy to him.", ref: "Sahih Muslim 2319" } ];
-        const dailyDuas = [ { text: "Rabbi inni lima anzalta ilayya min khayrin faqir\n(My Lord, I am in absolute need of the good You send me.)", ref: "Quran 28:24" } ];
+        const dailyHadiths = [
+            { text: "He who does not show mercy to people, Allah will not show mercy to him.", ref: "Sahih Muslim 2319" },
+            { text: "The most beloved of deeds to Allah are those that are most consistent, even if it is small.", ref: "Sahih al-Bukhari 6464" },
+            { text: "Make things easy for the people, and do not make it difficult for them...", ref: "Sahih al-Bukhari 69" },
+            { text: "A good word is charity.", ref: "Sahih al-Bukhari 2989" },
+            { text: "Richness is not having many possessions, but richness is being content with oneself.", ref: "Sahih al-Bukhari 6446" },
+            { text: "None of you truly believes until he loves for his brother what he loves for himself.", ref: "Sahih al-Bukhari 13" },
+            { text: "The strong man is not the good wrestler, but the strong man is he who controls himself when he is angry.", ref: "Sahih al-Bukhari 6114" },
+            { text: "Every religion has its distinct characteristic, and the distinct characteristic of Islam is modesty.", ref: "Ibn Majah" }
+        ];
+
+        const dailyDuas = [
+            { text: "Rabbi inni lima anzalta ilayya min khayrin faqir\n(My Lord, I am in absolute need of the good You send me.)", ref: "Quran 28:24" },
+            { text: "Rabbana atina fid-dunya hasanatan wa fil 'akhirati hasanatan waqina 'adhaban-nar\n(Our Lord, give us in this world what is good and in the Hereafter what is good and protect us from the punishment of the Fire.)", ref: "Quran 2:201" },
+            { text: "Ya Muqallibal-qulub, thabbit qalbi 'ala dinik\n(O Turner of the hearts, keep my heart firm upon Your religion.)", ref: "Tirmidhi" },
+            { text: "Rabbi zidni 'ilma\n(My Lord, increase me in knowledge.)", ref: "Quran 20:114" },
+            { text: "Astaghfirullahal-ladhi la ilaha illa Huwal-Hayyul-Qayyum wa atubu ilayh\n(I seek the forgiveness of Allah, there is no true god except Him, the Ever-Living, the Sustainer of existence, and I turn to Him in repentance.)", ref: "Tirmidhi" },
+            { text: "Rabbighfir warham wa anta khayrur-rahimin\n(My Lord, forgive and have mercy, and You are the best of the merciful.)", ref: "Quran 23:118" }
+        ];
 
         let config = { lat: 52.0907, lon: 5.1214, city: 'Netherlands', method: 3 };
         let state = { prayers: {}, nextPrayer: null, prevPrayerTime: null, namesList: [], isRamadan: false, notified10Min: false, adhanPlayed: false };
+        let wakeLock = null;
+
+        // === WAKE LOCK API LOGIC ===
+        async function requestWakeLock() {
+            if ('wakeLock' in navigator) {
+                try {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    wakeLock.addEventListener('release', () => { console.log('Screen Wake Lock released'); });
+                } catch (err) { console.error(`${err.name}, ${err.message}`); }
+            }
+        }
+        function releaseWakeLock() {
+            if (wakeLock !== null) { wakeLock.release().then(() => { wakeLock = null; }); }
+        }
+        document.addEventListener('visibilitychange', async () => {
+            if (wakeLock !== null && document.visibilityState === 'visible') requestWakeLock();
+        });
 
         // === MODALS & FOCUS MODE LOGIC ===
         const settingsBtn = document.getElementById('settings-btn');
@@ -562,6 +611,7 @@
             const audio = localStorage.getItem('adhan_audio') || 'default';
             const source = localStorage.getItem('adhan_daily') || 'quran';
             const wudu = localStorage.getItem('adhan_wudu') === 'true';
+            const keepAwake = localStorage.getItem('adhan_wakelock') === 'true';
 
             document.documentElement.setAttribute('data-theme', theme);
             if (theme !== 'dynamic') document.documentElement.removeAttribute('data-time-of-day');
@@ -572,7 +622,18 @@
             document.documentElement.style.fontSize = rootSize;
 
             document.getElementById('wudu-toggle').checked = wudu;
+            document.getElementById('wakelock-toggle').checked = keepAwake;
+
+            if (keepAwake) requestWakeLock();
+            else releaseWakeLock();
             
+            // Set dynamic title for Ayah/Hadith widget
+            if(source === 'hadith') {
+                document.getElementById('daily-title').setAttribute('data-i18n', 'hadith');
+            } else {
+                document.getElementById('daily-title').setAttribute('data-i18n', 'ayah');
+            }
+
             document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('active', b.dataset.themeVal === theme));
             document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.langVal === lang));
             document.querySelectorAll('.text-btn').forEach(b => b.classList.toggle('active', b.dataset.sizeVal === size));
@@ -595,9 +656,16 @@
         document.querySelectorAll('.text-btn').forEach(btn => btn.addEventListener('click', (e) => { localStorage.setItem('adhan_size', e.target.dataset.sizeVal); applySettings(); }));
         document.querySelectorAll('.adhan-btn').forEach(btn => btn.addEventListener('click', (e) => { localStorage.setItem('adhan_audio', e.target.dataset.adhanVal); applySettings(); }));
         document.querySelectorAll('.text-source-btn').forEach(btn => btn.addEventListener('click', (e) => { localStorage.setItem('adhan_daily', e.target.dataset.sourceVal); applySettings(); fetchContent(); }));
+        
         document.getElementById('wudu-toggle').addEventListener('change', (e) => { 
             localStorage.setItem('adhan_wudu', e.target.checked); 
             if (e.target.checked && "Notification" in window) Notification.requestPermission();
+        });
+
+        document.getElementById('wakelock-toggle').addEventListener('change', (e) => {
+            localStorage.setItem('adhan_wakelock', e.target.checked);
+            if (e.target.checked) requestWakeLock();
+            else releaseWakeLock();
         });
 
         // Hide App Install section if already running as standalone PWA
@@ -644,7 +712,7 @@
             }
         }
 
-        // === MULTI-LOCATION SYSTEM WITH EDIT/DELETE ===
+        // === MULTI-LOCATION SYSTEM ===
         let savedLocs = JSON.parse(localStorage.getItem('adhan_saved_locs')) || [];
         
         function renderLocations() {
@@ -747,16 +815,14 @@
             document.documentElement.setAttribute('data-time-of-day', timeOfDay);
         }
 
-        // === TOGGLE AUDIO PLAY/STOP ===
+        // === AUDIO ===
         window.previewAudio = function(type, btnElement) { 
             const audioEl = document.getElementById('audio-' + type);
             const isPlaying = !audioEl.paused;
 
-            // Pause all audio
             document.querySelectorAll('audio').forEach(a => { a.pause(); a.currentTime = 0; }); 
             document.querySelectorAll('.preview-btn').forEach(b => { b.innerText = '▶'; b.title = 'Play'; });
 
-            // If the audio clicked was NOT playing, play it now
             if (!isPlaying && audioEl) { 
                 audioEl.play().catch(e => console.log(e)); 
                 btnElement.innerText = '⏹';
@@ -776,8 +842,6 @@
         window.setStream = function(type) {
             document.getElementById('btn-makkah').classList.toggle('active', type === 'makkah');
             document.getElementById('btn-madinah').classList.toggle('active', type === 'madinah');
-            
-            // Updated to YouTube Search Links
             document.getElementById('stream-link').href = type === 'makkah' 
                 ? 'https://www.youtube.com/results?search_query=makkah+live' 
                 : 'https://www.youtube.com/results?search_query=madina+live';
@@ -794,7 +858,7 @@
         };
         window.resetTasbih = function() { tasbihCount = 0; document.getElementById('tasbih-btn').innerText = 0; };
 
-        // === PRAYER TRACKER WITH CONFETTI ===
+        // === PRAYER TRACKER ===
         const TRACK_PRAYERS = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
         let prayerData = JSON.parse(localStorage.getItem('adhan_tracker')) || {};
         let trackerOffsetDays = 0;
@@ -839,7 +903,6 @@
             prayerData[dateStr][prayerName] = isNowChecked;
             localStorage.setItem('adhan_tracker', JSON.stringify(prayerData));
             
-            // Check Confetti condition
             const prayersDone = TRACK_PRAYERS.filter(p => prayerData[dateStr][p]).length;
             if (prayersDone === 5 && isNowChecked && typeof confetti !== 'undefined') {
                 confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#D4AF37', '#2ecc71', '#ffffff'] });
@@ -903,8 +966,35 @@
         }
 
         async function fetchContent() {
+            const lang = localStorage.getItem('adhan_lang') || 'en';
+            const dailySource = localStorage.getItem('adhan_daily') || 'quran';
             const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
-            const hIndex = dayOfYear % dailyHadiths.length; document.getElementById('daily-text').innerText = `"${dailyHadiths[hIndex].text}"`; document.getElementById('daily-ref').innerText = dailyHadiths[hIndex].ref;
+            
+            // Ayah or Hadith based on toggle
+            if (dailySource === 'quran') {
+                const quranEditions = { en: 'en.asad', tr: 'tr.diyanet', nl: 'nl.leemhuis', fr: 'fr.hamidullah', de: 'de.aburida', es: 'es.cortes', ar: 'ar.alafasy' };
+                const edition = quranEditions[lang] || 'en.asad';
+                const ayahNumber = (dayOfYear % 6236) + 1;
+                const ayahData = await fetchCached(`quran_${edition}_${ayahNumber}`, `https://api.alquran.cloud/v1/ayah/${ayahNumber}/${edition}`, 24);
+                if(ayahData && ayahData.data) {
+                    document.getElementById('daily-text').innerText = `"${ayahData.data.text}"`;
+                    let surahName = lang === 'ar' ? ayahData.data.surah.name : ayahData.data.surah.englishName;
+                    document.getElementById('daily-ref').innerText = surahName + " " + ayahData.data.surah.number + ":" + ayahData.data.numberInSurah;
+                } else {
+                    document.getElementById('daily-text').innerText = "Loading or offline...";
+                }
+            } else {
+                const hIndex = dayOfYear % dailyHadiths.length;
+                document.getElementById('daily-text').innerText = `"${dailyHadiths[hIndex].text}"`;
+                document.getElementById('daily-ref').innerText = dailyHadiths[hIndex].ref;
+            }
+
+            // Always load Dua in dedicated section
+            const dIndex = dayOfYear % dailyDuas.length;
+            document.getElementById('dua-text').innerText = `"${dailyDuas[dIndex].text}"`;
+            document.getElementById('dua-ref').innerText = dailyDuas[dIndex].ref;
+
+            // Load Allah Names
             const namesData = await fetchCached('allah_names_v1', 'https://api.aladhan.com/v1/asmaAlHusna', 720);
             if(namesData && namesData.data) { state.namesList = namesData.data; rotateNames(); }
         }
@@ -922,7 +1012,7 @@
                     document.getElementById('curr-name').innerText = prevName; document.getElementById('curr-time').innerText = state.prayers[prevName];
                     document.getElementById('curr-name').style.color = prevName === "Sunrise" ? "var(--danger)" : "var(--gold)";
                     document.getElementById('shuruq-warning').style.display = prevName === "Sunrise" ? 'block' : 'none';
-                    updateDynamicTheme(); state.notified10Min = false; // Reset notification flag for new prayer
+                    updateDynamicTheme(); state.notified10Min = false;
                     return;
                 }
             }
@@ -930,14 +1020,13 @@
             state.nextPrayer = { name: "Fajr", time: fTime }; state.prevPrayerTime = parseTime(state.prayers.Isha);
             document.getElementById('curr-name').innerText = "Isha"; document.getElementById('curr-time').innerText = state.prayers.Isha; 
             document.getElementById('curr-name').style.color = "var(--gold)"; document.getElementById('shuruq-warning').style.display = 'none';
-            updateDynamicTheme(); state.notified10Min = false; // Reset notification flag
+            updateDynamicTheme(); state.notified10Min = false;
         }
 
         function tickTimer() {
             if(!state.nextPrayer) return;
             const now = new Date(); const diffMs = state.nextPrayer.time - now;
             
-            // Push Notification & Chime trigger at 10 minutes
             if (diffMs <= 600000 && diffMs > 599000 && !state.notified10Min) { 
                 if(localStorage.getItem('adhan_wudu') === 'true' && state.nextPrayer.name !== "Sunrise") { 
                     playAudio('chime'); 
