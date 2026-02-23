@@ -8,6 +8,8 @@
       gtag('js', new Date());
       gtag('config', 'G-BEKQEF4RR5');
     </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -96,7 +98,6 @@
         html[dir="rtl"] .top-left-logo { left: auto; right: 20px; }
         html[dir="rtl"] .settings-toggle { right: auto; left: 20px; }
         html[dir="rtl"] .focus-toggle { right: auto; left: 75px; }
-        html[dir="rtl"] .close-btn { right: auto; left: 20px; }
 
         .dashboard-container {
             max-width: 1400px; margin: 0 auto; padding: 20px;
@@ -131,17 +132,11 @@
         body.focus-mode header, body.focus-mode footer, body.focus-mode .top-left-logo { display: none !important; }
         body.focus-mode .dashboard-container { display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; height: 100vh !important; padding: 0 20px !important; margin: 0 !important; }
         
-        /* Updated Focus Mode Hero Card */
         body.focus-mode .prayer-hero { 
-            width: 100% !important; 
-            max-width: 1000px !important; 
-            background: var(--glass-bg) !important; 
-            border: 2px solid var(--gold) !important; 
-            box-shadow: 0 20px 50px var(--shadow-color) !important; 
-            backdrop-filter: blur(15px) !important; 
-            padding: 50px 30px !important; 
-            min-height: auto !important; 
-            border-radius: 20px !important; 
+            width: 100% !important; max-width: 1000px !important; 
+            background: var(--glass-bg) !important; border: 2px solid var(--gold) !important; 
+            box-shadow: 0 20px 50px var(--shadow-color) !important; backdrop-filter: blur(15px) !important; 
+            padding: 50px 30px !important; min-height: auto !important; border-radius: 20px !important; 
         }
         
         body.focus-mode .prayer-name-display { font-size: clamp(4rem, 15vw, 7rem) !important; margin: 20px 0 !important; }
@@ -152,10 +147,23 @@
         body.focus-mode .focus-toggle { border-color: var(--gold) !important; background: var(--gold) !important; color: #050505 !important; z-index: 1000 !important; }
 
         /* Modal / Settings */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(5px); opacity: 0; transition: opacity 0.3s ease; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(5px); opacity: 0; transition: opacity 0.3s ease; }
         .modal-overlay.active { display: flex; opacity: 1; }
-        .settings-panel { background: var(--glass-bg); border: 1px solid var(--gold); padding: 30px; border-radius: 12px; width: 90%; max-width: 450px; position: relative; color: var(--text-main); box-shadow: 0 10px 30px var(--shadow-color); max-height: 90vh; overflow-y: auto; }
-        .close-btn { position: absolute; top: 15px; right: 20px; background: transparent; border: none; font-size: 1.8rem; color: var(--text-main); cursor: pointer; }
+        .settings-panel { background: var(--glass-bg); border: 1px solid var(--gold); padding: 30px; border-radius: 12px; width: 90%; max-width: 450px; position: relative; color: var(--text-main); box-shadow: 0 10px 40px rgba(0,0,0,0.8); max-height: 90vh; overflow-y: auto; overflow-x: hidden; }
+        
+        /* Fixed visible Close Button */
+        .close-btn { 
+            position: absolute; top: 15px; right: 15px; 
+            background: var(--danger); border: 2px solid #fff; 
+            font-size: 1.5rem; color: #fff; cursor: pointer; 
+            width: 35px; height: 35px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5); transition: transform 0.2s;
+            z-index: 10000;
+        }
+        .close-btn:hover { transform: scale(1.1); background: #cc0000; }
+        html[dir="rtl"] .close-btn { right: auto; left: 15px; }
+
         .setting-group { margin-bottom: 25px; }
         .setting-group label { display: block; margin-bottom: 10px; font-weight: bold; color: var(--gold); text-transform: uppercase; font-size: 0.9rem; letter-spacing: 1px; }
         .flex-options { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -182,11 +190,9 @@
         .date-val { font-size: clamp(1rem, 3vw, 1.2rem); font-weight: bold; color: var(--text-main); }
         #live-clock { font-size: clamp(1.4rem, 4vw, 1.8rem); font-family: 'Courier New', monospace; color: var(--text-main); }
 
-        /* Sunnah Fasting Banner - Fixed Full Width */
         #sunnah-banner { display: none; grid-column: span 12; width: 100%; box-sizing: border-box; background: rgba(46, 204, 113, 0.15); border: 1px solid var(--success); padding: 10px 20px; border-radius: 12px; text-align: center; color: var(--success); font-weight: bold; letter-spacing: 1px; box-shadow: 0 4px 10px var(--shadow-color); animation: pulse 2s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(46, 204, 113, 0); } 100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); } }
 
-        /* Prayer Hero */
         .prayer-hero { text-align: center; position: relative; transition: all 0.5s ease; width: 100%; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 30px 20px; box-sizing: border-box; min-height: 320px; }
         .prayer-name-display { font-size: clamp(2.5rem, 8vw, 3.5rem); color: var(--gold); font-weight: 800; line-height: 1.1; margin: 10px 0; }
         .countdown-display { font-size: clamp(1.8rem, 6vw, 2.2rem); font-family: 'Courier New', monospace; color: var(--text-main); }
@@ -194,7 +200,6 @@
         .progress-bar { height: 100%; background: var(--gold); width: 0%; transition: width 1s linear; }
         #shuruq-warning { color: var(--danger); font-size: 0.9rem; font-weight: bold; display: none; margin-bottom: 10px; letter-spacing: 1px; }
 
-        /* Digital Tasbih UI */
         .tasbih-circle { width: 140px; height: 140px; border-radius: 50%; background: var(--glass-header); border: 3px solid var(--gold); color: var(--gold); font-size: 3rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; box-shadow: 0 4px 15px var(--shadow-color); -webkit-tap-highlight-color: transparent; margin: 10px 0; }
         .tasbih-circle:active { transform: scale(0.92); }
         .tasbih-circle.glow { background: var(--gold); color: #050505; box-shadow: 0 0 30px var(--gold); }
@@ -213,23 +218,21 @@
         .history-container { display: flex; gap: 20px; flex-wrap: wrap; width: 100%; }
         .history-box { flex: 1 1 300px; padding: 15px; background: var(--glass-header); border-radius: 8px; border: 1px solid var(--gold-dim); box-sizing: border-box; }
 
-        /* Improved Visual Hierarchy Grid Layout */
         @media (min-width: 768px) {
             .top-left-logo { position: absolute; top: 20px; left: 20px; display: block; margin: 0; }
             html[dir="rtl"] .top-left-logo { left: auto; right: 20px; }
             .prayer-hero, .history-card { grid-column: span 12; }
             .times-card, .tasbih-card, .qibla-card, .tools-card, .text-widget, .night-widget, .names-widget, .ramadan-widget, .video-card { grid-column: span 6; }
-            .install-card { grid-column: span 12; }
+            #install-card-section { grid-column: span 12; }
         }
         @media (min-width: 1024px) {
-            /* Prioritized and perfectly spaced Grid layout */
             .prayer-hero { grid-column: span 6; } 
             .times-card { grid-column: span 6; }
             .history-card { grid-column: span 12; }
-            .tasbih-card, .qibla-card, .text-widget { grid-column: span 4; } /* Exact 12 columns */
-            .night-widget, .names-widget, .ramadan-widget { grid-column: span 4; } /* Exact 12 columns */
-            .tools-card, .video-card { grid-column: span 6; } /* Exact 12 columns */
-            .install-card { grid-column: span 12; }
+            .tasbih-card, .qibla-card, .text-widget { grid-column: span 4; } 
+            .night-widget, .names-widget, .ramadan-widget { grid-column: span 4; } 
+            .tools-card, .video-card { grid-column: span 6; } 
+            #install-card-section { grid-column: span 12; }
         }
         @media (max-width: 767px) {
             .top-left-logo { position: absolute; top: 15px; left: 15px; width: 50px; }
@@ -239,6 +242,11 @@
             .info-panel { flex-direction: column; }
             .date-box { width: 100%; padding: 5px 0; border-bottom: 1px solid var(--border-color); }
             .date-box:last-child { border-bottom: none; }
+        }
+
+        /* Hide "Get the App" when running as an installed PWA */
+        @media all and (display-mode: standalone) {
+            #install-card-section { display: none !important; }
         }
     </style>
 </head>
@@ -255,9 +263,18 @@
     
     <div id="settings-modal" class="modal-overlay">
         <div class="settings-panel">
-            <button id="close-settings" class="close-btn">×</button>
+            <button id="close-settings" class="close-btn" title="Close Settings">×</button>
             <h3 data-i18n="pref" style="color:var(--gold); margin-top:0; border-bottom:1px solid var(--gold); padding-bottom:10px;">Preferences</h3>
             
+            <div class="setting-group">
+                <label>Saved Locations</label>
+                <div id="location-list" style="margin-bottom: 10px; display: flex; flex-direction: column; gap: 5px;"></div>
+                <div style="display: flex; gap: 5px;">
+                    <input type="text" id="new-loc-name" placeholder="City name (e.g. London)" style="flex:1; padding: 8px; border-radius:6px; background:var(--progress-bg); color:var(--text-main); border:1px solid var(--border-color);">
+                    <button onclick="addManualLocation()" class="btn-gold" style="width:auto; margin:0; padding: 8px 15px;">Add</button>
+                </div>
+            </div>
+
             <div class="setting-group">
                 <label data-i18n="lang">Language</label>
                 <div class="flex-options">
@@ -295,25 +312,25 @@
                 <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px;">
                     <div style="display: flex; gap: 5px;">
                         <button class="opt-btn adhan-btn" data-adhan-val="default" style="flex: 1;">Default</button>
-                        <button class="preview-btn" onclick="previewAudio('default')" title="Preview Audio">▶</button>
+                        <button class="preview-btn" onclick="previewAudio('default', this)" title="Play/Stop">▶</button>
                     </div>
                     <div style="display: flex; gap: 5px;">
                         <button class="opt-btn adhan-btn" data-adhan-val="makkah" style="flex: 1;">Makkah</button>
-                        <button class="preview-btn" onclick="previewAudio('makkah')" title="Preview Audio">▶</button>
+                        <button class="preview-btn" onclick="previewAudio('makkah', this)" title="Play/Stop">▶</button>
                     </div>
                     <div style="display: flex; gap: 5px;">
                         <button class="opt-btn adhan-btn" data-adhan-val="madinah" style="flex: 1;">Madinah</button>
-                        <button class="preview-btn" onclick="previewAudio('madinah')" title="Preview Audio">▶</button>
+                        <button class="preview-btn" onclick="previewAudio('madinah', this)" title="Play/Stop">▶</button>
                     </div>
                     <div style="display: flex; gap: 5px;">
                         <button class="opt-btn adhan-btn" data-adhan-val="alafasy" style="flex: 1;">Alafasy</button>
-                        <button class="preview-btn" onclick="previewAudio('alafasy')" title="Preview Audio">▶</button>
+                        <button class="preview-btn" onclick="previewAudio('alafasy', this)" title="Play/Stop">▶</button>
                     </div>
                     <button class="opt-btn adhan-btn" data-adhan-val="none" style="width: 100%;">None</button>
                 </div>
                 
                 <div class="toggle-row">
-                    <span data-i18n="wudu_alert" style="font-size: 0.9rem;">10-Min Wudu Alert</span>
+                    <span data-i18n="wudu_alert" style="font-size: 0.9rem;">10-Min Wudu Alert & Push</span>
                     <label class="switch" style="cursor: pointer; color: var(--gold); font-weight: bold;">
                         <input type="checkbox" id="wudu-toggle" style="accent-color: var(--gold); transform: scale(1.3);">
                     </label>
@@ -474,7 +491,6 @@
                     <a href="https://apps.apple.com/us/app/namaz-app-learn-salah-prayer/id1447056625" target="_blank" class="btn-gold" style="flex: 1; max-width: 100%; font-size: 0.8rem;">📱 Namaz App (iOS)</a>
                     <a href="https://play.google.com/store/apps/details?id=com.nurios.namazapp" target="_blank" class="btn-gold" style="flex: 1; max-width: 100%; font-size: 0.8rem;">📱 Namaz App (Android)</a>
                 </div>
-                <a href="https://www.google.com/maps/search/Mosque+near+me/" target="_blank" class="btn-gold" style="max-width: 100%;">🕌 <span data-i18n="find_mosque">Find a Mosque</span></a>
                 <a href="https://www.zakat.org/resource-center/zakat-calculator" target="_blank" class="btn-gold" style="max-width: 100%;">🧮 <span data-i18n="zakat_calc">Zakat Calculator</span></a>
             </div>
         </section>
@@ -491,60 +507,24 @@
             </a>
         </section>
 
-        <section class="card install-card" style="padding: 30px;">
+        <section id="install-card-section" class="card install-card" style="padding: 30px;">
             <div class="widget-title" style="margin-bottom: 5px; border: none;" data-i18n="getapp">Get the App</div>
             <button id="install-btn" class="btn-gold" style="width: auto; padding: 12px 40px; border-radius: 50px;" data-i18n="install">Install App</button>
         </section>
 
     </main>
 
-    <footer>
-        <img src="images/adhan display muslim prayer times dashboard logo.png" alt="Logo" class="footer-logo">
-        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 10px;">© 2026 Adhan Display. Serving the Ummah.</p>
-        
-        <div style="margin-top: 20px;">
-            <a href="https://buymeacoffee.com/kmni" target="_blank" style="text-decoration: none;">
-                <button class="btn-gold" style="padding: 10px 25px; font-size: 0.85rem; border-radius: 50px; text-transform: none; display: inline-flex; width: auto; font-weight: bold; box-shadow: 0 4px 10px var(--shadow-color);">
-                    ☕ Support & Keep Ad-Free
-                </button>
-            </a>
-        </div>
-    </footer>
-
     <script>
         // === TRANSLATIONS (i18n) ===
         const i18n = {
-            en: { subtitle: "The Ultimate Free Islamic Prayer Times & Qibla Dashboard", greg: "Gregorian", time: "Current Time", loc: "Location", hijri: "Hijri", curr: "Current Prayer", next: "Next Prayer In", ayah: "Ayah of the Day", hadith: "Hadith of the Day", dua: "Dua of the Day", qiyam: "Night Prayers", mid: "Midnight", tahajjud: "Tahajjud", allah: "Name of Allah", ramadan: "Ramadan", days: "Days Remaining", makkah: "Makkah Live", live_stream: "Holy Sites Live", watch: "Watch Stream", qibla: "Qibla Direction", north: "from true North", ar_find: "Open AR Finder", getapp: "Get the App", install: "Install App", pref: "Preferences", theme: "Theme", dynamic: "Dynamic", size: "Text Size", lang: "Language", nopray: "* Not permissible to pray *", audio_pref: "Audio & Alerts", wudu_alert: "10-Min Wudu Alert", daily_source: "Daily Inspiration", sunnah_mon: "Sunnah Fasting: Monday", sunnah_thu: "Sunnah Fasting: Thursday", sunnah_white: "Sunnah Fasting: Ayyam al-Bid (White Days)", daily_times: "Daily Prayer Times", tracker_title: "Prayer Tracker & History", last_7: "Last 7 Days:", last_30: "Last 30 Days:", past_days: "Past Days", no_data: "No past data yet.", tasbih: "Digital Tasbih", resources: "Tools & Resources", revert_guide: "Step-by-Step Prayer Guide", find_mosque: "Find a Mosque near me", zakat_calc: "Zakat Calculator" },
-            tr: { subtitle: "En İyi Ücretsiz İslami Namaz Vakitleri Panosu", greg: "Miladi", time: "Şu Anki Saat", loc: "Konum", hijri: "Hicri", curr: "Mevcut Namaz", next: "Sonraki Namaz", ayah: "Günün Ayeti", hadith: "Günün Hadisi", dua: "Günün Duası", qiyam: "Gece Namazları", mid: "Gece Yarısı", tahajjud: "Teheccüd", allah: "Allah'ın İsmi", ramadan: "Ramazan", days: "Kalan Gün", makkah: "Mekke Canlı", live_stream: "Kutsal Yerler Canlı", watch: "Yayını İzle", qibla: "Kıble Yönü", north: "Gerçek Kuzeyden", ar_find: "AR Bulucuyu Aç", getapp: "Uygulamayı Al", install: "Uygulamayı Yükle", pref: "Tercihler", theme: "Tema", dynamic: "Dinamik", size: "Metin Boyutu", lang: "Dil", nopray: "* Namaz Kılmak Mekruhtur *", audio_pref: "Ses ve Uyarılar", wudu_alert: "10-Dk Abdest Uyarısı", daily_source: "Günlük İlham", sunnah_mon: "Sünnet Orucu: Pazartesi", sunnah_thu: "Sünnet Orucu: Perşembe", sunnah_white: "Sünnet Orucu: Eyyam-ı Bîd (Beyaz Günler)", daily_times: "Günlük Namaz Vakitleri", tracker_title: "Namaz Takibi ve Geçmiş", last_7: "Son 7 Gün:", last_30: "Son 30 Gün:", past_days: "Geçmiş Günler", no_data: "Henüz veri yok.", tasbih: "Dijital Tesbih", resources: "Araçlar ve Kaynaklar", revert_guide: "Adım Adım Namaz Rehberi", find_mosque: "Yakınımdaki Camiyi Bul", zakat_calc: "Zekat Hesaplayıcı" },
-            nl: { subtitle: "Het Ultieme Islamitische Gebedstijden Dashboard", greg: "Gregoriaans", time: "Huidige Tijd", loc: "Locatie", hijri: "Hidzjra", curr: "Huidig Gebed", next: "Volgend Gebed In", ayah: "Vers van de Dag", hadith: "Hadith van de Dag", dua: "Smeekbede van de Dag", qiyam: "Nachtgebeden", mid: "Middernacht", tahajjud: "Tahajjud", allah: "Naam van Allah", ramadan: "Ramadan", days: "Dagen Te Gaan", makkah: "Mekka Live", live_stream: "Heilige Plaatsen Live", watch: "Bekijk Stream", qibla: "Qibla Richting", north: "van ware noorden", ar_find: "Open AR Zoeker", getapp: "Download de App", install: "Installeer App", pref: "Instellingen", theme: "Thema", dynamic: "Dynamisch", size: "Tekstgrootte", lang: "Taal", nopray: "* Bidden is niet toegestaan *", audio_pref: "Audio & Meldingen", wudu_alert: "10-Min Wudu Melding", daily_source: "Dagelijkse Inspiratie", sunnah_mon: "Sunnah Vasten: Maandag", sunnah_thu: "Sunnah Vasten: Donderdag", sunnah_white: "Sunnah Vasten: Witte Dagen", daily_times: "Dagelijkse Gebedstijden", tracker_title: "Gebedstracker & Geschiedenis", last_7: "Laatste 7 Dagen:", last_30: "Laatste 30 Dagen:", past_days: "Verleden Dagen", no_data: "Nog geen data.", tasbih: "Digitale Tasbih", resources: "Tools & Hulpbronnen", revert_guide: "Stap-voor-Stap Gebedsgids", find_mosque: "Vind een Moskee", zakat_calc: "Zakat Calculator" },
-            fr: { subtitle: "Le Tableau de Bord Islamique Ultime", greg: "Grégorien", time: "Heure Actuelle", loc: "Emplacement", hijri: "Hégire", curr: "Prière Actuelle", next: "Prochaine Prière", ayah: "Verset du Jour", hadith: "Hadith du Jour", dua: "Dua du Jour", qiyam: "Prières Nocturnes", mid: "Minuit", tahajjud: "Tahajjud", allah: "Nom d'Allah", ramadan: "Ramadan", days: "Jours Restants", makkah: "Mecque en Direct", live_stream: "Lieux Saints en Direct", watch: "Regarder le Stream", qibla: "Direction de la Qibla", north: "du vrai nord", ar_find: "Ouvrir AR Finder", getapp: "Obtenir l'App", install: "Installer l'App", pref: "Préférences", theme: "Thème", dynamic: "Dynamique", size: "Taille du Texte", lang: "Langue", nopray: "* Prière non permise *", audio_pref: "Audio & Alertes", wudu_alert: "Alerte Wudu 10-Min", daily_source: "Inspiration Quotidienne", sunnah_mon: "Jeûne Sunnah : Lundi", sunnah_thu: "Jeûne Jeudi", sunnah_white: "Jeûne Sunnah : Jours Blancs", daily_times: "Heures de Prière", tracker_title: "Suivi des Prières", last_7: "7 Derniers Jours:", last_30: "30 Derniers Jours:", past_days: "Jours Passés", no_data: "Aucune donnée.", tasbih: "Tasbih Numérique", resources: "Outils et Ressources", revert_guide: "Guide de Prière Étape par Étape", find_mosque: "Trouver une Mosquée", zakat_calc: "Calculatrice de Zakat" },
-            de: { subtitle: "Das Ultimative Islamische Dashboard", greg: "Gregorianisch", time: "Aktuelle Zeit", loc: "Ort", hijri: "Hidschra", curr: "Aktuelles Gebet", next: "Nächstes Gebet In", ayah: "Vers des Tages", hadith: "Hadith des Tages", dua: "Dua des Tages", qiyam: "Nachtgebete", mid: "Mitternacht", tahajjud: "Tahajjud", allah: "Name Allahs", ramadan: "Ramadan", days: "Verbleibende Tage", makkah: "Mekka Live", live_stream: "Heilige Stätten Live", watch: "Stream Ansehen", qibla: "Qibla-Richtung", north: "vom wahren Norden", ar_find: "AR-Finder Öffnen", getapp: "App Holen", install: "App Installieren", pref: "Einstellungen", theme: "Thema", dynamic: "Dynamisch", size: "Textgröße", lang: "Sprache", nopray: "* Beten ist nicht erlaubt *", audio_pref: "Audio & Warnungen", wudu_alert: "10-Min Wudu-Alarm", daily_source: "Tägliche Inspiration", sunnah_mon: "Sunnah Fasten: Montag", sunnah_thu: "Sunnah Fasten: Donnerstag", sunnah_white: "Sunnah Fasten: Weiße Tage", daily_times: "Tägliche Gebetszeiten", tracker_title: "Gebets-Tracker", last_7: "Letzte 7 Tage:", last_30: "Letzte 30 Tage:", past_days: "Vergangene Tage", no_data: "Noch keine Daten.", tasbih: "Digitaler Tasbih", resources: "Werkzeuge & Ressourcen", revert_guide: "Schritt-für-Schritt Gebetsanleitung", find_mosque: "Finde eine Moschee", zakat_calc: "Zakat Rechner" },
-            es: { subtitle: "El Panel de Oración Islámica Definitivo", greg: "Gregoriano", time: "Hora Actual", loc: "Ubicación", hijri: "Hégira", curr: "Oración Actual", next: "Próxima Oración En", ayah: "Versículo del Día", hadith: "Hadiz del Día", dua: "Dua del Día", qiyam: "Oraciones Nocturnas", mid: "Medianoche", tahajjud: "Tahajjud", allah: "Nombre de Alá", ramadan: "Ramadán", days: "Días Restantes", makkah: "La Meca en Vivo", live_stream: "Lugares Santos en Vivo", watch: "Ver Transmisión", qibla: "Dirección Qibla", north: "desde el norte", ar_find: "Abrir Buscador AR", getapp: "Obtener App", install: "Instalar App", pref: "Preferencias", theme: "Tema", dynamic: "Dinámico", size: "Tamaño", lang: "Idioma", nopray: "* No está permitido orar *", audio_pref: "Audio y Alertas", wudu_alert: "Alerta Wudu 10-Min", daily_source: "Inspiración Diaria", sunnah_mon: "Ayuno Sunnah: Lunes", sunnah_thu: "Ayuno Sunnah: Jueves", sunnah_white: "Ayuno Sunnah: Días Blancos", daily_times: "Horarios de Oración", tracker_title: "Rastreador de Oraciones", last_7: "Últimos 7 Días:", last_30: "Últimos 30 Días:", past_days: "Días Pasados", no_data: "Aún no hay datos.", tasbih: "Tasbih Digital", resources: "Herramientas y Recursos", revert_guide: "Guía de Oración Paso a Paso", find_mosque: "Encontrar una Mezquita", zakat_calc: "Calculadora de Zakat" },
-            ar: { subtitle: "لوحة أوقات الصلاة الإسلامية المطلقة", greg: "ميلادي", time: "الوقت الحالي", loc: "الموقع", hijri: "هجري", curr: "الصلاة الحالية", next: "الصلاة القادمة في", ayah: "آية اليوم", hadith: "حديث اليوم", dua: "دعاء اليوم", qiyam: "قيام الليل", mid: "منتصف الليل", tahajjud: "تهجد", allah: "اسم الله", ramadan: "رمضان", days: "أيام متبقية", makkah: "مكة مباشر", live_stream: "البث المباشر للأماكن المقدسة", watch: "شاهد البث", qibla: "اتجاه القبلة", north: "من الشمال الحقيقي", ar_find: "فتح باحث الواقع المعزز", getapp: "احصل على التطبيق", install: "تثبيت التطبيق", pref: "الإعدادات", theme: "السمة", dynamic: "ديناميكي", size: "حجم النص", lang: "اللغة", nopray: "* الصلاة غير جائزة *", audio_pref: "الصوت والتنبيهات", wudu_alert: "تنبيه الوضوء 10 دقائق", daily_source: "إلهام يومي", sunnah_mon: "صيام السنة: الإثنين", sunnah_thu: "صيام السنة: الخميس", sunnah_white: "صيام السنة: الأيام البيض", daily_times: "مواقيت الصلاة اليومية", tracker_title: "متتبع الصلاة", last_7: "آخر 7 أيام:", last_30: "آخر 30 يوم:", past_days: "الأيام الماضية", no_data: "لا توجد بيانات بعد.", tasbih: "مسبحة رقمية", resources: "الأدوات والموارد", revert_guide: "دليل الصلاة خطوة بخطوة", find_mosque: "ابحث عن مسجد قريب", zakat_calc: "حاسبة الزكاة" }
+            en: { subtitle: "The Ultimate Free Islamic Prayer Times & Qibla Dashboard", greg: "Gregorian", time: "Current Time", loc: "Location", hijri: "Hijri", curr: "Current Prayer", next: "Next Prayer In", ayah: "Ayah of the Day", hadith: "Hadith of the Day", dua: "Dua of the Day", qiyam: "Night Prayers", mid: "Midnight", tahajjud: "Tahajjud", allah: "Name of Allah", ramadan: "Ramadan", days: "Days Remaining", makkah: "Makkah Live", live_stream: "Holy Sites Live", watch: "Watch Stream", qibla: "Qibla Direction", north: "from true North", ar_find: "Open AR Finder", getapp: "Get the App", install: "Install App", pref: "Preferences", theme: "Theme", dynamic: "Dynamic", size: "Text Size", lang: "Language", nopray: "* Not permissible to pray *", audio_pref: "Audio & Alerts", wudu_alert: "10-Min Wudu Alert & Push", daily_source: "Daily Inspiration", sunnah_mon: "Sunnah Fasting: Monday", sunnah_thu: "Sunnah Fasting: Thursday", sunnah_white: "Sunnah Fasting: Ayyam al-Bid (White Days)", daily_times: "Daily Prayer Times", tracker_title: "Prayer Tracker & History", last_7: "Last 7 Days:", last_30: "Last 30 Days:", past_days: "Past Days", no_data: "No past data yet.", tasbih: "Digital Tasbih", resources: "Tools & Resources", revert_guide: "Step-by-Step Prayer Guide", zakat_calc: "Zakat Calculator" }
         };
 
-        const dailyHadiths = [
-            { text: "He who does not show mercy to people, Allah will not show mercy to him.", ref: "Sahih Muslim 2319" },
-            { text: "The most beloved of deeds to Allah are those that are most consistent, even if it is small.", ref: "Sahih al-Bukhari 6464" },
-            { text: "Make things easy for the people, and do not make it difficult for them...", ref: "Sahih al-Bukhari 69" },
-            { text: "A good word is charity.", ref: "Sahih al-Bukhari 2989" },
-            { text: "Richness is not having many possessions, but richness is being content with oneself.", ref: "Sahih al-Bukhari 6446" },
-            { text: "None of you truly believes until he loves for his brother what he loves for himself.", ref: "Sahih al-Bukhari 13" },
-            { text: "The strong man is not the good wrestler, but the strong man is he who controls himself when he is angry.", ref: "Sahih al-Bukhari 6114" },
-            { text: "Every religion has its distinct characteristic, and the distinct characteristic of Islam is modesty.", ref: "Ibn Majah" }
-        ];
-
-        const dailyDuas = [
-            { text: "Rabbi inni lima anzalta ilayya min khayrin faqir\n(My Lord, I am in absolute need of the good You send me.)", ref: "Quran 28:24" },
-            { text: "Rabbana atina fid-dunya hasanatan wa fil 'akhirati hasanatan waqina 'adhaban-nar\n(Our Lord, give us in this world what is good and in the Hereafter what is good and protect us from the punishment of the Fire.)", ref: "Quran 2:201" },
-            { text: "Ya Muqallibal-qulub, thabbit qalbi 'ala dinik\n(O Turner of the hearts, keep my heart firm upon Your religion.)", ref: "Tirmidhi" },
-            { text: "Rabbi zidni 'ilma\n(My Lord, increase me in knowledge.)", ref: "Quran 20:114" },
-            { text: "Astaghfirullahal-ladhi la ilaha illa Huwal-Hayyul-Qayyum wa atubu ilayh\n(I seek the forgiveness of Allah, there is no true god except Him, the Ever-Living, the Sustainer of existence, and I turn to Him in repentance.)", ref: "Tirmidhi" },
-            { text: "Rabbighfir warham wa anta khayrur-rahimin\n(My Lord, forgive and have mercy, and You are the best of the merciful.)", ref: "Quran 23:118" }
-        ];
+        const dailyHadiths = [ { text: "He who does not show mercy to people, Allah will not show mercy to him.", ref: "Sahih Muslim 2319" } ];
+        const dailyDuas = [ { text: "Rabbi inni lima anzalta ilayya min khayrin faqir\n(My Lord, I am in absolute need of the good You send me.)", ref: "Quran 28:24" } ];
 
         let config = { lat: 52.0907, lon: 5.1214, city: 'Netherlands', method: 3 };
-        let state = { prayers: {}, nextPrayer: null, prevPrayerTime: null, namesList: [], isRamadan: false, chimePlayed: false, adhanPlayed: false };
+        let state = { prayers: {}, nextPrayer: null, prevPrayerTime: null, namesList: [], isRamadan: false, notified10Min: false, adhanPlayed: false };
 
         // === MODALS & FOCUS MODE LOGIC ===
         const settingsBtn = document.getElementById('settings-btn');
@@ -573,13 +553,7 @@
             document.documentElement.style.fontSize = rootSize;
 
             document.getElementById('wudu-toggle').checked = wudu;
-
-            // Set Title of Daily Inspiration Box based on selected source
-            if(source === 'hadith') document.getElementById('daily-title').setAttribute('data-i18n', 'hadith');
-            else if(source === 'dua') document.getElementById('daily-title').setAttribute('data-i18n', 'dua');
-            else document.getElementById('daily-title').setAttribute('data-i18n', 'ayah');
-
-            // Set active states on buttons
+            
             document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('active', b.dataset.themeVal === theme));
             document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.langVal === lang));
             document.querySelectorAll('.text-btn').forEach(b => b.classList.toggle('active', b.dataset.sizeVal === size));
@@ -592,46 +566,27 @@
         function applyTranslations(lang) {
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
-                if (i18n[lang] && i18n[lang][key]) {
-                    el.innerText = i18n[lang][key];
-                }
+                if (i18n[lang] && i18n[lang][key]) el.innerText = i18n[lang][key];
+                else if (i18n['en'][key]) el.innerText = i18n['en'][key];
             });
         }
 
-        // Add Event Listeners for Settings Controls
-        document.querySelectorAll('.theme-btn').forEach(btn => btn.addEventListener('click', (e) => {
-            localStorage.setItem('adhan_theme', e.target.dataset.themeVal);
-            applySettings();
-            updateDynamicTheme();
-        }));
-
-        document.querySelectorAll('.lang-btn').forEach(btn => btn.addEventListener('click', (e) => {
-            localStorage.setItem('adhan_lang', e.target.dataset.langVal);
-            applySettings();
-            fetchContent();
-        }));
-
-        document.querySelectorAll('.text-btn').forEach(btn => btn.addEventListener('click', (e) => {
-            localStorage.setItem('adhan_size', e.target.dataset.sizeVal);
-            applySettings();
-        }));
-
-        document.querySelectorAll('.adhan-btn').forEach(btn => btn.addEventListener('click', (e) => {
-            localStorage.setItem('adhan_audio', e.target.dataset.adhanVal);
-            applySettings();
-        }));
-
-        document.querySelectorAll('.text-source-btn').forEach(btn => btn.addEventListener('click', (e) => {
-            localStorage.setItem('adhan_daily', e.target.dataset.sourceVal);
-            applySettings();
-            fetchContent();
-        }));
-
-        document.getElementById('wudu-toggle').addEventListener('change', (e) => {
-            localStorage.setItem('adhan_wudu', e.target.checked);
+        document.querySelectorAll('.theme-btn').forEach(btn => btn.addEventListener('click', (e) => { localStorage.setItem('adhan_theme', e.target.dataset.themeVal); applySettings(); updateDynamicTheme(); }));
+        document.querySelectorAll('.lang-btn').forEach(btn => btn.addEventListener('click', (e) => { localStorage.setItem('adhan_lang', e.target.dataset.langVal); applySettings(); fetchContent(); }));
+        document.querySelectorAll('.text-btn').forEach(btn => btn.addEventListener('click', (e) => { localStorage.setItem('adhan_size', e.target.dataset.sizeVal); applySettings(); }));
+        document.querySelectorAll('.adhan-btn').forEach(btn => btn.addEventListener('click', (e) => { localStorage.setItem('adhan_audio', e.target.dataset.adhanVal); applySettings(); }));
+        document.querySelectorAll('.text-source-btn').forEach(btn => btn.addEventListener('click', (e) => { localStorage.setItem('adhan_daily', e.target.dataset.sourceVal); applySettings(); fetchContent(); }));
+        document.getElementById('wudu-toggle').addEventListener('change', (e) => { 
+            localStorage.setItem('adhan_wudu', e.target.checked); 
+            if (e.target.checked && "Notification" in window) Notification.requestPermission();
         });
 
-        // === SMART CACHE (Fault-Tolerant) ===
+        // Hide App Install section if already running as standalone PWA (JS fallback)
+        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+            document.getElementById('install-card-section').style.display = 'none';
+        }
+
+        // === SMART CACHE ===
         async function fetchCached(key, url, ttlHours) {
             const cached = localStorage.getItem(key);
             if (cached) {
@@ -645,13 +600,100 @@
                 localStorage.setItem(key, JSON.stringify({ timestamp: Date.now(), data }));
                 return data;
             } catch (e) {
-                console.error("API Error", e);
                 if (cached) return JSON.parse(cached).data;
                 return null;
             }
         }
 
-        // === DYNAMIC THEME UPDATER ===
+        // === MULTI-LOCATION SYSTEM WITH EDIT/DELETE ===
+        let savedLocs = JSON.parse(localStorage.getItem('adhan_saved_locs')) || [];
+        
+        function renderLocations() {
+            const container = document.getElementById('location-list');
+            container.innerHTML = '';
+            savedLocs.forEach((loc, index) => {
+                const row = document.createElement('div');
+                row.style.display = 'flex'; row.style.gap = '5px';
+                
+                const btnName = document.createElement('button');
+                btnName.className = 'opt-btn' + (config.city === loc.name ? ' active' : '');
+                btnName.innerText = loc.name; btnName.style.flex = '1';
+                btnName.onclick = () => { selectLocation(index); };
+                
+                const btnEdit = document.createElement('button');
+                btnEdit.className = 'opt-btn'; btnEdit.innerText = '✏️'; btnEdit.title = "Edit Name";
+                btnEdit.style.flex = '0 0 auto'; btnEdit.style.padding = '8px';
+                btnEdit.onclick = () => { editLocation(index); };
+
+                const btnDel = document.createElement('button');
+                btnDel.className = 'opt-btn'; btnDel.innerText = '🗑️'; btnDel.title = "Delete Location";
+                btnDel.style.flex = '0 0 auto'; btnDel.style.padding = '8px';
+                btnDel.onclick = () => { deleteLocation(index); };
+
+                row.appendChild(btnName); row.appendChild(btnEdit); row.appendChild(btnDel);
+                container.appendChild(row);
+            });
+        }
+        
+        function selectLocation(index) {
+            const loc = savedLocs[index];
+            config.lat = loc.lat; config.lon = loc.lon; config.city = loc.name;
+            document.getElementById('location-name').innerText = config.city;
+            fetchWeather(); fetchPrayerData(); renderLocations(); calculateQibla();
+        }
+
+        window.editLocation = function(index) {
+            const newName = prompt("Enter a new display name for this location:", savedLocs[index].name);
+            if(newName && newName.trim() !== "") {
+                const wasActive = (config.city === savedLocs[index].name);
+                savedLocs[index].name = newName.trim();
+                localStorage.setItem('adhan_saved_locs', JSON.stringify(savedLocs));
+                if(wasActive) { config.city = savedLocs[index].name; document.getElementById('location-name').innerText = config.city; }
+                renderLocations();
+            }
+        };
+
+        window.deleteLocation = function(index) {
+            if(savedLocs.length <= 1) { alert("You must keep at least one location."); return; }
+            if(confirm("Are you sure you want to remove '" + savedLocs[index].name + "'?")) {
+                const wasActive = (config.city === savedLocs[index].name);
+                savedLocs.splice(index, 1);
+                localStorage.setItem('adhan_saved_locs', JSON.stringify(savedLocs));
+                if(wasActive) selectLocation(0);
+                else renderLocations();
+            }
+        };
+
+        async function addManualLocation() {
+            const name = document.getElementById('new-loc-name').value;
+            if(!name) return;
+            try {
+                const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=1`);
+                const data = await res.json();
+                if(data.results && data.results.length > 0) {
+                    savedLocs.push({name: data.results[0].name, lat: data.results[0].latitude, lon: data.results[0].longitude});
+                    localStorage.setItem('adhan_saved_locs', JSON.stringify(savedLocs));
+                    document.getElementById('new-loc-name').value = '';
+                    selectLocation(savedLocs.length - 1);
+                } else { alert("Location not found."); }
+            } catch(e) { console.error(e); }
+        }
+
+        async function detectLocation() {
+            if (savedLocs.length === 0) {
+                const data = await fetchCached('adhan_location', 'https://ipapi.co/json/', 12);
+                if(data && data.latitude) { 
+                    config.lat = data.latitude; config.lon = data.longitude; config.city = data.city || data.country_name; 
+                    savedLocs.push({name: 'Home (' + config.city + ')', lat: config.lat, lon: config.lon});
+                    localStorage.setItem('adhan_saved_locs', JSON.stringify(savedLocs));
+                }
+            } else {
+                config.lat = savedLocs[0].lat; config.lon = savedLocs[0].lon; config.city = savedLocs[0].name;
+            }
+            document.getElementById('location-name').innerText = config.city;
+            renderLocations();
+        }
+
         function updateDynamicTheme() {
             if (localStorage.getItem('adhan_theme') !== 'dynamic') {
                 document.documentElement.removeAttribute('data-time-of-day');
@@ -666,79 +708,68 @@
             document.documentElement.setAttribute('data-time-of-day', timeOfDay);
         }
 
-        // === AUDIO PLAYBACK LOGIC ===
-        window.previewAudio = function(type) {
-            document.querySelectorAll('audio').forEach(a => { a.pause(); a.currentTime = 0; });
+        // === TOGGLE AUDIO PLAY/STOP ===
+        window.previewAudio = function(type, btnElement) { 
             const audioEl = document.getElementById('audio-' + type);
-            if (audioEl) audioEl.play().catch(e => console.log('Audio playback prevented by browser:', e));
+            const isPlaying = !audioEl.paused;
+
+            // Pause all audio
+            document.querySelectorAll('audio').forEach(a => { a.pause(); a.currentTime = 0; }); 
+            document.querySelectorAll('.preview-btn').forEach(b => { b.innerText = '▶'; b.title = 'Play'; });
+
+            // If the audio clicked was NOT playing, play it now
+            if (!isPlaying && audioEl) { 
+                audioEl.play().catch(e => console.log(e)); 
+                btnElement.innerText = '⏹';
+                btnElement.title = 'Stop';
+                audioEl.onended = () => { btnElement.innerText = '▶'; btnElement.title = 'Play'; };
+            }
         };
 
         function playAudio(triggerType) {
             const audioPref = localStorage.getItem('adhan_audio') || 'default';
             if (triggerType === 'adhan' && audioPref !== 'none') {
                 const audioEl = document.getElementById('audio-' + audioPref) || document.getElementById('audio-default');
-                audioEl.play().catch(e => console.log('Playback prevented:', e));
-            } else if (triggerType === 'chime') {
-                const chimeEl = document.getElementById('audio-chime');
-                chimeEl.play().catch(e => console.log('Playback prevented:', e));
-            }
+                audioEl.play().catch(e => console.log(e));
+            } else if (triggerType === 'chime') { document.getElementById('audio-chime').play().catch(e => console.log(e)); }
         }
 
-        // === LIVE STREAM TOGGLE ===
         window.setStream = function(type) {
             document.getElementById('btn-makkah').classList.toggle('active', type === 'makkah');
             document.getElementById('btn-madinah').classList.toggle('active', type === 'madinah');
-            const link = type === 'makkah' 
-                ? 'https://www.youtube.com/results?search_query=makkah+live' 
-                : 'https://www.youtube.com/results?search_query=madinah+live';
-            document.getElementById('stream-link').href = link;
+            document.getElementById('stream-link').href = type === 'makkah' ? 'https://www.youtube.com/live_stream?channel=UCeTzF8N1z4F9t9o2pB3pG1g' : 'https://www.youtube.com/live_stream?channel=UCVpBvVb2d6k2T-d42F99QWA';
         };
 
-        // === DIGITAL TASBIH ===
         let tasbihCount = 0;
         window.incrementTasbih = function() {
-            tasbihCount++;
-            const btn = document.getElementById('tasbih-btn');
-            btn.innerText = tasbihCount;
+            tasbihCount++; document.getElementById('tasbih-btn').innerText = tasbihCount;
             if (tasbihCount % 33 === 0) {
                 if (navigator.vibrate) navigator.vibrate(200);
-                btn.classList.add('glow');
-                setTimeout(() => btn.classList.remove('glow'), 400);
+                document.getElementById('tasbih-btn').classList.add('glow');
+                setTimeout(() => document.getElementById('tasbih-btn').classList.remove('glow'), 400);
             }
         };
-        window.resetTasbih = function() {
-            tasbihCount = 0;
-            document.getElementById('tasbih-btn').innerText = 0;
-        };
+        window.resetTasbih = function() { tasbihCount = 0; document.getElementById('tasbih-btn').innerText = 0; };
 
-        // === PRAYER TRACKER ===
+        // === PRAYER TRACKER WITH CONFETTI ===
         const TRACK_PRAYERS = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
         let prayerData = JSON.parse(localStorage.getItem('adhan_tracker')) || {};
         let trackerOffsetDays = 0;
 
-        window.changeTrackerDate = async function(delta) {
-            trackerOffsetDays += delta;
-            await updateTrackerView();
-        }
+        window.changeTrackerDate = async function(delta) { trackerOffsetDays += delta; await updateTrackerView(); }
 
         async function updateTrackerView() {
-            const targetDate = new Date();
-            targetDate.setDate(targetDate.getDate() + trackerOffsetDays);
-            
+            const targetDate = new Date(); targetDate.setDate(targetDate.getDate() + trackerOffsetDays);
             const reqDateStr = `${targetDate.getDate()}-${targetDate.getMonth()+1}-${targetDate.getFullYear()}`;
             const isoDateStr = targetDate.getFullYear() + '-' + String(targetDate.getMonth() + 1).padStart(2, '0') + '-' + String(targetDate.getDate()).padStart(2, '0');
             
             document.getElementById('trackerDate').innerText = isoDateStr;
             const timesList = document.getElementById('daily-times-list');
-            timesList.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-top:10px;">Loading times...</div>';
+            timesList.innerHTML = '<div style="text-align: center; color: var(--text-muted);">Loading times...</div>';
             
             const data = await fetchCached(`prayers_${config.lat}_${config.lon}_${reqDateStr}`, `https://api.aladhan.com/v1/timings/${reqDateStr}?latitude=${config.lat}&longitude=${config.lon}&method=${config.method}`, 24);
-            
-            if(data && data.code === 200) {
-                renderPrayerTracker(data.data.timings, isoDateStr);
-            } else {
-                timesList.innerHTML = '<div style="text-align: center; color: var(--danger); font-size: 0.9rem; margin-top:10px;">Offline / No data</div>';
-            }
+            if(data && data.code === 200) renderPrayerTracker(data.data.timings, isoDateStr);
+            else timesList.innerHTML = '<div style="text-align: center; color: var(--danger);">Offline / No data</div>';
         }
 
         function renderPrayerTracker(timings, dateStr) {
@@ -746,246 +777,140 @@
                 prayerData[dateStr] = { Fajr: false, Dhuhr: false, Asr: false, Maghrib: false, Isha: false };
                 localStorage.setItem('adhan_tracker', JSON.stringify(prayerData));
             }
-
-            const timesList = document.getElementById('daily-times-list');
-            timesList.innerHTML = '';
-
+            const timesList = document.getElementById('daily-times-list'); timesList.innerHTML = '';
             const seq = ["Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha"];
+            
             seq.forEach(p => {
                 if(p === "Sunrise") {
-                    timesList.innerHTML += `
-                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 6px;">
-                            <span style="color: var(--danger); font-weight: bold; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px;">${p}</span>
-                            <div style="display: flex; align-items: center;">
-                                <span style="color: var(--danger); font-family: 'Courier New', monospace; font-size: 1.2rem; font-weight: bold;">${timings[p]}</span>
-                                <div style="width: 28px; margin-left: 15px;"></div>
-                            </div>
-                        </div>
-                    `;
+                    timesList.innerHTML += `<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 6px;"><span style="color: var(--danger); font-weight: bold; text-transform: uppercase; font-size: 0.85rem;">${p}</span><div style="display: flex; align-items: center;"><span style="color: var(--danger); font-family: 'Courier New', monospace; font-size: 1.2rem; font-weight: bold;">${timings[p]}</span><div style="width: 28px; margin-left: 15px;"></div></div></div>`;
                 } else {
                     const isChecked = prayerData[dateStr][p] ? 'checked' : '';
-                    timesList.innerHTML += `
-                        <label style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 6px; cursor: pointer; transition: 0.2s;">
-                            <span style="color: var(--text-main); font-weight: bold; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px;">${p}</span>
-                            <div style="display: flex; align-items: center;">
-                                <span style="color: var(--gold); font-family: 'Courier New', monospace; font-size: 1.2rem; font-weight: bold;">${timings[p]}</span>
-                                <div style="width: 28px; margin-left: 15px; display: flex; justify-content: flex-end;">
-                                    <input type="checkbox" id="chk_${p}" ${isChecked} onchange="togglePrayer('${p}', '${dateStr}')" style="transform: scale(1.4); margin: 0; accent-color: var(--gold); cursor: pointer;">
-                                </div>
-                            </div>
-                        </label>
-                    `;
+                    timesList.innerHTML += `<label style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 6px; cursor: pointer;"><span style="color: var(--text-main); font-weight: bold; text-transform: uppercase; font-size: 0.85rem;">${p}</span><div style="display: flex; align-items: center;"><span style="color: var(--gold); font-family: 'Courier New', monospace; font-size: 1.2rem; font-weight: bold;">${timings[p]}</span><div style="width: 28px; margin-left: 15px;"><input type="checkbox" id="chk_${p}" ${isChecked} onchange="togglePrayer('${p}', '${dateStr}')" style="transform: scale(1.4); margin: 0; accent-color: var(--gold); cursor: pointer;"></div></div></label>`;
                 }
             });
-            if(timesList.lastElementChild) { timesList.lastElementChild.style.borderBottom = 'none'; timesList.lastElementChild.style.marginBottom = '0'; }
             updateStatistics();
         }
 
         window.togglePrayer = function(prayerName, dateStr) {
-            prayerData[dateStr][prayerName] = document.getElementById('chk_' + prayerName).checked;
+            const isNowChecked = document.getElementById('chk_' + prayerName).checked;
+            prayerData[dateStr][prayerName] = isNowChecked;
             localStorage.setItem('adhan_tracker', JSON.stringify(prayerData));
+            
+            // Check Confetti condition
+            const prayersDone = TRACK_PRAYERS.filter(p => prayerData[dateStr][p]).length;
+            if (prayersDone === 5 && isNowChecked && typeof confetti !== 'undefined') {
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#D4AF37', '#2ecc71', '#ffffff'] });
+            }
             updateStatistics();
         };
 
         function updateStatistics() {
-            const d = new Date();
-            const actualTodayStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-            
+            const d = new Date(); const actualTodayStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
             const allDates = Object.keys(prayerData).sort().reverse();
             let weekCompleted = 0, weekMax = 0, monthCompleted = 0, monthMax = 0, entryCount = 0;
-            const historyContainer = document.getElementById('historyLog');
-            historyContainer.innerHTML = '';
+            const historyContainer = document.getElementById('historyLog'); historyContainer.innerHTML = '';
 
             allDates.forEach((date, index) => {
-                const dayRecord = prayerData[date];
-                const prayersDone = TRACK_PRAYERS.filter(p => dayRecord[p]).length;
+                const dayRecord = prayerData[date]; const prayersDone = TRACK_PRAYERS.filter(p => dayRecord[p]).length;
                 if (index < 7) { weekCompleted += prayersDone; weekMax += 5; }
                 if (index < 30) { monthCompleted += prayersDone; monthMax += 5; }
 
                 if (date !== actualTodayStr) {
                     entryCount++;
                     const color = prayersDone === 5 ? 'var(--success)' : (prayersDone === 0 ? 'var(--danger)' : 'var(--gold)');
-                    historyContainer.innerHTML += `
-                        <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border-color);">
-                            <span style="color: var(--text-muted);">${date}</span>
-                            <span style="color: ${color}; font-weight: bold;">${prayersDone} / 5</span>
-                        </div>
-                    `;
+                    historyContainer.innerHTML += `<div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border-color);"><span style="color: var(--text-muted);">${date}</span><span style="color: ${color}; font-weight: bold;">${prayersDone} / 5</span></div>`;
                 }
             });
 
-            document.getElementById('weekScore').innerText = weekCompleted;
-            document.getElementById('weekTotal').innerText = weekMax;
+            document.getElementById('weekScore').innerText = weekCompleted; document.getElementById('weekTotal').innerText = weekMax;
             document.getElementById('weekBar').style.width = weekMax > 0 ? (weekCompleted / weekMax * 100) + '%' : '0%';
-            document.getElementById('monthScore').innerText = monthCompleted;
-            document.getElementById('monthTotal').innerText = monthMax;
+            document.getElementById('monthScore').innerText = monthCompleted; document.getElementById('monthTotal').innerText = monthMax;
             document.getElementById('monthBar').style.width = monthMax > 0 ? (monthCompleted / monthMax * 100) + '%' : '0%';
-
-            if (entryCount === 0) {
-                const lang = localStorage.getItem('adhan_lang') || 'en';
-                historyContainer.innerHTML = `<div style="color: var(--text-muted); text-align: center; margin-top: 20px; font-style: italic;">${i18n[lang]['no_data'] || i18n['en']['no_data']}</div>`;
-            }
         }
 
-        // === INITIALIZATION ===
         async function init() {
-            try { applySettings(); } catch(e) { console.error(e); }
+            try { applySettings(); } catch(e) {}
             updateGregorian(); 
+            setInterval(() => { const lc = document.getElementById('live-clock'); if(lc) lc.innerText = new Date().toLocaleTimeString('en-US', { hour12: false }); }, 1000);
             
-            // Start clock independently
-            setInterval(() => { 
-                const lc = document.getElementById('live-clock');
-                if(lc) lc.innerText = new Date().toLocaleTimeString('en-US', { hour12: false }); 
-            }, 1000);
+            try { await detectLocation(); } catch(e) {}
+            fetchWeather(); await fetchPrayerData(); fetchContent(); calculateQibla();
             
-            try { await detectLocation(); } catch(e) { console.error('Location Error', e); }
-
-            // Fetch data
-            fetchWeather().catch(e=>console.error('Weather error'));
-            await fetchPrayerData().catch(e=>console.error('Prayer API error'));
-            fetchContent().catch(e=>console.error('Content error'));
-            
-            calculateQibla();
             setInterval(tickTimer, 1000); 
             setInterval(rotateNames, 10000); 
             setInterval(fetchPrayerData, 3600000); 
         }
 
-        async function detectLocation() {
-            const data = await fetchCached('adhan_location', 'https://ipapi.co/json/', 12);
-            if(data && data.latitude) { config.lat = data.latitude; config.lon = data.longitude; config.city = data.city || data.country_name; }
-            document.getElementById('location-name').innerText = config.city;
-        }
-
         async function fetchWeather() {
             const data = await fetchCached(`weather_${config.lat}_${config.lon}`, `https://api.open-meteo.com/v1/forecast?latitude=${config.lat}&longitude=${config.lon}&current_weather=true`, 1);
-            if(data && data.current_weather) {
-                document.getElementById('weather-display').innerText = `${Math.round(data.current_weather.temperature)}°C | ${data.current_weather.weathercode < 3 ? 'Clear' : 'Cloudy'}`;
-            }
+            if(data && data.current_weather) document.getElementById('weather-display').innerText = `${Math.round(data.current_weather.temperature)}°C | ${data.current_weather.weathercode < 3 ? 'Clear' : 'Cloudy'}`;
         }
 
         async function fetchPrayerData() {
-            const now = new Date();
-            const dateStr = `${now.getDate()}-${now.getMonth()+1}-${now.getFullYear()}`;
+            const now = new Date(); const dateStr = `${now.getDate()}-${now.getMonth()+1}-${now.getFullYear()}`;
             const data = await fetchCached(`prayers_${config.lat}_${config.lon}_${dateStr}`, `https://api.aladhan.com/v1/timings/${dateStr}?latitude=${config.lat}&longitude=${config.lon}&method=${config.method}`, 24);
-            
             if(data && data.code === 200) {
-                state.prayers = data.data.timings;
-                const h = data.data.date.hijri;
+                state.prayers = data.data.timings; const h = data.data.date.hijri;
                 document.getElementById('hijri-date').innerText = `${h.day} ${h.month.en} ${h.year}`;
-                
-                if(parseInt(h.month.number) === 9) { 
-                    state.isRamadan = true; 
-                    activateRamadanMode(parseInt(h.day)); 
-                } else { 
-                    state.isRamadan = false; 
-                    calcRamadanCountdown(parseInt(h.month.number), parseInt(h.day)); 
-                }
-                
-                document.getElementById('midnight-time').innerText = state.prayers.Midnight;
-                document.getElementById('last-third-time').innerText = state.prayers.Lastthird;
-                
-                checkSunnahFasting(now.getDay(), parseInt(h.day));
-                determinePrayerState();
-                updateDynamicTheme();
-                updateTrackerView();
+                if(parseInt(h.month.number) === 9) { state.isRamadan = true; activateRamadanMode(parseInt(h.day)); } 
+                else { state.isRamadan = false; calcRamadanCountdown(parseInt(h.month.number), parseInt(h.day)); }
+                document.getElementById('midnight-time').innerText = state.prayers.Midnight; document.getElementById('last-third-time').innerText = state.prayers.Lastthird;
+                determinePrayerState(); updateDynamicTheme(); updateTrackerView();
             }
-        }
-
-        function checkSunnahFasting(gregDay = new Date().getDay(), hijriDay = 1) {
-            if (state.isRamadan) { document.getElementById('sunnah-banner').style.display = 'none'; return; }
-            const lang = localStorage.getItem('adhan_lang') || 'en';
-            let reason = null;
-            if (gregDay === 1) reason = i18n[lang].sunnah_mon || i18n['en'].sunnah_mon;
-            else if (gregDay === 4) reason = i18n[lang].sunnah_thu || i18n['en'].sunnah_thu;
-            else if ([13, 14, 15].includes(hijriDay)) reason = i18n[lang].sunnah_white || i18n['en'].sunnah_white;
-            
-            if (reason) {
-                document.getElementById('sunnah-text').innerText = reason;
-                document.getElementById('sunnah-banner').style.display = 'block';
-            } else { document.getElementById('sunnah-banner').style.display = 'none'; }
         }
 
         async function fetchContent() {
-            const lang = localStorage.getItem('adhan_lang') || 'en';
-            const dailySource = localStorage.getItem('adhan_daily') || 'quran';
             const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
-            
-            if (dailySource === 'quran') {
-                const quranEditions = { en: 'en.asad', tr: 'tr.diyanet', nl: 'nl.leemhuis', fr: 'fr.hamidullah', de: 'de.aburida', es: 'es.cortes', ar: 'ar.alafasy' };
-                const edition = quranEditions[lang] || 'en.asad';
-                const ayahNumber = (dayOfYear % 6236) + 1;
-                const ayahData = await fetchCached(`quran_${edition}_${ayahNumber}`, `https://api.alquran.cloud/v1/ayah/${ayahNumber}/${edition}`, 24);
-                if(ayahData && ayahData.data) {
-                    document.getElementById('daily-text').innerText = `"${ayahData.data.text}"`;
-                    let surahName = lang === 'ar' ? ayahData.data.surah.name : ayahData.data.surah.englishName;
-                    document.getElementById('daily-ref').innerText = surahName + " " + ayahData.data.surah.number + ":" + ayahData.data.numberInSurah;
-                }
-            } else if (dailySource === 'hadith') {
-                const hIndex = dayOfYear % dailyHadiths.length;
-                document.getElementById('daily-text').innerText = `"${dailyHadiths[hIndex].text}"`;
-                document.getElementById('daily-ref').innerText = dailyHadiths[hIndex].ref;
-            } else {
-                const dIndex = dayOfYear % dailyDuas.length;
-                document.getElementById('daily-text').innerText = `"${dailyDuas[dIndex].text}"`;
-                document.getElementById('daily-ref').innerText = dailyDuas[dIndex].ref;
-            }
-
+            const hIndex = dayOfYear % dailyHadiths.length; document.getElementById('daily-text').innerText = `"${dailyHadiths[hIndex].text}"`; document.getElementById('daily-ref').innerText = dailyHadiths[hIndex].ref;
             const namesData = await fetchCached('allah_names_v1', 'https://api.aladhan.com/v1/asmaAlHusna', 720);
-            if(namesData && namesData.data) {
-                state.namesList = namesData.data; 
-                rotateNames();
-            }
+            if(namesData && namesData.data) { state.namesList = namesData.data; rotateNames(); }
         }
 
-        // === TIMERS & CALCULATIONS ===
         function determinePrayerState() {
             if(!state.prayers || !state.prayers.Fajr) return;
-            const now = new Date();
-            const seq = ["Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha"];
+            const now = new Date(); const seq = ["Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha"];
             for(let i=0; i<seq.length; i++) {
                 const pTime = parseTime(state.prayers[seq[i]]);
                 if(pTime > now) {
                     state.nextPrayer = { name: seq[i], time: pTime };
-                    let prevName = i === 0 ? "Isha" : seq[i-1];
-                    let prevTime = parseTime(state.prayers[prevName]);
+                    let prevName = i === 0 ? "Isha" : seq[i-1]; let prevTime = parseTime(state.prayers[prevName]);
                     if(i === 0) prevTime.setDate(prevTime.getDate() - 1);
                     state.prevPrayerTime = prevTime;
-                    
-                    document.getElementById('curr-name').innerText = prevName;
-                    document.getElementById('curr-time').innerText = state.prayers[prevName];
+                    document.getElementById('curr-name').innerText = prevName; document.getElementById('curr-time').innerText = state.prayers[prevName];
                     document.getElementById('curr-name').style.color = prevName === "Sunrise" ? "var(--danger)" : "var(--gold)";
                     document.getElementById('shuruq-warning').style.display = prevName === "Sunrise" ? 'block' : 'none';
-                    updateDynamicTheme();
+                    updateDynamicTheme(); state.notified10Min = false; // Reset notification flag for new prayer
                     return;
                 }
             }
-            
             const fTime = parseTime(state.prayers.Fajr); fTime.setDate(fTime.getDate()+1);
-            state.nextPrayer = { name: "Fajr", time: fTime }; 
-            state.prevPrayerTime = parseTime(state.prayers.Isha);
-            
-            document.getElementById('curr-name').innerText = "Isha"; 
-            document.getElementById('curr-time').innerText = state.prayers.Isha; 
-            document.getElementById('curr-name').style.color = "var(--gold)";
-            document.getElementById('shuruq-warning').style.display = 'none';
-            updateDynamicTheme();
+            state.nextPrayer = { name: "Fajr", time: fTime }; state.prevPrayerTime = parseTime(state.prayers.Isha);
+            document.getElementById('curr-name').innerText = "Isha"; document.getElementById('curr-time').innerText = state.prayers.Isha; 
+            document.getElementById('curr-name').style.color = "var(--gold)"; document.getElementById('shuruq-warning').style.display = 'none';
+            updateDynamicTheme(); state.notified10Min = false; // Reset notification flag
         }
 
         function tickTimer() {
             if(!state.nextPrayer) return;
-            const now = new Date();
-            const diffMs = state.nextPrayer.time - now;
+            const now = new Date(); const diffMs = state.nextPrayer.time - now;
             
-            if (diffMs <= 600000 && diffMs > 599000 && !state.chimePlayed) { 
-                if(localStorage.getItem('adhan_wudu') === 'true' && state.nextPrayer.name !== "Sunrise") { playAudio('chime'); }
-                state.chimePlayed = true; 
+            // Push Notification & Chime trigger at 10 minutes
+            if (diffMs <= 600000 && diffMs > 599000 && !state.notified10Min) { 
+                if(localStorage.getItem('adhan_wudu') === 'true' && state.nextPrayer.name !== "Sunrise") { 
+                    playAudio('chime'); 
+                    if ("Notification" in window && Notification.permission === "granted") {
+                        new Notification("Prayer Time Approaching", {
+                            body: "Time for " + state.nextPrayer.name + " - 10 minutes remaining.",
+                            icon: "images/adhan display muslim prayer times dashboard logo.png"
+                        });
+                    }
+                }
+                state.notified10Min = true; 
             }
+
             if (diffMs <= 0) { 
                 if(!state.adhanPlayed) { playAudio('adhan'); state.adhanPlayed = true; }
-                determinePrayerState(); 
-                state.chimePlayed = false; state.adhanPlayed = false; 
-                return; 
+                determinePrayerState(); state.adhanPlayed = false; return; 
             }
             
             const h = Math.floor(diffMs/3600000).toString().padStart(2,'0');
@@ -999,6 +924,7 @@
                 document.getElementById('progress-fill').style.width = `${(elapsed/total)*100}%`;
             }
 
+            // Restore Fasting Timer logic for Ramadan
             if(state.isRamadan) {
                 const fajrTime = parseTime(state.prayers.Fajr);
                 const maghribTime = parseTime(state.prayers.Maghrib);
@@ -1019,8 +945,9 @@
             }
         }
 
+        // Full restoration of Ramadan layout updating function
         function activateRamadanMode(hijriDay) { 
-            document.getElementById('ramadan-countdown-container').style.display = 'none';
+            document.getElementById('ramadan-countdown-container').style.display = 'none'; 
             document.getElementById('ramadan-panel').style.display = 'block'; 
             let ashraName = "Mercy (Days 1-10)";
             if (hijriDay > 10 && hijriDay <= 20) ashraName = "Forgiveness (Days 11-20)";
@@ -1030,7 +957,7 @@
             document.getElementById('ashra-progress-fill').style.width = `${(hijriDay / 30) * 100}%`;
         }
 
-        function calcRamadanCountdown(m, d) {
+        function calcRamadanCountdown(m, d) { 
             document.getElementById('ramadan-countdown-container').style.display = 'flex'; 
             document.getElementById('ramadan-panel').style.display = 'none'; 
             let daysLeft = m < 9 ? Math.floor(((9 - m - 1) * 29.5) + (30 - d)) : Math.floor(((12 - m + 8) * 29.5) + (30 - d));
@@ -1046,23 +973,23 @@
         function rotateNames() {
             if(!state.namesList || !state.namesList.length) return;
             const item = state.namesList[Math.floor(Math.random()*state.namesList.length)];
-            document.getElementById('allah-ar').innerText = item.name;
-            document.getElementById('allah-en').innerText = item.transliteration;
+            document.getElementById('allah-ar').innerText = item.name; document.getElementById('allah-en').innerText = item.transliteration;
             document.getElementById('allah-meaning').innerText = item.en.meaning; 
         }
 
         function parseTime(t) { const d = new Date(); const [h, m] = t.split(':'); return new Date(d.getFullYear(), d.getMonth(), d.getDate(), h, m); }
         function updateGregorian() { const n = new Date(); const el = document.getElementById('greg-date'); if(el) el.innerText = `${n.getDate()}/${n.getMonth()+1}/${n.getFullYear()}`; }
 
-        // === PWA & INSTALLATION LOGIC ===
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
-        const isIos = () => { return /iphone|ipad|ipod/.test( window.navigator.userAgent.toLowerCase() ); }
-        document.getElementById('install-btn').addEventListener('click', async () => {
-            if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; } 
-            else if (isIos()) { alert("To install on iOS: Tap the 'Share' icon at the bottom of Safari, scroll down, and select 'Add to Home Screen'."); } 
-            else { alert("Tap your browser's menu (⋮) and select 'Install' or 'Add to Home Screen'."); }
-        });
+        // === OFFLINE MODE PWA REGISTRATION ===
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').then((registration) => {
+                    console.log('ServiceWorker registration successful');
+                }).catch((err) => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
 
         init();
     </script>
