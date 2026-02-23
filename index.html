@@ -501,7 +501,7 @@
                 <button class="opt-btn active" id="btn-makkah" onclick="setStream('makkah')" style="flex: 1;">Makkah</button>
                 <button class="opt-btn" id="btn-madinah" onclick="setStream('madinah')" style="flex: 1;">Madinah</button>
             </div>
-            <a id="stream-link" href="https://www.youtube.com/live_stream?channel=UCeTzF8N1z4F9t9o2pB3pG1g" target="_blank" class="btn-gold">
+            <a id="stream-link" href="https://www.youtube.com/results?search_query=makkah+live" target="_blank" class="btn-gold">
                 <span style="height: 10px; width: 10px; background-color: var(--danger); border-radius: 50%; display: inline-block; box-shadow: 0 0 8px var(--danger);"></span> 
                 <span data-i18n="watch">Watch Stream</span>
             </a>
@@ -737,7 +737,7 @@
         window.setStream = function(type) {
             document.getElementById('btn-makkah').classList.toggle('active', type === 'makkah');
             document.getElementById('btn-madinah').classList.toggle('active', type === 'madinah');
-            document.getElementById('stream-link').href = type === 'makkah' ? 'https://www.youtube.com/live_stream?channel=UCeTzF8N1z4F9t9o2pB3pG1g' : 'https://www.youtube.com/live_stream?channel=UCVpBvVb2d6k2T-d42F99QWA';
+            document.getElementById('stream-link').href = type === 'makkah' ? 'https://www.youtube.com/results?search_query=makkah+live' : 'https://www.youtube.com/results?search_query=madina+live';
         };
 
         let tasbihCount = 0;
