@@ -433,7 +433,7 @@
                 <button onclick="changeTrackerDate(-1)" style="background: transparent; border: none; color: var(--gold); font-size: 1.2rem; cursor: pointer; font-weight: bold;"><</button>
                 <div style="text-align: center; line-height: 1.2;">
                     <span data-i18n="daily_times">Daily Prayer Times</span><br>
-                    <span id="trackerDate" style="color: var(--text-muted); font-size: 0.75rem; text-transform: none;">--/--/----</span>
+                    <span id="trackerDate" style="color: var(--text-muted); font-size: 0.75rem; text-transform: none; display: flex; align-items: center; justify-content: center;">--/--/----</span>
                 </div>
                 <button onclick="changeTrackerDate(1)" style="background: transparent; border: none; color: var(--gold); font-size: 1.2rem; cursor: pointer; font-weight: bold;">></button>
             </div>
@@ -597,7 +597,9 @@
             { text: "Ya Muqallibal-qulub, thabbit qalbi 'ala dinik\n(O Turner of the hearts, keep my heart firm upon Your religion.)", ref: "Tirmidhi" },
             { text: "Rabbi zidni 'ilma\n(My Lord, increase me in knowledge.)", ref: "Quran 20:114" },
             { text: "Astaghfirullahal-ladhi la ilaha illa Huwal-Hayyul-Qayyum wa atubu ilayh\n(I seek the forgiveness of Allah, there is no true god except Him, the Ever-Living, the Sustainer of existence, and I turn to Him in repentance.)", ref: "Tirmidhi" },
-            { text: "Rabbighfir warham wa anta khayrur-rahimin\n(My Lord, forgive and have mercy, and You are the best of the merciful.)", ref: "Quran 23:118" }
+            { text: "Rabbighfir warham wa anta khayrur-rahimin\n(My Lord, forgive and have mercy, and You are the best of the merciful.)", ref: "Quran 23:118" },
+            { text: "HasbiyAllahu la ilaha illa Huwa 'alayhi tawakkaltu wa Huwa Rabbul-'Arshil-'Adhim\n(Allah is sufficient for me. There is no true god but Him, in Him I put my trust, and He is the Lord of the Great Throne.)", ref: "Abu Dawud" },
+            { text: "Allahumma inni as'aluka 'ilman nafi'an, wa rizqan tayyiban, wa 'amalan mutaqabbalan\n(O Allah, I ask You for beneficial knowledge, goodly provision and acceptable deeds.)", ref: "Ibn Majah" }
         ];
 
         let config = { lat: 52.0907, lon: 5.1214, city: 'Netherlands', method: 3 };
@@ -923,14 +925,47 @@
         let prayerData = JSON.parse(localStorage.getItem('adhan_tracker')) || {};
         let trackerOffsetDays = 0;
 
+        // Jump directly to a clicked date from history
+        window.jumpToDate = function(dateStr) {
+            const parts = dateStr.split('-');
+            const target = new Date(parts[0], parts[1]-1, parts[2]);
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            target.setHours(0,0,0,0);
+            const diffTime = target - today;
+            trackerOffsetDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+            updateTrackerView();
+            // Scroll to tracker
+            document.querySelector('.times-card').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        };
+
         window.changeTrackerDate = async function(delta) { trackerOffsetDays += delta; await updateTrackerView(); }
+
+        window.toggleAllPrayers = function(dateStr) {
+            const allDone = TRACK_PRAYERS.every(p => prayerData[dateStr] && prayerData[dateStr][p]);
+            
+            TRACK_PRAYERS.forEach(p => {
+                prayerData[dateStr][p] = !allDone;
+                const chk = document.getElementById('chk_' + p);
+                if(chk) chk.checked = !allDone;
+            });
+            
+            localStorage.setItem('adhan_tracker', JSON.stringify(prayerData));
+            
+            // If they just checked them all, fire confetti!
+            if (!allDone && typeof confetti !== 'undefined') {
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#D4AF37', '#2ecc71', '#ffffff'] });
+            }
+            updateStatistics();
+        };
 
         async function updateTrackerView() {
             const targetDate = new Date(); targetDate.setDate(targetDate.getDate() + trackerOffsetDays);
             const reqDateStr = `${targetDate.getDate()}-${targetDate.getMonth()+1}-${targetDate.getFullYear()}`;
             const isoDateStr = targetDate.getFullYear() + '-' + String(targetDate.getMonth() + 1).padStart(2, '0') + '-' + String(targetDate.getDate()).padStart(2, '0');
             
-            document.getElementById('trackerDate').innerText = isoDateStr;
+            document.getElementById('trackerDate').innerHTML = `${isoDateStr} &nbsp; <button onclick="toggleAllPrayers('${isoDateStr}')" style="background: transparent; border: 1px solid var(--gold); color: var(--gold); border-radius: 4px; padding: 2px 6px; font-size: 0.65rem; cursor: pointer; vertical-align: middle;">✓ All</button>`;
+            
             const timesList = document.getElementById('daily-times-list');
             timesList.innerHTML = '<div style="text-align: center; color: var(--text-muted);">Loading times...</div>';
             
@@ -984,7 +1019,8 @@
                 if (date !== actualTodayStr) {
                     entryCount++;
                     const color = prayersDone === 5 ? 'var(--success)' : (prayersDone === 0 ? 'var(--danger)' : 'var(--gold)');
-                    historyContainer.innerHTML += `<div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border-color);"><span style="color: var(--text-muted);">${date}</span><span style="color: ${color}; font-weight: bold;">${prayersDone} / 5</span></div>`;
+                    const crown = prayersDone === 5 ? ' 🌟' : ''; // Visual indicator for perfect days
+                    historyContainer.innerHTML += `<div onclick="jumpToDate('${date}')" title="Click to edit this day" style="display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid var(--border-color); cursor: pointer; border-radius: 6px; transition: 0.2s;" onmouseover="this.style.background='var(--progress-bg)'" onmouseout="this.style.background='transparent'"><span style="color: var(--text-muted);">${date}</span><span style="color: ${color}; font-weight: bold;">${prayersDone} / 5${crown}</span></div>`;
                 }
             });
 
@@ -1045,12 +1081,25 @@
                     document.getElementById('daily-text').innerText = "Loading or offline...";
                 }
             } else {
-                const hIndex = dayOfYear % dailyHadiths.length;
-                document.getElementById('daily-text').innerText = `"${dailyHadiths[hIndex].text}"`;
-                document.getElementById('daily-ref').innerText = dailyHadiths[hIndex].ref;
+                // Dynamic Hadith API Fetch
+                try {
+                    const hadithNumber = (dayOfYear % 7500) + 1; // Sahih Bukhari has approx 7500 Hadiths
+                    const hadithData = await fetchCached(`hadith_bukhari_${hadithNumber}`, `https://cdn.jsdelivr.net/npm/@fawazahmed0/hadith-api@1/editions/eng-bukhari/${hadithNumber}.json`, 24);
+                    
+                    if(hadithData && hadithData.hadiths && hadithData.hadiths[0]) {
+                        // Stripping HTML tags safely
+                        let rawText = hadithData.hadiths[0].text.replace(/<[^>]*>?/gm, '').trim();
+                        document.getElementById('daily-text').innerText = `"${rawText}"`;
+                        document.getElementById('daily-ref').innerText = `Sahih al-Bukhari ${hadithData.hadiths[0].hadithnumber}`;
+                    } else { throw new Error("Fallback to static"); }
+                } catch (e) {
+                    const hIndex = dayOfYear % dailyHadiths.length;
+                    document.getElementById('daily-text').innerText = `"${dailyHadiths[hIndex].text}"`;
+                    document.getElementById('daily-ref').innerText = dailyHadiths[hIndex].ref;
+                }
             }
 
-            // Always load Dua in dedicated section
+            // Always load Dua in dedicated section (Static list but expanded)
             const dIndex = dayOfYear % dailyDuas.length;
             document.getElementById('dua-text').innerText = `"${dailyDuas[dIndex].text}"`;
             document.getElementById('dua-ref').innerText = dailyDuas[dIndex].ref;
