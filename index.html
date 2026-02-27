@@ -260,7 +260,6 @@
         button.opt-btn { cursor: pointer; font-weight: bold; text-align: center; }
         button.opt-btn:hover { border-color: var(--gold); background: var(--highlight-bg); }
         button.opt-btn.active { background: var(--gold); color: #050505; border-color: var(--gold); }
-        .lang-btn { padding: 10px 0; font-size: 0.9rem; min-width: 35px; }
 
         input[type="text"]:focus, input[type="number"]:focus, select:focus { border-color: var(--gold); box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); background: rgba(0,0,0,0.6); }
         input[type="range"] { flex: 1; accent-color: var(--gold); margin: 10px 0; }
@@ -334,8 +333,11 @@
             .date-box { width: 100%; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
             .date-box:last-child { border-bottom: none; }
         }
+
+        /* FIX: Hide Fullscreen button and Install banner if running as an installed PWA */
         @media all and (display-mode: standalone) {
             #install-card-section { display: none !important; }
+            #fullscreen-btn { display: none !important; }
         }
     </style>
 </head>
@@ -438,15 +440,19 @@
 
             <div class="setting-group">
                 <label data-i18n="lang">Language</label>
-                <div class="flex-options">
-                    <button class="opt-btn lang-btn" data-lang-val="en">EN</button>
-                    <button class="opt-btn lang-btn" data-lang-val="tr">TR</button>
-                    <button class="opt-btn lang-btn" data-lang-val="nl">NL</button>
-                    <button class="opt-btn lang-btn" data-lang-val="fr">FR</button>
-                    <button class="opt-btn lang-btn" data-lang-val="de">DE</button>
-                    <button class="opt-btn lang-btn" data-lang-val="es">ES</button>
-                    <button class="opt-btn lang-btn" data-lang-val="ar">AR</button>
-                </div>
+                <select id="lang-select" class="opt-btn" style="width: 100%;">
+                    <option value="en">🇬🇧 English</option>
+                    <option value="ar">🇸🇦 العربية (Arabic)</option>
+                    <option value="ur">🇵🇰 اردو (Urdu)</option>
+                    <option value="id">🇮🇩 Bahasa Indonesia</option>
+                    <option value="bn">🇧🇩 বাংলা (Bengali)</option>
+                    <option value="tr">🇹🇷 Türkçe</option>
+                    <option value="fr">🇫🇷 Français</option>
+                    <option value="de">🇩🇪 Deutsch</option>
+                    <option value="nl">🇳🇱 Nederlands</option>
+                    <option value="es">🇪🇸 Español</option>
+                    <option value="ru">🇷🇺 Русский</option>
+                </select>
             </div>
 
             <div class="setting-group">
@@ -769,6 +775,7 @@
     </footer>
 
     <script>
+        // FIX: Expanded i18n object to include Indonesian, Urdu, Bengali, and Russian.
         const i18n = {
             en: { subtitle: "The Ultimate Free Islamic Prayer Times & Qibla Dashboard", greg: "Gregorian", time: "Current Time", loc: "Location", hijri: "Hijri", curr: "Current Prayer", next: "Next Prayer In", ayah: "Ayah of the Day", hadith: "Hadith of the Day", dua: "Dua of the Day", qiyam: "Night Prayers", mid: "Midnight", tahajjud: "Tahajjud", allah: "Name of Allah", ramadan: "Ramadan", days: "Days Remaining", makkah: "Makkah Live", live_stream: "Holy Sites Live", watch: "Watch Stream", qibla: "Qibla Direction", north: "from true North", ar_find: "🧭 Open Qibla Compass", getapp: "Get the App", install: "Install App", pref: "Preferences", theme: "Theme Background", dynamic: "Dynamic", size: "Text Size", lang: "Language", nopray: "* Not permissible to pray *", audio_pref: "Audio & Alerts", wudu_alert: "10-Min Wudu Alert & Push", daily_source: "Daily Inspiration", sunnah_mon: "Sunnah Fasting: Monday", sunnah_thu: "Sunnah Fasting: Thursday", sunnah_white: "Sunnah Fasting: Ayyam al-Bid (White Days)", daily_times: "Daily Prayer Times", tracker_title: "Prayer Tracker & History", last_7: "Last 7 Days:", last_30: "Last 30 Days:", past_days: "Past Days (Tap to Edit)", no_data: "No past data yet.", tasbih: "Digital Tasbih", resources: "Tools & Resources", revert_guide: "Step-by-Step Prayer Guide", zakat_calc: "Zakat Calculator" },
             tr: { subtitle: "En İyi Ücretsiz İslami Namaz Vakitleri Panosu", greg: "Miladi", time: "Şu Anki Saat", loc: "Konum", hijri: "Hicri", curr: "Mevcut Namaz", next: "Sonraki Namaz", ayah: "Günün Ayeti", hadith: "Günün Hadisi", dua: "Günün Duası", qiyam: "Gece Namazları", mid: "Gece Yarısı", tahajjud: "Teheccüd", allah: "Allah'ın İsmi", ramadan: "Ramazan", days: "Kalan Gün", makkah: "Mekke Canlı", live_stream: "Kutsal Yerler Canlı", watch: "Yayını İzle", qibla: "Kıble Yönü", north: "Gerçek Kuzeyden", ar_find: "🧭 Kıble Pusulasını Aç", getapp: "Uygulamayı Al", install: "Uygulamayı Yükle", pref: "Tercihler", theme: "Tema", dynamic: "Dinamik", size: "Metin Boyutu", lang: "Dil", nopray: "* Namaz Kılmak Mekruhtur *", audio_pref: "Ses ve Uyarılar", wudu_alert: "10-Dk Abdest Uyarısı", daily_source: "Günlük İlham", sunnah_mon: "Sünnet Orucu: Pazartesi", sunnah_thu: "Sünnet Orucu: Perşembe", sunnah_white: "Sünnet Orucu: Eyyam-ı Bîd (Beyaz Günler)", daily_times: "Günlük Namaz Vakitleri", tracker_title: "Namaz Takibi ve Geçmiş", last_7: "Son 7 Gün:", last_30: "Son 30 Gün:", past_days: "Geçmiş Günler", no_data: "Henüz veri yok.", tasbih: "Dijital Tesbih", resources: "Araçlar ve Kaynaklar", revert_guide: "Adım Adım Namaz Rehberi", zakat_calc: "Zekat Hesaplayıcı" },
@@ -776,7 +783,11 @@
             fr: { subtitle: "Le Tableau de Bord Islamique Ultime", greg: "Grégorien", time: "Heure Actuelle", loc: "Emplacement", hijri: "Hégire", curr: "Prière Actuelle", next: "Prochaine Prière", ayah: "Verset du Jour", hadith: "Hadith du Jour", dua: "Dua du Jour", qiyam: "Prières Nocturnes", mid: "Minuit", tahajjud: "Tahajjud", allah: "Nom d'Allah", ramadan: "Ramadan", days: "Jours Restants", makkah: "Mecque en Direct", live_stream: "Lieux Saints en Direct", watch: "Regarder le Stream", qibla: "Direction de la Qibla", north: "du vrai nord", ar_find: "🧭 Ouvrir la Boussole Qibla", getapp: "Obtenir l'App", install: "Installer l'App", pref: "Préférences", theme: "Thème", dynamic: "Dynamique", size: "Taille du Texte", lang: "Langue", nopray: "* Prière non permise *", audio_pref: "Audio & Alertes", wudu_alert: "Alerte Wudu 10-Min", daily_source: "Inspiration Quotidienne", sunnah_mon: "Jeûne Sunnah : Lundi", sunnah_thu: "Jeûne Sunnah : Jeudi", sunnah_white: "Jeûne Sunnah : Jours Blancs", daily_times: "Heures de Prière", tracker_title: "Suivi des Prières", last_7: "7 Derniers Jours:", last_30: "30 Derniers Jours:", past_days: "Jours Passés", no_data: "Aucune donnée.", tasbih: "Tasbih Numérique", resources: "Outils et Ressources", revert_guide: "Guide de Prière Étape par Étape", zakat_calc: "Calculatrice de Zakat" },
             de: { subtitle: "Das Ultimative Islamische Dashboard", greg: "Gregorianisch", time: "Aktuelle Zeit", loc: "Ort", hijri: "Hidschra", curr: "Aktuelles Gebet", next: "Nächstes Gebet In", ayah: "Vers des Tages", hadith: "Hadith des Tages", dua: "Dua des Tages", qiyam: "Nachtgebete", mid: "Mitternacht", tahajjud: "Tahajjud", allah: "Name Allahs", ramadan: "Ramadan", days: "Verbleibende Tage", makkah: "Mekka Live", live_stream: "Heilige Stätten Live", watch: "Stream Ansehen", qibla: "Qibla-Richtung", north: "vom wahren Norden", ar_find: "🧭 Qibla-Kompass Öffnen", getapp: "App Holen", install: "App Installieren", pref: "Einstellungen", theme: "Thema", dynamic: "Dynamisch", size: "Textgröße", lang: "Sprache", nopray: "* Beten ist nicht erlaubt *", audio_pref: "Audio & Warnungen", wudu_alert: "10-Min Wudu-Alarm", daily_source: "Tägliche Inspiration", sunnah_mon: "Sunnah Fasten: Montag", sunnah_thu: "Sunnah Fasten: Donnerstag", sunnah_white: "Sunnah Fasten: Weiße Tage", daily_times: "Tägliche Gebetszeiten", tracker_title: "Gebets-Tracker", last_7: "Letzte 7 Tage:", last_30: "Letzte 30 Tage:", past_days: "Vergangene Tage", no_data: "Noch keine Daten.", tasbih: "Digitaler Tasbih", resources: "Werkzeuge & Ressourcen", revert_guide: "Schritt-für-Schritt Gebetsanleitung", zakat_calc: "Zakat Rechner" },
             es: { subtitle: "El Panel de Oración Islámica Definitivo", greg: "Gregoriano", time: "Hora Actual", loc: "Ubicación", hijri: "Hégira", curr: "Oración Actual", next: "Próxima Oración En", ayah: "Versículo del Día", hadith: "Hadiz del Día", dua: "Dua del Día", qiyam: "Oraciones Nocturnas", mid: "Medianoche", tahajjud: "Tahajjud", allah: "Nombre de Alá", ramadan: "Ramadán", days: "Días Restantes", makkah: "La Meca en Vivo", live_stream: "Lugares Santos en Vivo", watch: "Ver Transmisión", qibla: "Dirección Qibla", north: "desde el norte", ar_find: "🧭 Abrir Brújula Qibla", getapp: "Obtener App", install: "Instalar App", pref: "Preferencias", theme: "Tema", dynamic: "Dinámico", size: "Tamaño", lang: "Idioma", nopray: "* No está permitido orar *", audio_pref: "Audio y Alertas", wudu_alert: "Alerta Wudu 10-Min", daily_source: "Inspiración Diaria", sunnah_mon: "Ayuno Sunnah: Lunes", sunnah_thu: "Ayuno Sunnah: Jueves", sunnah_white: "Ayuno Sunnah: Días Blancos", daily_times: "Horarios de Oración", tracker_title: "Rastreador de Oraciones", last_7: "Últimos 7 Días:", last_30: "Últimos 30 Días:", past_days: "Días Pasados", no_data: "Aún no hay datos.", tasbih: "Tasbih Digital", resources: "Herramientas y Recursos", revert_guide: "Guía de Oración Paso a Paso", zakat_calc: "Calculadora de Zakat" },
-            ar: { subtitle: "لوحة أوقات الصلاة الإسلامية المطلقة", greg: "ميلادي", time: "الوقت الحالي", loc: "الموقع", hijri: "هجري", curr: "الصلاة الحالية", next: "الصلاة القادمة في", ayah: "آية اليوم", hadith: "حديث اليوم", dua: "دعاء اليوم", qiyam: "قيام الليل", mid: "منتصف الليل", tahajjud: "تهجد", allah: "اسم الله", ramadan: "رمضان", days: "أيام متبقية", makkah: "مكة مباشر", live_stream: "البث المباشر للأماكن المقدسة", watch: "شاهد البث", qibla: "اتجاه القبلة", north: "من الشمال الحقيقي", ar_find: "🧭 فتح بوصلة القبلة", getapp: "احصل على التطبيق", install: "تثبيت التطبيق", pref: "الإعدادات", theme: "السمة", dynamic: "ديناميكي", size: "حجم النص", lang: "اللغة", nopray: "* الصلاة غير جائزة *", audio_pref: "الصوت والتنبيهات", wudu_alert: "تنبيه الوضوء 10 دقائق", daily_source: "إلهام يومي", sunnah_mon: "صيام السنة: الإثنين", sunnah_thu: "صيام السنة: الخميس", sunnah_white: "صيام السنة: الأيام البيض", daily_times: "مواقيت الصلاة اليومية", tracker_title: "متتبع الصلاة", last_7: "آخر 7 أيام:", last_30: "آخر 30 يوم:", past_days: "الأيام الماضية", no_data: "لا توجد بيانات بعد.", tasbih: "مسبحة رقمية", resources: "الأدوات والموارد", revert_guide: "دليل الصلاة خطوة بخطوة", zakat_calc: "حاسبة الزكاة" }
+            ar: { subtitle: "لوحة أوقات الصلاة الإسلامية المطلقة", greg: "ميلادي", time: "الوقت الحالي", loc: "الموقع", hijri: "هجري", curr: "الصلاة الحالية", next: "الصلاة القادمة في", ayah: "آية اليوم", hadith: "حديث اليوم", dua: "دعاء اليوم", qiyam: "قيام الليل", mid: "منتصف الليل", tahajjud: "تهجد", allah: "اسم الله", ramadan: "رمضان", days: "أيام متبقية", makkah: "مكة مباشر", live_stream: "البث المباشر للأماكن المقدسة", watch: "شاهد البث", qibla: "اتجاه القبلة", north: "من الشمال الحقيقي", ar_find: "🧭 فتح بوصلة القبلة", getapp: "احصل على التطبيق", install: "تثبيت التطبيق", pref: "الإعدادات", theme: "السمة", dynamic: "ديناميكي", size: "حجم النص", lang: "اللغة", nopray: "* الصلاة غير جائزة *", audio_pref: "الصوت والتنبيهات", wudu_alert: "تنبيه الوضوء 10 دقائق", daily_source: "إلهام يومي", sunnah_mon: "صيام السنة: الإثنين", sunnah_thu: "صيام السنة: الخميس", sunnah_white: "صيام السنة: الأيام البيض", daily_times: "مواقيت الصلاة اليومية", tracker_title: "متتبع الصلاة", last_7: "آخر 7 أيام:", last_30: "آخر 30 يوم:", past_days: "الأيام الماضية", no_data: "لا توجد بيانات بعد.", tasbih: "مسبحة رقمية", resources: "الأدوات والموارد", revert_guide: "دليل الصلاة خطوة بخطوة", zakat_calc: "حاسبة الزكاة" },
+            id: { subtitle: "Papan Utama Waktu Shalat Islami", greg: "Masehi", time: "Waktu Saat Ini", loc: "Lokasi", hijri: "Hijriah", curr: "Shalat Saat Ini", next: "Shalat Berikutnya Dalam", ayah: "Ayat Hari Ini", hadith: "Hadits Hari Ini", dua: "Doa Hari Ini", qiyam: "Shalat Malam", mid: "Tengah Malam", tahajjud: "Tahajjud", allah: "Nama Allah", ramadan: "Ramadhan", days: "Hari Tersisa", makkah: "Makkah Live", live_stream: "Live Tempat Suci", watch: "Tonton Live", qibla: "Arah Kiblat", north: "dari Utara sebenarnya", ar_find: "🧭 Buka Kompas Kiblat", getapp: "Dapatkan Aplikasi", install: "Instal Aplikasi", pref: "Preferensi", theme: "Tema", dynamic: "Dinamis", size: "Ukuran Teks", lang: "Bahasa", nopray: "* Dilarang shalat *", audio_pref: "Audio & Peringatan", wudu_alert: "Peringatan Wudhu 10-Menit", daily_source: "Inspirasi Harian", sunnah_mon: "Puasa Sunnah: Senin", sunnah_thu: "Puasa Sunnah: Kamis", sunnah_white: "Puasa Sunnah: Ayyamul Bidh", daily_times: "Waktu Shalat Harian", tracker_title: "Pelacak Shalat", last_7: "7 Hari Terakhir:", last_30: "30 Hari Terakhir:", past_days: "Hari Sebelumnya", no_data: "Belum ada data.", tasbih: "Tasbih Digital", resources: "Alat & Sumber Daya", revert_guide: "Panduan Shalat", zakat_calc: "Kalkulator Zakat" },
+            ur: { subtitle: "اسلامی نماز کے اوقات کا ڈیش بورڈ", greg: "عیسوی", time: "موجودہ وقت", loc: "مقام", hijri: "ہجری", curr: "موجودہ نماز", next: "اگلی نماز میں", ayah: "آج کی آیت", hadith: "آج کی حدیث", dua: "آج کی دعا", qiyam: "نماز تہجد", mid: "آدھی رات", tahajjud: "تہجد", allah: "اللہ کا نام", ramadan: "رمضان", days: "باقی دن", makkah: "مکہ لائیو", live_stream: "مقدس مقامات لائیو", watch: "لائیو دیکھیں", qibla: "قبلہ کی سمت", north: "حقیقی شمال سے", ar_find: "🧭 قبلہ کمپاس کھولیں", getapp: "ایپ حاصل کریں", install: "ایپ انسٹال کریں", pref: "ترجیحات", theme: "تھیم", dynamic: "متحرک", size: "متن کا سائز", lang: "زبان", nopray: "* نماز پڑھنا منع ہے *", audio_pref: "آڈیو اور الرٹس", wudu_alert: "10 منٹ وضو الرٹ", daily_source: "روزانہ کی تحریک", sunnah_mon: "سنت روزہ: پیر", sunnah_thu: "سنت روزہ: جمعرات", sunnah_white: "سنت روزہ: ایام بیض", daily_times: "روزانہ نماز کے اوقات", tracker_title: "نماز ٹریکر", last_7: "آخری 7 دن:", last_30: "آخری 30 دن:", past_days: "پچھلے دن", no_data: "کوئی ڈیٹا نہیں۔", tasbih: "ڈیجیٹل تسبیح", resources: "ٹولز اور وسائل", revert_guide: "نماز کا طریقہ", zakat_calc: "زکوٰۃ کیلکولیٹر" },
+            bn: { subtitle: "ইসলামিক নামাজের সময় ড্যাশবোর্ড", greg: "ইংরেজি", time: "বর্তমান সময়", loc: "অবস্থান", hijri: "হিজরি", curr: "বর্তমান নামাজ", next: "পরবর্তী নামাজ", ayah: "আজকের আয়াত", hadith: "আজকের হাদিস", dua: "আজকের দোয়া", qiyam: "রাতের নামাজ", mid: "মধ্যরাত", tahajjud: "তাহাজ্জুদ", allah: "আল্লাহর নাম", ramadan: "রমজান", days: "দিন বাকি", makkah: "মক্কা লাইভ", live_stream: "পবিত্র স্থান লাইভ", watch: "লাইভ দেখুন", qibla: "কিবলার দিক", north: "প্রকৃত উত্তর থেকে", ar_find: "🧭 কিবলা কম্পাস খুলুন", getapp: "অ্যাপটি পান", install: "অ্যাপ ইনস্টল করুন", pref: "পছন্দসমূহ", theme: "থিম", dynamic: "ডাইনামিক", size: "টেক্সট সাইজ", lang: "ভাষা", nopray: "* নামাজ পড়া নিষেধ *", audio_pref: "অডিও এবং সতর্কতা", wudu_alert: "১০-মিনিট ওজু সতর্কতা", daily_source: "দৈনিক অনুপ্রেরণা", sunnah_mon: "সুন্নাহ রোজা: সোমবার", sunnah_thu: "সুন্নাহ রোজা: বৃহস্পতিবার", sunnah_white: "সুন্নাহ রোজা: আইয়ামে বিজ", daily_times: "দৈনিক নামাজের সময়", tracker_title: "নামাজ ট্র্যাকার", last_7: "শেষ ৭ দিন:", last_30: "শেষ ৩০ দিন:", past_days: "অতীতের দিনগুলো", no_data: "কোনো ডেটা নেই।", tasbih: "ডিজিটাল তসবিহ", resources: "টুলস এবং রিসোর্স", revert_guide: "নামাজ পড়ার নিয়ম", zakat_calc: "যাকাত ক্যালকুলেটর" },
+            ru: { subtitle: "Исламская панель времени намаза", greg: "Григорианский", time: "Текущее время", loc: "Местоположение", hijri: "Хиджра", curr: "Текущий намаз", next: "Следующий намаз через", ayah: "Аят дня", hadith: "Хадис дня", dua: "Дуа дня", qiyam: "Ночные молитвы", mid: "Полночь", tahajjud: "Тахаджуд", allah: "Имя Аллаха", ramadan: "Рамадан", days: "Осталось дней", makkah: "Мекка Прямой эфир", live_stream: "Святые места (эфир)", watch: "Смотреть трансляцию", qibla: "Направление Киблы", north: "от истинного севера", ar_find: "🧭 Открыть компас Киблы", getapp: "Скачать приложение", install: "Установить приложение", pref: "Настройки", theme: "Тема", dynamic: "Динамическая", size: "Размер текста", lang: "Язык", nopray: "* Молиться не разрешено *", audio_pref: "Аудио и оповещения", wudu_alert: "10-мин оповещение о вуду", daily_source: "Ежедневное вдохновение", sunnah_mon: "Сунна-пост: Понедельник", sunnah_thu: "Сунна-пост: Четверг", sunnah_white: "Сунна-пост: Белые дни", daily_times: "Ежедневное время намаза", tracker_title: "Трекер намаза", last_7: "Последние 7 дней:", last_30: "Последние 30 дней:", past_days: "Прошлые дни", no_data: "Пока нет данных.", tasbih: "Цифровой тасбих", resources: "Инструменты и ресурсы", revert_guide: "Пошаговое руководство", zakat_calc: "Калькулятор закята" }
         };
 
         const dailyHadiths = [
@@ -1170,7 +1181,10 @@
             else document.getElementById('daily-title').setAttribute('data-i18n', 'ayah');
 
             document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('active', b.dataset.themeVal === theme));
-            document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.langVal === lang));
+            
+            // Set the dropdown to the saved language
+            document.getElementById('lang-select').value = lang;
+
             document.querySelectorAll('.text-btn').forEach(b => b.classList.toggle('active', b.dataset.sizeVal === size));
             document.querySelectorAll('.adhan-btn').forEach(b => b.classList.toggle('active', b.dataset.adhanVal === audio));
             document.querySelectorAll('.text-source-btn').forEach(b => b.classList.toggle('active', b.dataset.sourceVal === source));
@@ -1179,6 +1193,9 @@
         }
 
         function applyTranslations(lang) {
+            // FIX: Ensure RTL works perfectly for Urdu just like Arabic
+            document.documentElement.dir = (lang === 'ar' || lang === 'ur') ? 'rtl' : 'ltr';
+
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (i18n[lang] && i18n[lang][key]) el.innerText = i18n[lang][key];
@@ -1187,11 +1204,17 @@
         }
 
         document.querySelectorAll('.theme-btn').forEach(btn => btn.addEventListener('click', (e) => { localStorage.setItem('adhan_theme', e.target.dataset.themeVal); applySettings(); updateDynamicTheme(); }));
-        document.querySelectorAll('.lang-btn').forEach(btn => btn.addEventListener('click', (e) => { localStorage.setItem('adhan_lang', e.target.dataset.langVal); applySettings(); fetchContent(); }));
         document.querySelectorAll('.text-btn').forEach(btn => btn.addEventListener('click', (e) => { localStorage.setItem('adhan_size', e.target.dataset.sizeVal); applySettings(); }));
         document.querySelectorAll('.adhan-btn').forEach(btn => btn.addEventListener('click', (e) => { localStorage.setItem('adhan_audio', e.target.dataset.adhanVal); applySettings(); }));
         document.querySelectorAll('.text-source-btn').forEach(btn => btn.addEventListener('click', (e) => { localStorage.setItem('adhan_daily', e.target.dataset.sourceVal); applySettings(); fetchContent(); }));
         
+        // FIX: Replaced button clicks with the dropdown 'change' event listener
+        document.getElementById('lang-select').addEventListener('change', (e) => { 
+            localStorage.setItem('adhan_lang', e.target.value); 
+            applySettings(); 
+            fetchContent(); 
+        });
+
         document.getElementById('wudu-toggle').addEventListener('change', (e) => { 
             localStorage.setItem('adhan_wudu', e.target.checked); 
             if (e.target.checked && "Notification" in window) Notification.requestPermission();
@@ -1206,7 +1229,6 @@
             document.getElementById('install-card-section').style.display = 'none';
         }
 
-        // FIX: Ensure Promise resolution logic is satisfied for newer Chrome/Chromium versions
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
         const isIos = () => { return /iphone|ipad|ipod/.test( window.navigator.userAgent.toLowerCase() ); };
