@@ -84,13 +84,24 @@
         html { font-size: 16px; transition: font-size 0.3s ease; }
 
         body {
-            background-image: var(--bg-image); background-size: cover;
-            background-position: center; background-attachment: fixed;
             background-color: #050505; color: var(--text-main);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0; min-height: 100vh; padding-bottom: 80px;
             display: flex; flex-direction: column; overflow-x: hidden;
-            transition: background-image 1s ease, color 0.5s ease;
+            transition: color 0.5s ease;
+        }
+
+        /* Fixed Background Pseudo-element for Mobile Responsiveness */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: var(--bg-image);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: -1;
+            transition: background-image 1s ease;
         }
 
         /* RTL (Arabic) Support */
