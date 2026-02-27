@@ -1,21 +1,27 @@
 {
+  "id": "/adhan-display",
   "name": "Adhan Display",
   "short_name": "Adhan Display",
   "description": "Live Islamic Prayer Times, Qibla Direction, Quran Verses, and Tracker.",
-  "start_url": "index.html",
+  "start_url": "/index.html",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "minimal-ui", "standalone"],
   "background_color": "#050505",
   "theme_color": "#050505",
+  "orientation": "portrait",
+  "categories": ["lifestyle", "utilities", "education"],
   "icons": [
     {
       "src": "images/adhan display muslim prayer times dashboard logo.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "images/adhan display muslim prayer times dashboard logo.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ],
   "shortcuts": [
@@ -23,28 +29,28 @@
       "name": "Next Prayer",
       "short_name": "Prayer",
       "description": "View the countdown to the next prayer",
-      "url": "index.html#hero",
+      "url": "/index.html#hero",
       "icons": [{"src": "images/adhan display muslim prayer times dashboard logo.png", "sizes": "192x192"}]
     },
     {
       "name": "Prayer Tracker",
       "short_name": "Tracker",
       "description": "Log your prayers",
-      "url": "index.html#tracker",
+      "url": "/index.html#tracker",
       "icons": [{"src": "images/adhan display muslim prayer times dashboard logo.png", "sizes": "192x192"}]
     },
     {
       "name": "Qibla Direction",
       "short_name": "Qibla",
       "description": "Find the Qibla compass",
-      "url": "index.html#qibla",
+      "url": "/index.html#qibla",
       "icons": [{"src": "images/adhan display muslim prayer times dashboard logo.png", "sizes": "192x192"}]
     },
     {
       "name": "Makkah Live",
       "short_name": "Live",
       "description": "Watch Makkah live stream",
-      "url": "index.html#live",
+      "url": "/index.html#live",
       "icons": [{"src": "images/adhan display muslim prayer times dashboard logo.png", "sizes": "192x192"}]
     }
   ]
