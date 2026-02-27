@@ -1,5 +1,9 @@
-const CACHE_NAME = 'adhan-display-v2';
+const VERSION = 'v3';
+const CACHE_STATIC = `adhan-static-${VERSION}`;
+const CACHE_DYNAMIC = `adhan-dynamic-${VERSION}`;
+const CACHE_API = `adhan-api-${VERSION}`;
 
+// Core assets required for the app to function offline
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -13,28 +17,28 @@ const ASSETS_TO_CACHE = [
   '/audio/makkah.mp3',
   '/audio/madinah.mp3',
   '/audio/alafasy.mp3',
-  'https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js',
-  'https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&display=swap'
+  'https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js'
 ];
 
-// Install event: cache all static assets
+// Install Event: Pre-cache static assets
 self.addEventListener('install', (event) => {
-  self.skipWaiting();
+  self.skipWaiting(); // Force the waiting service worker to become the active service worker.
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('Opened cache');
+    caches.open(CACHE_STATIC).then((cache) => {
+      console.log('[Service Worker] Pre-caching static assets');
       return cache.addAll(ASSETS_TO_CACHE);
     })
   );
 });
 
-// Activate event: cleanup old caches
+// Activate Event: Clean up old cache buckets
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
+          if (![CACHE_STATIC, CACHE_DYNAMIC, CACHE_API].includes(cacheName)) {
+            console.log('[Service Worker] Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
@@ -43,40 +47,71 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch event: Network-first for APIs, Cache-first for static assets
+// Fetch Event: Advanced Routing Strategy
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // For API calls (AlAdhan, OpenMeteo, Quran), try network first, fallback to cache
-  if (url.origin === 'https://api.aladhan.com' || url.origin === 'https://api.open-meteo.com' || url.origin === 'https://api.alquran.cloud') {
+  // 1. API Requests -> Network First, Fallback to Cache
+  if (url.origin.includes('api.aladhan.com') || url.origin.includes('api.open-meteo.com') || url.origin.includes('api.alquran.cloud')) {
     event.respondWith(
       fetch(event.request)
         .then((networkResponse) => {
-          return caches.open('adhan-api-cache').then((cache) => {
-            cache.put(event.request, networkResponse.clone());
-            return networkResponse;
-          });
+          const clonedResponse = networkResponse.clone();
+          caches.open(CACHE_API).then((cache) => cache.put(event.request, clonedResponse));
+          return networkResponse;
         })
         .catch(() => caches.match(event.request))
     );
-  } else {
-    // For local assets, try cache first, fallback to network
+    return;
+  }
+
+  // 2. Google Fonts -> Cache First, Fallback to Network (Stale-While-Revalidate)
+  if (url.origin.includes('fonts.googleapis.com') || url.origin.includes('fonts.gstatic.com')) {
     event.respondWith(
-      caches.match(event.request).then((response) => {
-        return response || fetch(event.request).then((networkResponse) => {
-            // Optional: cache new non-API requests dynamically
-            return networkResponse;
-        });
+      caches.match(event.request).then((cachedResponse) => {
+        const fetchPromise = fetch(event.request).then((networkResponse) => {
+          caches.open(CACHE_STATIC).then((cache) => cache.put(event.request, networkResponse.clone()));
+          return networkResponse;
+        }).catch(() => console.log('[Service Worker] Font fetch failed offline'));
+        
+        return cachedResponse || fetchPromise;
       })
     );
+    return;
   }
+
+  // 3. Static & Local Assets -> Cache First, Fallback to Network + Dynamic Caching
+  event.respondWith(
+    caches.match(event.request).then((cachedResponse) => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+
+      return fetch(event.request).then((networkResponse) => {
+        // Ensure the response is valid before dynamic caching
+        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+          return networkResponse;
+        }
+
+        const responseToCache = networkResponse.clone();
+        caches.open(CACHE_DYNAMIC).then((cache) => cache.put(event.request, responseToCache));
+        return networkResponse;
+      }).catch(() => {
+        // Offline Fallback for HTML Navigation
+        if (event.request.mode === 'navigate') {
+          return caches.match('/index.html');
+        }
+      });
+    })
+  );
 });
 
 // Handling Push Notifications
 self.addEventListener('push', (event) => {
   let data = { title: "Adhan Display", body: "Notification", url: "/" };
+  
   if (event.data) {
-    data = event.data.json();
+    try { data = event.data.json(); } catch(e) { data.body = event.data.text(); }
   }
   
   const options = {
@@ -95,6 +130,7 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      // Focus existing app window if already open
       if (windowClients.length > 0) {
         let client = windowClients[0];
         client.focus();
@@ -102,6 +138,7 @@ self.addEventListener('notificationclick', (event) => {
              client.navigate(event.notification.data.url);
         }
       } else {
+        // Open new window if app is fully closed
         clients.openWindow(event.notification.data && event.notification.data.url ? event.notification.data.url : '/');
       }
     })
