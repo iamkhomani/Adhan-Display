@@ -1,24 +1,51 @@
 {
-  "name": "Adhan Display Dashboard",
+  "name": "Adhan Display",
   "short_name": "Adhan Display",
-  "description": "The Ultimate Free Islamic Prayer Times & Qibla Dashboard.",
-  "start_url": "/",
+  "description": "Live Islamic Prayer Times, Qibla Direction, Quran Verses, and Tracker.",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#050505",
   "theme_color": "#050505",
-  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "images/adhan display muslim prayer times dashboard logo.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "images/adhan display muslim prayer times dashboard logo.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Next Prayer",
+      "short_name": "Prayer",
+      "description": "View the countdown to the next prayer",
+      "url": "index.html#hero",
+      "icons": [{"src": "images/adhan display muslim prayer times dashboard logo.png", "sizes": "192x192"}]
+    },
+    {
+      "name": "Prayer Tracker",
+      "short_name": "Tracker",
+      "description": "Log your prayers",
+      "url": "index.html#tracker",
+      "icons": [{"src": "images/adhan display muslim prayer times dashboard logo.png", "sizes": "192x192"}]
+    },
+    {
+      "name": "Qibla Direction",
+      "short_name": "Qibla",
+      "description": "Find the Qibla compass",
+      "url": "index.html#qibla",
+      "icons": [{"src": "images/adhan display muslim prayer times dashboard logo.png", "sizes": "192x192"}]
+    },
+    {
+      "name": "Makkah Live",
+      "short_name": "Live",
+      "description": "Watch Makkah live stream",
+      "url": "index.html#live",
+      "icons": [{"src": "images/adhan display muslim prayer times dashboard logo.png", "sizes": "192x192"}]
     }
   ]
 }
