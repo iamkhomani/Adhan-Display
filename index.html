@@ -38,7 +38,7 @@
             --text-main: #f0f0f0; --text-muted: #aaaaaa;
             --border-color: #333333; --progress-bg: #222222;
             --shadow-color: rgba(0,0,0,0.5);
-            --danger: #ff4444; --success: #2ecc71;
+            --danger: #ff4444; --success: #2ecc71; --info: #3498db;
             --highlight-bg: rgba(212, 175, 55, 0.1);
         }
 
@@ -93,7 +93,6 @@
             transition: color 0.5s ease;
         }
 
-        /* Fixed Background Pseudo-element for Perfect Mobile Responsiveness */
         body::before {
             content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background-image: var(--bg-image); background-size: cover;
@@ -105,6 +104,7 @@
         html[dir="rtl"] .top-left-logo { left: auto; right: 20px; }
         html[dir="rtl"] .settings-toggle { right: auto; left: 20px; }
         html[dir="rtl"] .focus-toggle { right: auto; left: 75px; }
+        html[dir="rtl"] .fullscreen-toggle { right: auto; left: 140px; }
 
         .dashboard-container {
             max-width: 1400px; margin: 0 auto; padding: 20px;
@@ -116,7 +116,7 @@
         /* Top Bar Controls */
         .top-left-logo { position: absolute; top: 20px; left: 20px; width: clamp(50px, 8vw, 70px); height: auto; z-index: 10; }
 
-        .settings-toggle, .focus-toggle {
+        .settings-toggle, .focus-toggle, .fullscreen-toggle {
             position: absolute; top: 20px; background: var(--glass-bg);
             border: 1px solid var(--gold); color: var(--text-main); 
             cursor: pointer; z-index: 100; display: flex; align-items: center; justify-content: center;
@@ -124,10 +124,43 @@
         }
         .settings-toggle { right: 20px; font-size: 1.5rem; width: 45px; height: 45px; border-radius: 50%; }
         .focus-toggle { right: 75px; font-size: 0.95rem; font-weight: bold; height: 45px; padding: 0 15px; border-radius: 25px; gap: 6px; }
-        .settings-toggle:hover, .focus-toggle:hover { transform: scale(1.05) translateY(-2px); background: var(--gold); color: #050505; box-shadow: 0 6px 15px rgba(212, 175, 55, 0.3); }
+        .fullscreen-toggle { right: 205px; font-size: 1.2rem; width: 45px; height: 45px; border-radius: 12px; }
+
+        .settings-toggle:hover, .focus-toggle:hover, .fullscreen-toggle:hover { 
+            transform: scale(1.05) translateY(-2px); background: var(--gold); color: #050505; box-shadow: 0 6px 15px rgba(212, 175, 55, 0.3); 
+        }
+
+        /* Focus Mode Styles */
+        body.focus-mode .dashboard-container > *:not(.prayer-hero) { display: none !important; }
+        body.focus-mode header, body.focus-mode footer, body.focus-mode .top-left-logo { display: none !important; }
+        body.focus-mode .dashboard-container { 
+            display: flex !important; align-items: center !important; justify-content: center !important; 
+            min-height: 100vh !important; padding: 20px !important; margin: 0 !important; 
+        }
+        body.focus-mode .prayer-hero { 
+            width: 100% !important; max-width: 1000px !important; 
+            background: var(--glass-bg) !important; border: 2px solid var(--gold) !important; 
+            box-shadow: 0 20px 50px var(--shadow-color) !important; backdrop-filter: blur(15px) !important; 
+            padding: 50px !important; min-height: auto !important; border-radius: 20px !important; 
+            display: flex !important; flex-direction: row !important; justify-content: space-between !important; align-items: center !important; gap: 40px !important;
+        }
+        body.focus-mode .hero-main { flex: 1; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
+        body.focus-mode .hero-side { display: flex; flex-direction: column; flex: 0 0 300px; border-left: 1px solid var(--border-color); padding-left: 40px; }
+        body.focus-mode .prayer-name-display { font-size: clamp(3rem, 10vw, 6rem) !important; margin: 15px 0 !important; }
+        body.focus-mode .countdown-display { font-size: clamp(2.5rem, 8vw, 4.5rem) !important; margin-bottom: 25px !important; }
+        body.focus-mode .progress-container { height: 18px !important; margin-top: 30px !important; border-radius: 10px !important; width: 100% !important; }
+        body.focus-mode #status-label, body.focus-mode #next-label { font-size: clamp(1.2rem, 3vw, 1.8rem) !important; letter-spacing: 2px !important; }
+        body.focus-mode #curr-time { font-size: clamp(1.8rem, 5vw, 2.5rem) !important; margin-bottom: 20px !important; }
+        body.focus-mode .focus-toggle { border-color: var(--gold) !important; background: var(--gold) !important; color: #050505 !important; z-index: 1000 !important; }
+        body.focus-mode .fullscreen-toggle { z-index: 1000 !important; }
+
+        @media (max-width: 850px) {
+            body.focus-mode .prayer-hero { flex-direction: column !important; padding: 40px 20px !important; gap: 30px !important; }
+            body.focus-mode .hero-side { border-left: none; border-top: 1px solid var(--border-color); padding-left: 0; padding-top: 25px; flex: auto; width: 100%; }
+        }
 
         /* Unified Cards */
-        .card { background: var(--glass-bg); border: 1px solid var(--gold); border-radius: 12px; padding: 25px 20px; backdrop-filter: blur(10px); box-shadow: 0 4px 20px var(--shadow-color); transition: all 0.3s ease; display: flex; flex-direction: column; justify-content: center; align-items: center; grid-column: span 12; box-sizing: border-box; width: 100%; }
+        .card { background: var(--glass-bg); border: 1px solid var(--gold); border-radius: 12px; padding: 25px 20px; backdrop-filter: blur(10px); box-shadow: 0 4px 20px var(--shadow-color); transition: all 0.3s ease; display: flex; flex-direction: column; justify-content: center; align-items: center; grid-column: span 12; box-sizing: border-box; width: 100%; position: relative; }
         .card:hover { box-shadow: 0 6px 25px rgba(212, 175, 55, 0.15); transform: translateY(-2px); }
         .widget-title { color: var(--gold-dim); text-transform: uppercase; font-size: 0.85rem; border-bottom: 1px solid var(--gold); width: 100%; text-align: center; padding-bottom: 8px; margin-bottom: 15px; letter-spacing: 1px; font-weight: bold; }
         
@@ -142,58 +175,24 @@
         .date-val { font-size: clamp(1rem, 3vw, 1.2rem); font-weight: bold; color: var(--text-main); }
         .live-clock { font-size: clamp(1.4rem, 4vw, 1.8rem); font-family: 'Courier New', monospace; color: var(--text-main); font-weight: bold; }
 
-        /* Progress Bar Enhancements */
-        .progress-container { width: 100%; height: 12px; background: var(--progress-bg); border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color); }
-        .progress-bar { height: 100%; background: var(--gold); width: 0%; transition: width 1s linear; will-change: width; }
+        /* Banners */
+        .banner { display: none; grid-column: span 12; width: 100%; box-sizing: border-box; padding: 12px 20px; border-radius: 12px; text-align: center; font-weight: bold; letter-spacing: 1px; box-shadow: 0 4px 10px var(--shadow-color); animation: pulse 2s infinite; }
+        #sunnah-banner { background: rgba(46, 204, 113, 0.15); border: 1px solid var(--success); color: var(--success); }
+        #jumuah-banner { background: rgba(212, 175, 55, 0.15); border: 1px solid var(--gold); color: var(--gold); }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(46, 204, 113, 0); } 100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); } }
 
-        /* =========================================
-           FOCUS MODE STYLES
-           ========================================= */
+        /* Hero */
         .hero-side { display: none; }
-        
-        body.focus-mode .dashboard-container > *:not(.prayer-hero) { display: none !important; }
-        body.focus-mode header, body.focus-mode footer, body.focus-mode .top-left-logo { display: none !important; }
-        body.focus-mode .dashboard-container { 
-            display: flex !important; align-items: center !important; justify-content: center !important; 
-            min-height: 100vh !important; padding: 20px !important; margin: 0 !important; 
-        }
-        
-        body.focus-mode .prayer-hero { 
-            width: 100% !important; max-width: 1000px !important; 
-            background: var(--glass-bg) !important; border: 2px solid var(--gold) !important; 
-            box-shadow: 0 20px 50px var(--shadow-color) !important; backdrop-filter: blur(15px) !important; 
-            padding: 50px !important; min-height: auto !important; border-radius: 20px !important; 
-            display: flex !important; flex-direction: row !important; justify-content: space-between !important; align-items: center !important; gap: 40px !important;
-        }
-
-        body.focus-mode .hero-main { flex: 1; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
-        body.focus-mode .hero-side { 
-            display: flex; flex-direction: column; flex: 0 0 300px; 
-            border-left: 1px solid var(--border-color); padding-left: 40px; 
-        }
-        
-        body.focus-mode .prayer-name-display { font-size: clamp(3rem, 10vw, 6rem) !important; margin: 15px 0 !important; }
-        body.focus-mode .countdown-display { font-size: clamp(2.5rem, 8vw, 4.5rem) !important; margin-bottom: 25px !important; }
-        body.focus-mode .progress-container { height: 18px !important; margin-top: 30px !important; border-radius: 10px !important; width: 100% !important; }
-        body.focus-mode #status-label, body.focus-mode #next-label { font-size: clamp(1.2rem, 3vw, 1.8rem) !important; letter-spacing: 2px !important; }
-        body.focus-mode #curr-time { font-size: clamp(1.8rem, 5vw, 2.5rem) !important; margin-bottom: 20px !important; }
-        body.focus-mode .focus-toggle { border-color: var(--gold) !important; background: var(--gold) !important; color: #050505 !important; z-index: 1000 !important; }
-
-        @media (max-width: 850px) {
-            body.focus-mode .prayer-hero { flex-direction: column !important; padding: 40px 20px !important; gap: 30px !important; }
-            body.focus-mode .hero-side { border-left: none; border-top: 1px solid var(--border-color); padding-left: 0; padding-top: 25px; flex: auto; width: 100%; }
-        }
-
-        /* Standard Hero Layout (Non-Focus Mode) */
         .prayer-hero { text-align: center; position: relative; width: 100%; display: flex; flex-direction: column; justify-content: space-between; align-items: center; min-height: 320px; }
         .hero-main { width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; }
         .prayer-name-display { font-size: clamp(2.5rem, 8vw, 3.5rem); color: var(--gold); font-weight: 800; line-height: 1.1; margin: 10px 0; letter-spacing: 2px; }
         .countdown-display { font-size: clamp(1.8rem, 6vw, 2.2rem); font-family: 'Courier New', monospace; color: var(--text-main); font-weight: bold; }
         #shuruq-warning { color: var(--danger); font-size: 0.9rem; font-weight: bold; display: none; margin-bottom: 10px; letter-spacing: 1px; }
 
-        /* =========================================
-           MODALS & FORMS (MOBILE OPTIMIZED)
-           ========================================= */
+        .progress-container { width: 100%; height: 12px; background: var(--progress-bg); border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color); margin-top: 20px;}
+        .progress-bar { height: 100%; background: var(--gold); width: 0%; transition: width 1s linear; will-change: width; }
+
+        /* Modals & Inputs */
         .modal-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(0,0,0,0.85); display: none; align-items: flex-start; 
@@ -206,7 +205,6 @@
             border-radius: 16px; width: 100%; max-width: 480px; position: relative; 
             color: var(--text-main); box-shadow: 0 15px 50px rgba(0,0,0,0.9); margin: 0 auto auto auto; 
         }
-
         .close-btn { 
             position: absolute; top: 12px; right: 12px; background: rgba(255, 68, 68, 0.9); border: 2px solid #fff; 
             font-size: 1.6rem; color: #fff; cursor: pointer; width: 38px; height: 38px; border-radius: 50%;
@@ -219,7 +217,6 @@
         .setting-group label { display: block; margin-bottom: 10px; font-weight: bold; color: var(--gold); text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; }
         .flex-options { display: flex; gap: 8px; flex-wrap: wrap; }
         
-        /* Unified inputs and buttons */
         .opt-btn, input[type="text"], input[type="number"], select { 
             flex: 1 1 auto; min-width: 40px; padding: 12px 10px; background: rgba(0,0,0,0.4); 
             border: 1px solid var(--border-color); color: var(--text-main); border-radius: 8px; 
@@ -229,10 +226,10 @@
         button.opt-btn { cursor: pointer; font-weight: bold; text-align: center; }
         button.opt-btn:hover { border-color: var(--gold); background: var(--highlight-bg); }
         button.opt-btn.active { background: var(--gold); color: #050505; border-color: var(--gold); }
-        
         .lang-btn { padding: 10px 0; font-size: 0.9rem; min-width: 35px; }
 
         input[type="text"]:focus, input[type="number"]:focus, select:focus { border-color: var(--gold); box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); background: rgba(0,0,0,0.6); }
+        input[type="range"] { flex: 1; accent-color: var(--gold); margin: 10px 0; }
 
         .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px; background: rgba(0,0,0,0.2); gap: 15px; }
         .toggle-row span { flex: 1; line-height: 1.4; }
@@ -248,18 +245,10 @@
         }
         .btn-gold:hover { background: var(--gold); color: #050505; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4); transform: translateY(-2px); }
 
-        /* History Rows - Fully Clickable */
-        .history-row {
-            display: flex; justify-content: space-between; padding: 14px 12px; 
-            border-bottom: 1px solid var(--border-color); cursor: pointer; 
-            transition: all 0.2s ease; border-radius: 6px; margin-bottom: 4px;
-            background: rgba(255,255,255,0.02);
-        }
+        .history-row { display: flex; justify-content: space-between; padding: 14px 12px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: all 0.2s ease; border-radius: 6px; margin-bottom: 4px; background: rgba(255,255,255,0.02); }
         .history-row:hover { background: var(--highlight-bg); transform: translateX(4px); border-color: var(--gold-dim); }
-        
         .streak-badge { color: #ff9800; font-weight: bold; font-size: 1.1rem; margin-bottom: 20px; text-align: center; background: rgba(255,152,0,0.1); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,152,0,0.3); text-transform: uppercase; letter-spacing: 1px;}
 
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
@@ -278,6 +267,7 @@
             .prayer-hero, .history-card { grid-column: span 12; }
             .times-card, .tasbih-card, .qibla-card, .tools-card, .text-widget, .dua-widget, .night-widget, .names-widget, .ramadan-widget, .video-card { grid-column: span 6; }
             #install-card-section { grid-column: span 12; }
+            .fullscreen-toggle { right: 135px; }
         }
         @media (min-width: 1024px) {
             .prayer-hero { grid-column: span 6; } 
@@ -293,6 +283,7 @@
             .top-left-logo { top: 15px; left: 15px; width: 50px; }
             .settings-toggle { top: 15px; right: 15px; width: 40px; height: 40px; }
             .focus-toggle { top: 15px; right: 65px; height: 40px; padding: 0 10px; font-size: 0.85rem; }
+            .fullscreen-toggle { top: 15px; right: 155px; width: 40px; height: 40px; font-size: 1.1rem; }
             .header-section { margin-top: 60px; }
             .info-panel { flex-direction: column; gap: 5px; }
             .date-box { width: 100%; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
@@ -311,6 +302,7 @@
     <audio id="audio-madinah" src="audio/madinah.mp3" preload="none"></audio>
     <audio id="audio-alafasy" src="audio/alafasy.mp3" preload="none"></audio>
 
+    <button id="fullscreen-btn" class="fullscreen-toggle" aria-label="Fullscreen">⛶</button>
     <button id="focus-btn" class="focus-toggle" aria-label="Focus Mode">🕋 Focus Mode</button>
     <button id="settings-btn" class="settings-toggle" aria-label="Settings">⚙️</button>
     
@@ -385,11 +377,17 @@
                 </select>
             </div>
 
-            <div class="setting-group">
-                <label>Manual Offset (Minutes)</label>
-                <input type="number" id="manual-offset" value="0" placeholder="e.g. 5 to add 5 mins">
-                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px; line-height: 1.4;">Adjust times globally to perfectly match your local mosque.</div>
+            <div style="display: flex; gap: 15px;">
+                <div class="setting-group" style="flex: 1;">
+                    <label>Manual Offset (Min)</label>
+                    <input type="number" id="manual-offset" value="0" placeholder="e.g. 5">
+                </div>
+                <div class="setting-group" style="flex: 1;">
+                    <label>Hijri Offset (Days)</label>
+                    <input type="number" id="hijri-offset" value="0" min="-2" max="2" placeholder="e.g. 1">
+                </div>
             </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: -10px; margin-bottom: 25px; line-height: 1.4;">Adjust times to perfectly match your local mosque/moon sighting.</div>
 
             <div class="setting-group">
                 <label data-i18n="lang">Language</label>
@@ -445,6 +443,11 @@
                     <button class="opt-btn adhan-btn" data-adhan-val="none" style="width: 100%;">None</button>
                 </div>
                 
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                    <span style="font-size: 0.95rem; font-weight: 500;">Volume</span>
+                    <input type="range" id="adhan-volume" min="0" max="1" step="0.1" value="1">
+                </div>
+
                 <div class="toggle-row">
                     <span data-i18n="wudu_alert" style="font-size: 0.95rem; font-weight: 500;">10-Min Wudu Alert & Push</span>
                     <label class="switch" style="cursor: pointer;">
@@ -502,7 +505,8 @@
             </div>
         </section>
 
-        <div id="sunnah-banner">🌙 <span id="sunnah-text">Sunnah Fasting Today</span></div>
+        <div id="sunnah-banner" class="banner">🌙 <span id="sunnah-text">Sunnah Fasting Today</span></div>
+        <div id="jumuah-banner" class="banner">🕌 It's Jumu'ah! Remember to read Surah Al-Kahf and send Salawat.</div>
 
         <section id="ramadan-panel" class="card" style="display: none; border-color: var(--success); text-align: center;">
             <div id="fasting-label" style="color:var(--success); text-transform:uppercase; font-size:0.8rem; letter-spacing: 1px; width: 100%;">Fasting Timer</div>
@@ -808,23 +812,69 @@
             { text: "Speak good or remain silent.", ref: "Sahih al-Bukhari 6018" }
         ];
 
+        // 50 Authentic & Popular Duas
         const dailyDuas = [
-            { text: "Rabbi inni lima anzalta ilayya min khayrin faqir\n(My Lord, I am in absolute need of the good You send me.)", ref: "Quran 28:24" },
-            { text: "Rabbana atina fid-dunya hasanatan wa fil 'akhirati hasanatan waqina 'adhaban-nar\n(Our Lord, give us in this world what is good and in the Hereafter what is good and protect us from the punishment of the Fire.)", ref: "Quran 2:201" },
+            { text: "Rabbana atina fid-dunya hasanatan wa fil 'akhirati hasanatan waqina 'adhaban-nar\n(Our Lord, give us in this world [that which is] good and in the Hereafter [that which is] good and protect us from the punishment of the Fire.)", ref: "Quran 2:201" },
+            { text: "Rabbi inni lima anzalta ilayya min khayrin faqir\n(My Lord, indeed I am, for whatever good You would send down to me, in need.)", ref: "Quran 28:24" },
             { text: "Ya Muqallibal-qulub, thabbit qalbi 'ala dinik\n(O Turner of the hearts, keep my heart firm upon Your religion.)", ref: "Tirmidhi" },
             { text: "Rabbi zidni 'ilma\n(My Lord, increase me in knowledge.)", ref: "Quran 20:114" },
             { text: "Astaghfirullahal-ladhi la ilaha illa Huwal-Hayyul-Qayyum wa atubu ilayh\n(I seek the forgiveness of Allah, there is no true god except Him, the Ever-Living, the Sustainer of existence, and I turn to Him in repentance.)", ref: "Tirmidhi" },
-            { text: "Rabbighfir warham wa anta khayrur-rahimin\n(My Lord, forgive and have mercy, and You are the best of the merciful.)", ref: "Quran 23:118" }
+            { text: "Rabbighfir warham wa anta khayrur-rahimin\n(My Lord, forgive and have mercy, and You are the best of the merciful.)", ref: "Quran 23:118" },
+            { text: "Rabbana la tuzigh qulubana ba'da idh hadaytana wa hab lana min ladunka rahmatan\n(Our Lord, let not our hearts deviate after You have guided us and grant us from Yourself mercy.)", ref: "Quran 3:8" },
+            { text: "Rabbana hab lana min azwajina wa dhurriyyatina qurrata a'yunin waj'alna lil-muttaqina imama\n(Our Lord, grant us from among our wives and offspring comfort to our eyes and make us an example for the righteous.)", ref: "Quran 25:74" },
+            { text: "Rabbana zalamna anfusana wa in lam taghfir lana wa tarhamna lanakunanna minal-khasirin\n(Our Lord, we have wronged ourselves, and if You do not forgive us and have mercy upon us, we will surely be among the losers.)", ref: "Quran 7:23" },
+            { text: "Rabbi ishrah li sadri wa yassir li amri\n(My Lord, expand for me my breast [with assurance] and ease for me my task.)", ref: "Quran 20:25-26" },
+            { text: "Rabbana afrigh 'alayna sabran wa thabbit aqdamana wansurna 'alal-qawmil-kafirin\n(Our Lord, pour upon us patience and plant firmly our feet and give us victory over the disbelieving people.)", ref: "Quran 2:250" },
+            { text: "Rabbi awzi'ni an ashkura ni'matakal-lati an'amta 'alayya wa 'ala walidayya\n(My Lord, enable me to be grateful for Your favor which You have bestowed upon me and upon my parents.)", ref: "Quran 27:19" },
+            { text: "Rabbi hab li min ladunka dhurriyyatan tayyibatan innaka sami'ud-du'a\n(My Lord, grant me from Yourself a good offspring. Indeed, You are the Hearer of supplication.)", ref: "Quran 3:38" },
+            { text: "Rabbana-ghfir lana wa li-ikhwaninal-ladhina sabaquna bil-iman\n(Our Lord, forgive us and our brothers who preceded us in faith.)", ref: "Quran 59:10" },
+            { text: "Rabbi-j'alni muqimas-salati wa min dhurriyyati Rabbana wa taqabbal du'a\n(My Lord, make me an establisher of prayer, and [many] from my descendants. Our Lord, and accept my supplication.)", ref: "Quran 14:40" },
+            { text: "Rabbana taqabbal minna innaka Antas-Sami'ul-'Alim\n(Our Lord, accept [this] from us. Indeed You are the Hearing, the Knowing.)", ref: "Quran 2:127" },
+            { text: "Hasbunallah wa ni'mal-wakil\n(Sufficient for us is Allah, and [He is] the best Disposer of affairs.)", ref: "Quran 3:173" },
+            { text: "La ilaha illa anta subhanaka inni kuntu minaz-zalimin\n(There is no deity except You; exalted are You. Indeed, I have been of the wrongdoers.)", ref: "Quran 21:87" },
+            { text: "Bismillahil-ladhi la yadurru ma'as-mihi shai'un fil-ardi wa la fis-sama'i wa huwas-Sami'ul-'Alim\n(In the Name of Allah with Whose Name there is protection against every kind of harm in the earth or in the heaven, and He is the All-Hearing and All-Knowing.)", ref: "Abu Dawud" },
+            { text: "Raditu billahi Rabban wa bil-Islami dinan wa bi Muhammadin nabiyyan\n(I am pleased with Allah as my Lord, with Islam as my religion, and with Muhammad as my Prophet.)", ref: "Abu Dawud" },
+            { text: "Allahumma inni as'alukal-huda wat-tuqa wal-'afafa wal-ghina\n(O Allah, I ask You for guidance, piety, chastity, and self-sufficiency.)", ref: "Muslim" },
+            { text: "Allahumma inni a'udhu bika minal-hammi wal-hazan, wal-'ajzi wal-kasal, wal-bukhli wal-jubn\n(O Allah, I seek refuge in You from anxiety and sorrow, weakness and laziness, miserliness and cowardice.)", ref: "Bukhari" },
+            { text: "Allahumma 'afini fi badani, Allahumma 'afini fi sam'i, Allahumma 'afini fi basari\n(O Allah, grant me health in my body. O Allah, grant me health in my hearing. O Allah, grant me health in my sight.)", ref: "Abu Dawud" },
+            { text: "Allahumma inni as'aluka 'ilman nafi'an, wa rizqan tayyiban, wa 'amalan mutaqabbalan\n(O Allah, I ask You for beneficial knowledge, goodly provision, and acceptable deeds.)", ref: "Ibn Majah" },
+            { text: "Ya Hayyu Ya Qayyum, bi-rahmatika astaghith, aslih li sha'ni kullahu\n(O Ever-Living, O Sustainer, in Your mercy I seek relief; rectify for me all of my affairs.)", ref: "Tirmidhi" },
+            { text: "Allahumma rahmataka arju fala takilni ila nafsi tarfata 'aynin\n(O Allah, it is Your mercy that I hope for, so do not leave me in charge of my affairs even for a blink of an eye.)", ref: "Abu Dawud" },
+            { text: "Allahumma ajirni minan-nar\n(O Allah, save me from the Fire.)", ref: "Abu Dawud" },
+            { text: "Allahumma innaka 'afuwwun tuhibbul-'afwa fa'fu 'anni\n(O Allah, You are forgiving and love forgiveness, so forgive me.)", ref: "Tirmidhi" },
+            { text: "Rabbi-ghfir li wa tub 'alayya innaka Antat-Tawwabur-Rahim\n(My Lord, forgive me and accept my repentance. Indeed, You are the Accepting of repentance, the Merciful.)", ref: "Abu Dawud" },
+            { text: "Allahummaghfir li dhanbi kullahu, diqqahu wa jillahu, wa awwalahu wa akhirahu\n(O Allah, forgive me all my sins, the small and the great, the first and the last.)", ref: "Muslim" },
+            { text: "Allahumma inni a'udhu bika min 'adhabi jahannam wa min 'adhabil-qabri\n(O Allah, I seek refuge in You from the punishment of Hell and from the punishment of the grave.)", ref: "Muslim" },
+            { text: "Allahumma bika asbahna wa bika amsayna, wa bika nahya wa bika namut, wa ilaykan-nushur\n(O Allah, by You we enter the morning and by You we enter the evening, by You we live and by You we die, and to You is the Final Return.)", ref: "Tirmidhi" },
+            { text: "Allahumma anta Rabbi la ilaha illa anta, khalaqtani wa ana 'abduka...\n(O Allah, You are my Lord, there is none worthy of worship but You. You created me and I am Your slave...)", ref: "Sayyid al-Istighfar (Bukhari)" },
+            { text: "Subhanallahi wa bihamdihi, Subhanallahil-'Azim\n(Glory be to Allah and His is the praise, (and) Allah, the Greatest is free from imperfection.)", ref: "Bukhari" },
+            { text: "La hawla wa la quwwata illa billah\n(There is no power and no strength except with Allah.)", ref: "Bukhari" },
+            { text: "Allahumm-aslih li dini alladhi huwa 'ismatu amri, wa aslih li dunyaya allati fiha ma'ashi\n(O Allah, set right for me my religion which is the safeguard of my affairs. And set right for me my world in which is my life.)", ref: "Muslim" },
+            { text: "Allahumma inni as'alukal-'afwa wal-'afiyata fid-dunya wal-akhirah\n(O Allah, I ask You for forgiveness and well-being in this world and in the Hereafter.)", ref: "Abu Dawud" },
+            { text: "Allahumma a'inni 'ala dhikrika wa shukrika wa husni 'ibadatik\n(O Allah, help me to remember You, to thank You, and to worship You in the best of manners.)", ref: "Abu Dawud" },
+            { text: "Rabbana atina min ladunka rahmatan wahayyi' lana min amrina rashada\n(Our Lord, grant us from Yourself mercy and prepare for us from our affair right guidance.)", ref: "Quran 18:10" },
+            { text: "Rabbi fala taj'alni fil-qawmiz-zalimin\n(My Lord, then do not place me among the wrongdoing people.)", ref: "Quran 23:94" },
+            { text: "Rabbana wasi'ta kulla shai'in rahmatan wa 'ilman faghfir lilladhina tabu\n(Our Lord, You have encompassed all things in mercy and knowledge, so forgive those who have repented.)", ref: "Quran 40:7" },
+            { text: "Rabbana-ghfir lana dhunubana wa israfana fi amrina wa thabbit aqdamana\n(Our Lord, forgive us our sins and the excess [committed] in our affairs and plant firmly our feet.)", ref: "Quran 3:147" },
+            { text: "Rabbi anilni hukman wa alhiqni bis-salihin\n(My Lord, grant me authority and join me with the righteous.)", ref: "Quran 26:83" },
+            { text: "Rabbana asrif 'anna 'adhaba jahannama inna 'adhabaha kana gharama\n(Our Lord, avert from us the punishment of Hell. Indeed, its punishment is ever adhering.)", ref: "Quran 25:65" },
+            { text: "Allahumma musarrifal-qulub, sarrif qulubana 'ala ta'atik\n(O Allah, Turner of the hearts, direct our hearts to Your obedience.)", ref: "Muslim" },
+            { text: "Allahumma inni a'udhu bika min zawali ni'matik, wa tahawwuli 'afiyatik\n(O Allah, I seek refuge in You from the withholding of Your favor, the decline of the good health You have given.)", ref: "Muslim" },
+            { text: "Allahumma aslih dhati baynina wa allif bayna qulubina wahdina subulas-salam\n(O Allah, reconcile between us, bring our hearts together, and guide us to the paths of peace.)", ref: "Abu Dawud" },
+            { text: "Allahumm-akfini bihalalika 'an haramika wa aghnini bifadlika 'amman siwaka\n(O Allah, suffice me with Your lawful against Your unlawful, and make me independent of all those besides You.)", ref: "Tirmidhi" },
+            { text: "Allahumma inni as'aluka husnal-khatimah\n(O Allah, I ask You for a good end to my life.)", ref: "General Dua" },
+            { text: "Allahumma ij'al fi qalbi nuran wa fi basari nuran wa fi sam'i nuran\n(O Allah, place light in my heart, and light in my sight, and light in my hearing.)", ref: "Muslim" }
         ];
 
-        let config = { lat: 52.0907, lon: 5.1214, city: 'Netherlands', method: 3, offset: 0 };
-        let state = { prayers: {}, monthlyCache: [], nextPrayer: null, prevPrayerTime: null, namesList: [], isRamadan: false, notified10Min: false, adhanPlayed: false, dailyAlertTriggered: false };
+        let config = { lat: 52.0907, lon: 5.1214, city: 'Netherlands', method: 3, offset: 0, hijriOffset: 0 };
+        let state = { prayers: {}, monthlyCache: [], nextPrayer: null, prevPrayerTime: null, namesList: [], isRamadan: false, notified10Min: false, adhanPlayed: false, dailyAlertTriggered: false, qiblaDegree: 0 };
         let wakeLock = null;
         let isAutoLoc = localStorage.getItem('adhan_auto_loc') !== 'false';
         let autoLocationInterval = null;
 
         const DOM = {};
 
+        // === WAKE LOCK API LOGIC ===
         async function requestWakeLock() {
             if ('wakeLock' in navigator) {
                 try {
@@ -835,6 +885,7 @@
         }
         document.addEventListener('visibilitychange', async () => { if (document.visibilityState === 'visible') requestWakeLock(); });
 
+        // === ONBOARDING LOGIC ===
         function checkOnboarding() {
             if (!localStorage.getItem('adhan_onboarded')) {
                 document.getElementById('onboarding-modal').classList.add('active');
@@ -868,6 +919,7 @@
             }
         }
 
+        // === UI & MODALS LOGIC ===
         function initUI() {
             DOM.liveClock = document.getElementById('live-clock');
             DOM.gregDate = document.getElementById('greg-date');
@@ -881,22 +933,29 @@
             DOM.shuruqWarn = document.getElementById('shuruq-warning');
             DOM.welcomeMessage = document.getElementById('welcome-message');
             DOM.focusTimesList = document.getElementById('focus-times-list');
+            DOM.jumuahBanner = document.getElementById('jumuah-banner');
 
             const settingsBtn = document.getElementById('settings-btn');
             const closeSettingsBtn = document.getElementById('close-settings');
             const settingsModal = document.getElementById('settings-modal');
             const focusBtn = document.getElementById('focus-btn');
+            const fsBtn = document.getElementById('fullscreen-btn');
 
             settingsBtn.addEventListener('click', () => settingsModal.classList.add('active'));
             closeSettingsBtn.addEventListener('click', () => {
                 settingsModal.classList.remove('active');
                 const newMethod = document.getElementById('calc-method').value;
                 const newOffset = document.getElementById('manual-offset').value;
-                if (newMethod != config.method || newOffset != config.offset) {
+                const newHijri = document.getElementById('hijri-offset').value;
+                
+                if (newMethod != config.method || newOffset != config.offset || newHijri != config.hijriOffset) {
                     config.method = newMethod;
                     config.offset = parseInt(newOffset) || 0;
+                    config.hijriOffset = parseInt(newHijri) || 0;
+                    
                     localStorage.setItem('adhan_method', config.method);
                     localStorage.setItem('adhan_offset', config.offset);
+                    localStorage.setItem('adhan_hijri_offset', config.hijriOffset);
                     localStorage.removeItem(`calendar_${config.lat}_${config.lon}`);
                     fetchPrayerData();
                 }
@@ -904,6 +963,19 @@
             focusBtn.addEventListener('click', () => {
                 document.body.classList.toggle('focus-mode');
                 if(document.body.classList.contains('focus-mode')) window.scrollTo(0,0);
+            });
+            fsBtn.addEventListener('click', () => {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(err => console.log(err));
+                } else {
+                    if (document.exitFullscreen) document.exitFullscreen();
+                }
+            });
+            
+            document.getElementById('adhan-volume').addEventListener('input', (e) => {
+                const vol = parseFloat(e.target.value);
+                localStorage.setItem('adhan_volume', vol);
+                document.querySelectorAll('audio').forEach(a => a.volume = vol);
             });
         }
 
@@ -915,9 +987,11 @@
             const source = localStorage.getItem('adhan_daily') || 'quran';
             const wudu = localStorage.getItem('adhan_wudu') === 'true';
             const dailyAlert = localStorage.getItem('adhan_daily_alert') === 'true';
+            const vol = localStorage.getItem('adhan_volume') || 1;
             
             config.method = localStorage.getItem('adhan_method') || 3;
             config.offset = parseInt(localStorage.getItem('adhan_offset')) || 0;
+            config.hijriOffset = parseInt(localStorage.getItem('adhan_hijri_offset')) || 0;
 
             document.documentElement.setAttribute('data-theme', theme);
             if (theme !== 'dynamic') document.documentElement.removeAttribute('data-time-of-day');
@@ -931,6 +1005,9 @@
             document.getElementById('daily-alert-toggle').checked = dailyAlert;
             document.getElementById('calc-method').value = config.method;
             document.getElementById('manual-offset').value = config.offset;
+            document.getElementById('hijri-offset').value = config.hijriOffset;
+            document.getElementById('adhan-volume').value = vol;
+            document.querySelectorAll('audio').forEach(a => a.volume = parseFloat(vol));
 
             if(source === 'hadith') document.getElementById('daily-title').setAttribute('data-i18n', 'hadith');
             else document.getElementById('daily-title').setAttribute('data-i18n', 'ayah');
@@ -1156,18 +1233,23 @@
 
         async function fetchPrayerData() {
             const now = new Date(); const month = now.getMonth() + 1; const year = now.getFullYear();
-            const data = await fetchCached(`calendar_${config.lat}_${config.lon}`, `https://api.aladhan.com/v1/calendar/${year}/${month}?latitude=${config.lat}&longitude=${config.lon}&method=${config.method}`, 720); 
+            
+            const adjParam = config.hijriOffset !== 0 ? `&adjustment=${config.hijriOffset}` : '';
+            const data = await fetchCached(`calendar_${config.lat}_${config.lon}_${config.hijriOffset}`, `https://api.aladhan.com/v1/calendar/${year}/${month}?latitude=${config.lat}&longitude=${config.lon}&method=${config.method}${adjParam}`, 720); 
             
             if(data && data.code === 200) {
                 state.monthlyCache = data.data; 
                 
                 const todayData = state.monthlyCache[now.getDate() - 1]; 
                 state.prayers = todayData.timings; 
-                const h = todayData.date.hijri;
                 
-                if(DOM.hijriDate) DOM.hijriDate.innerText = `${h.day} ${h.month.en} ${h.year}`;
-                if(parseInt(h.month.number) === 9) { state.isRamadan = true; activateRamadanMode(parseInt(h.day)); } 
-                else { state.isRamadan = false; calcRamadanCountdown(parseInt(h.month.number), parseInt(h.day)); }
+                const h = todayData.date.hijri;
+                let hDay = parseInt(h.day) + config.hijriOffset;
+                if(hDay > 30) hDay -= 30; if(hDay < 1) hDay += 30; 
+                
+                if(DOM.hijriDate) DOM.hijriDate.innerText = `${hDay} ${h.month.en} ${h.year}`;
+                if(parseInt(h.month.number) === 9) { state.isRamadan = true; activateRamadanMode(hDay); } 
+                else { state.isRamadan = false; calcRamadanCountdown(parseInt(h.month.number), hDay); }
                 
                 document.getElementById('midnight-time').innerText = addOffsetToString(state.prayers.Midnight); 
                 document.getElementById('last-third-time').innerText = addOffsetToString(state.prayers.Lastthird);
@@ -1261,7 +1343,6 @@
             document.getElementById('monthBar').style.width = monthMax > 0 ? (monthCompleted / monthMax * 100) + '%' : '0%';
         }
 
-        // UPDATED: Now takes the CURRENT prayer name to highlight it
         function renderFocusModeTimes(activePrayerName) {
             if(!state.prayers || !DOM.focusTimesList) return;
             const seq = ["Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha"];
@@ -1291,6 +1372,10 @@
             
             setInterval(() => { if(DOM.liveClock) DOM.liveClock.innerText = new Date().toLocaleTimeString('en-US', { hour12: false }); }, 1000);
             
+            if(new Date().getDay() === 5 && DOM.jumuahBanner) {
+                DOM.jumuahBanner.style.display = 'block';
+            }
+
             try { await initLocation(); } catch(e) {}
             fetchContent(); 
             
@@ -1351,7 +1436,7 @@
                     if(DOM.currName) DOM.currName.style.color = prevName === "Sunrise" ? "var(--danger)" : "var(--gold)";
                     if(DOM.shuruqWarn) DOM.shuruqWarn.style.display = prevName === "Sunrise" ? 'block' : 'none';
                     
-                    renderFocusModeTimes(prevName); // PASSES CURRENT PRAYER
+                    renderFocusModeTimes(prevName);
                     updateDynamicTheme(); state.notified10Min = false; return;
                 }
             }
@@ -1362,7 +1447,7 @@
             if(DOM.currTime) DOM.currTime.innerText = addOffsetToString(state.prayers.Isha); 
             if(DOM.shuruqWarn) DOM.shuruqWarn.style.display = 'none';
             
-            renderFocusModeTimes("Isha"); // PASSES CURRENT PRAYER (ISHA)
+            renderFocusModeTimes("Isha"); 
             updateDynamicTheme(); state.notified10Min = false;
         }
 
@@ -1440,7 +1525,8 @@
         function calculateQibla() {
             const lat1 = config.lat * (Math.PI/180), lon1 = config.lon * (Math.PI/180), lat2 = 21.4225 * (Math.PI/180), lon2 = 39.8262 * (Math.PI/180);
             const y = Math.sin(lon2 - lon1) * Math.cos(lat2), x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
-            document.getElementById('qibla-degree').innerText = Math.round(((Math.atan2(y, x) * 180/Math.PI) + 360) % 360) + "°";
+            state.qiblaDegree = Math.round(((Math.atan2(y, x) * 180/Math.PI) + 360) % 360);
+            document.getElementById('qibla-degree').innerText = state.qiblaDegree + "°";
         }
 
         function rotateNames() {
