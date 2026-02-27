@@ -83,6 +83,15 @@
             --text-main: #e0e0e0;
         }
 
+        /* Custom Theme Overrides */
+        [data-theme="custom"] {
+            --glass-bg: rgba(15, 15, 20, 0.80); 
+            --glass-header: rgba(10, 10, 15, 0.70);
+            --border-color: rgba(212, 175, 55, 0.4);
+            --shadow-color: rgba(0,0,0,0.8);
+            --text-main: #f0f0f0;
+        }
+
         html { font-size: 16px; transition: font-size 0.3s ease; scroll-behavior: smooth; }
 
         body {
@@ -102,9 +111,7 @@
 
         html[dir="rtl"] body { font-family: 'Tajawal', 'Segoe UI', sans-serif; }
         html[dir="rtl"] .top-left-logo { left: auto; right: 20px; }
-        html[dir="rtl"] .settings-toggle { right: auto; left: 20px; }
-        html[dir="rtl"] .focus-toggle { right: auto; left: 75px; }
-        html[dir="rtl"] .fullscreen-toggle { right: auto; left: 140px; }
+        html[dir="rtl"] .top-controls { right: auto; left: 20px; }
 
         .dashboard-container {
             max-width: 1400px; margin: 0 auto; padding: 20px;
@@ -113,22 +120,22 @@
             transition: all 0.5s ease;
         }
 
-        /* Top Bar Controls */
+        /* Fixed Top Controls (Prevents Overlapping) */
         .top-left-logo { position: absolute; top: 20px; left: 20px; width: clamp(50px, 8vw, 70px); height: auto; z-index: 10; }
 
-        .settings-toggle, .focus-toggle, .fullscreen-toggle {
-            position: absolute; top: 20px; background: var(--glass-bg);
-            border: 1px solid var(--gold); color: var(--text-main); 
-            cursor: pointer; z-index: 100; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 10px var(--shadow-color); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        .top-controls {
+            position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 100;
         }
-        .settings-toggle { right: 20px; font-size: 1.5rem; width: 45px; height: 45px; border-radius: 50%; }
-        .focus-toggle { right: 75px; font-size: 0.95rem; font-weight: bold; height: 45px; padding: 0 15px; border-radius: 25px; gap: 6px; }
-        .fullscreen-toggle { right: 205px; font-size: 1.2rem; width: 45px; height: 45px; border-radius: 12px; }
 
-        .settings-toggle:hover, .focus-toggle:hover, .fullscreen-toggle:hover { 
-            transform: scale(1.05) translateY(-2px); background: var(--gold); color: #050505; box-shadow: 0 6px 15px rgba(212, 175, 55, 0.3); 
+        .control-btn {
+            background: var(--glass-bg); border: 1px solid var(--gold); color: var(--text-main); 
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px var(--shadow-color); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 45px;
         }
+        .control-btn.icon-only { width: 45px; border-radius: 50%; font-size: 1.4rem; }
+        .control-btn.text-btn { padding: 0 15px; border-radius: 25px; font-weight: bold; font-size: 0.95rem; gap: 6px; }
+        .control-btn:hover { transform: scale(1.05) translateY(-2px); background: var(--gold); color: #050505; box-shadow: 0 6px 15px rgba(212, 175, 55, 0.3); }
 
         /* Focus Mode Styles */
         body.focus-mode .dashboard-container > *:not(.prayer-hero) { display: none !important; }
@@ -151,8 +158,7 @@
         body.focus-mode .progress-container { height: 18px !important; margin-top: 30px !important; border-radius: 10px !important; width: 100% !important; }
         body.focus-mode #status-label, body.focus-mode #next-label { font-size: clamp(1.2rem, 3vw, 1.8rem) !important; letter-spacing: 2px !important; }
         body.focus-mode #curr-time { font-size: clamp(1.8rem, 5vw, 2.5rem) !important; margin-bottom: 20px !important; }
-        body.focus-mode .focus-toggle { border-color: var(--gold) !important; background: var(--gold) !important; color: #050505 !important; z-index: 1000 !important; }
-        body.focus-mode .fullscreen-toggle { z-index: 1000 !important; }
+        body.focus-mode #focus-btn { border-color: var(--gold) !important; background: var(--gold) !important; color: #050505 !important; z-index: 1000 !important; }
 
         @media (max-width: 850px) {
             body.focus-mode .prayer-hero { flex-direction: column !important; padding: 40px 20px !important; gap: 30px !important; }
@@ -230,6 +236,7 @@
 
         input[type="text"]:focus, input[type="number"]:focus, select:focus { border-color: var(--gold); box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); background: rgba(0,0,0,0.6); }
         input[type="range"] { flex: 1; accent-color: var(--gold); margin: 10px 0; }
+        input[type="file"] { padding: 8px; }
 
         .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px; background: rgba(0,0,0,0.2); gap: 15px; }
         .toggle-row span { flex: 1; line-height: 1.4; }
@@ -245,7 +252,7 @@
         }
         .btn-gold:hover { background: var(--gold); color: #050505; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4); transform: translateY(-2px); }
 
-        .history-row { display: flex; justify-content: space-between; padding: 14px 12px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: all 0.2s ease; border-radius: 6px; margin-bottom: 4px; background: rgba(255,255,255,0.02); }
+        .history-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 12px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: all 0.2s ease; border-radius: 6px; margin-bottom: 4px; background: rgba(255,255,255,0.02); }
         .history-row:hover { background: var(--highlight-bg); transform: translateX(4px); border-color: var(--gold-dim); }
         .streak-badge { color: #ff9800; font-weight: bold; font-size: 1.1rem; margin-bottom: 20px; text-align: center; background: rgba(255,152,0,0.1); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,152,0,0.3); text-transform: uppercase; letter-spacing: 1px;}
 
@@ -267,7 +274,6 @@
             .prayer-hero, .history-card { grid-column: span 12; }
             .times-card, .tasbih-card, .qibla-card, .tools-card, .text-widget, .dua-widget, .night-widget, .names-widget, .ramadan-widget, .video-card { grid-column: span 6; }
             #install-card-section { grid-column: span 12; }
-            .fullscreen-toggle { right: 135px; }
         }
         @media (min-width: 1024px) {
             .prayer-hero { grid-column: span 6; } 
@@ -281,9 +287,10 @@
         }
         @media (max-width: 767px) {
             .top-left-logo { top: 15px; left: 15px; width: 50px; }
-            .settings-toggle { top: 15px; right: 15px; width: 40px; height: 40px; }
-            .focus-toggle { top: 15px; right: 65px; height: 40px; padding: 0 10px; font-size: 0.85rem; }
-            .fullscreen-toggle { top: 15px; right: 155px; width: 40px; height: 40px; font-size: 1.1rem; }
+            .top-controls { top: 15px; right: 15px; gap: 8px; }
+            .control-btn { height: 40px; }
+            .control-btn.icon-only { width: 40px; font-size: 1.1rem; }
+            .control-btn.text-btn { padding: 0 12px; font-size: 0.85rem; gap: 4px; }
             .header-section { margin-top: 60px; }
             .info-panel { flex-direction: column; gap: 5px; }
             .date-box { width: 100%; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
@@ -302,9 +309,11 @@
     <audio id="audio-madinah" src="audio/madinah.mp3" preload="none"></audio>
     <audio id="audio-alafasy" src="audio/alafasy.mp3" preload="none"></audio>
 
-    <button id="fullscreen-btn" class="fullscreen-toggle" aria-label="Fullscreen">⛶</button>
-    <button id="focus-btn" class="focus-toggle" aria-label="Focus Mode">🕋 Focus Mode</button>
-    <button id="settings-btn" class="settings-toggle" aria-label="Settings">⚙️</button>
+    <div class="top-controls">
+        <button id="fullscreen-btn" class="control-btn icon-only" aria-label="Fullscreen" title="Fullscreen">⛶</button>
+        <button id="focus-btn" class="control-btn text-btn" aria-label="Focus Mode">🕋 Focus Mode</button>
+        <button id="settings-btn" class="control-btn icon-only" aria-label="Settings" title="Settings">⚙️</button>
+    </div>
     
     <div id="onboarding-modal" class="modal-overlay" style="z-index: 3000;">
         <div class="settings-panel" style="text-align: center; max-width: 420px; padding-top: 45px;">
@@ -403,12 +412,19 @@
             </div>
 
             <div class="setting-group">
-                <label data-i18n="theme">Theme</label>
+                <label data-i18n="theme">Theme Background</label>
                 <div class="flex-options">
                     <button class="opt-btn theme-btn" data-theme-val="dark">Dark</button>
                     <button class="opt-btn theme-btn" data-theme-val="light">Light</button>
                     <button class="opt-btn theme-btn" data-theme-val="green">Green</button>
                     <button class="opt-btn theme-btn" data-theme-val="dynamic" data-i18n="dynamic">Dynamic</button>
+                    <button class="opt-btn theme-btn" data-theme-val="custom">Custom</button>
+                </div>
+                
+                <div id="custom-bg-section" style="display: none; margin-top: 15px; padding: 15px; border: 1px dashed var(--gold); border-radius: 8px;">
+                    <label style="font-size: 0.85rem; text-transform: none; color: var(--gold);">Upload Custom Image (Max ~2MB)</label>
+                    <input type="file" id="custom-bg-upload" accept="image/*" class="opt-btn" style="padding: 8px; width: 100%; margin-top: 5px;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 5px;">Image is processed and saved locally to your device.</div>
                 </div>
             </div>
 
@@ -443,8 +459,8 @@
                     <button class="opt-btn adhan-btn" data-adhan-val="none" style="width: 100%;">None</button>
                 </div>
                 
-                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-                    <span style="font-size: 0.95rem; font-weight: 500;">Volume</span>
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px; padding: 0 5px;">
+                    <span style="font-size: 0.95rem; font-weight: 500; color: var(--gold);">Volume</span>
                     <input type="range" id="adhan-volume" min="0" max="1" step="0.1" value="1">
                 </div>
 
@@ -587,8 +603,8 @@
         <section class="card qibla-card" id="qibla">
             <div class="widget-title" data-i18n="qibla">Qibla Direction</div>
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1;">
-                <div id="qibla-degree" style="font-size:3.5rem; font-weight:bold; color:var(--gold); margin: 15px 0; text-shadow: 0 2px 10px var(--shadow-color);">--°</div>
-                <div style="font-size:0.95rem; color:var(--text-muted); margin-bottom: 25px; text-transform: uppercase; letter-spacing: 1px;" data-i18n="north">from true North</div>
+                <div id="qibla-degree" style="font-size:4rem; font-weight:bold; color:var(--gold); margin: 15px 0; text-shadow: 0 2px 10px var(--shadow-color);">--°</div>
+                <div style="font-size:1rem; color:var(--text-muted); margin-bottom: 25px; text-transform: uppercase; letter-spacing: 1px;" data-i18n="north">from true North</div>
                 <a href="https://qiblafinder.withgoogle.com/" target="_blank" class="btn-gold" data-i18n="ar_find" style="margin-top: auto;">🧭 Open Qibla Compass</a>
             </div>
         </section>
@@ -698,14 +714,13 @@
     </footer>
 
     <script>
-        // === TRANSLATIONS (i18n) ===
         const i18n = {
-            en: { subtitle: "The Ultimate Free Islamic Prayer Times & Qibla Dashboard", greg: "Gregorian", time: "Current Time", loc: "Location", hijri: "Hijri", curr: "Current Prayer", next: "Next Prayer In", ayah: "Ayah of the Day", hadith: "Hadith of the Day", dua: "Dua of the Day", qiyam: "Night Prayers", mid: "Midnight", tahajjud: "Tahajjud", allah: "Name of Allah", ramadan: "Ramadan", days: "Days Remaining", makkah: "Makkah Live", live_stream: "Holy Sites Live", watch: "Watch Stream", qibla: "Qibla Direction", north: "from true North", ar_find: "🧭 Open Qibla Compass", getapp: "Get the App", install: "Install App", pref: "Preferences", theme: "Theme", dynamic: "Dynamic", size: "Text Size", lang: "Language", nopray: "* Not permissible to pray *", audio_pref: "Audio & Alerts", wudu_alert: "10-Min Wudu Alert & Push", daily_source: "Daily Inspiration", sunnah_mon: "Sunnah Fasting: Monday", sunnah_thu: "Sunnah Fasting: Thursday", sunnah_white: "Sunnah Fasting: Ayyam al-Bid (White Days)", daily_times: "Daily Prayer Times", tracker_title: "Prayer Tracker & History", last_7: "Last 7 Days:", last_30: "Last 30 Days:", past_days: "Past Days (Tap to Edit)", no_data: "No past data yet.", tasbih: "Digital Tasbih", resources: "Tools & Resources", revert_guide: "Step-by-Step Prayer Guide", zakat_calc: "Zakat Calculator" },
+            en: { subtitle: "The Ultimate Free Islamic Prayer Times & Qibla Dashboard", greg: "Gregorian", time: "Current Time", loc: "Location", hijri: "Hijri", curr: "Current Prayer", next: "Next Prayer In", ayah: "Ayah of the Day", hadith: "Hadith of the Day", dua: "Dua of the Day", qiyam: "Night Prayers", mid: "Midnight", tahajjud: "Tahajjud", allah: "Name of Allah", ramadan: "Ramadan", days: "Days Remaining", makkah: "Makkah Live", live_stream: "Holy Sites Live", watch: "Watch Stream", qibla: "Qibla Direction", north: "from true North", ar_find: "🧭 Open Qibla Compass", getapp: "Get the App", install: "Install App", pref: "Preferences", theme: "Theme Background", dynamic: "Dynamic", size: "Text Size", lang: "Language", nopray: "* Not permissible to pray *", audio_pref: "Audio & Alerts", wudu_alert: "10-Min Wudu Alert & Push", daily_source: "Daily Inspiration", sunnah_mon: "Sunnah Fasting: Monday", sunnah_thu: "Sunnah Fasting: Thursday", sunnah_white: "Sunnah Fasting: Ayyam al-Bid (White Days)", daily_times: "Daily Prayer Times", tracker_title: "Prayer Tracker & History", last_7: "Last 7 Days:", last_30: "Last 30 Days:", past_days: "Past Days (Tap to Edit)", no_data: "No past data yet.", tasbih: "Digital Tasbih", resources: "Tools & Resources", revert_guide: "Step-by-Step Prayer Guide", zakat_calc: "Zakat Calculator" },
             tr: { subtitle: "En İyi Ücretsiz İslami Namaz Vakitleri Panosu", greg: "Miladi", time: "Şu Anki Saat", loc: "Konum", hijri: "Hicri", curr: "Mevcut Namaz", next: "Sonraki Namaz", ayah: "Günün Ayeti", hadith: "Günün Hadisi", dua: "Günün Duası", qiyam: "Gece Namazları", mid: "Gece Yarısı", tahajjud: "Teheccüd", allah: "Allah'ın İsmi", ramadan: "Ramazan", days: "Kalan Gün", makkah: "Mekke Canlı", live_stream: "Kutsal Yerler Canlı", watch: "Yayını İzle", qibla: "Kıble Yönü", north: "Gerçek Kuzeyden", ar_find: "🧭 Kıble Pusulasını Aç", getapp: "Uygulamayı Al", install: "Uygulamayı Yükle", pref: "Tercihler", theme: "Tema", dynamic: "Dinamik", size: "Metin Boyutu", lang: "Dil", nopray: "* Namaz Kılmak Mekruhtur *", audio_pref: "Ses ve Uyarılar", wudu_alert: "10-Dk Abdest Uyarısı", daily_source: "Günlük İlham", sunnah_mon: "Sünnet Orucu: Pazartesi", sunnah_thu: "Sünnet Orucu: Perşembe", sunnah_white: "Sünnet Orucu: Eyyam-ı Bîd (Beyaz Günler)", daily_times: "Günlük Namaz Vakitleri", tracker_title: "Namaz Takibi ve Geçmiş", last_7: "Son 7 Gün:", last_30: "Son 30 Gün:", past_days: "Geçmiş Günler", no_data: "Henüz veri yok.", tasbih: "Dijital Tesbih", resources: "Araçlar ve Kaynaklar", revert_guide: "Adım Adım Namaz Rehberi", zakat_calc: "Zekat Hesaplayıcı" },
             nl: { subtitle: "Het Ultieme Islamitische Gebedstijden Dashboard", greg: "Gregoriaans", time: "Huidige Tijd", loc: "Locatie", hijri: "Hidzjra", curr: "Huidig Gebed", next: "Volgend Gebed In", ayah: "Vers van de Dag", hadith: "Hadith van de Dag", dua: "Smeekbede van de Dag", qiyam: "Nachtgebeden", mid: "Middernacht", tahajjud: "Tahajjud", allah: "Naam van Allah", ramadan: "Ramadan", days: "Dagen Te Gaan", makkah: "Mekka Live", live_stream: "Heilige Plaatsen Live", watch: "Bekijk Stream", qibla: "Qibla Richting", north: "van ware noorden", ar_find: "🧭 Open Qibla Kompas", getapp: "Download de App", install: "Installeer App", pref: "Instellingen", theme: "Thema", dynamic: "Dynamisch", size: "Tekstgrootte", lang: "Taal", nopray: "* Bidden is niet toegestaan *", audio_pref: "Audio & Meldingen", wudu_alert: "10-Min Wudu Melding", daily_source: "Dagelijkse Inspiratie", sunnah_mon: "Sunnah Vasten: Maandag", sunnah_thu: "Sunnah Vasten: Donderdag", sunnah_white: "Sunnah Vasten: Witte Dagen", daily_times: "Dagelijkse Gebedstijden", tracker_title: "Gebedstracker & Geschiedenis", last_7: "Laatste 7 Dagen:", last_30: "Laatste 30 Dagen:", past_days: "Verleden Dagen", no_data: "Nog geen data.", tasbih: "Digitale Tasbih", resources: "Tools & Hulpbronnen", revert_guide: "Stap-voor-Stap Gebedsgids", zakat_calc: "Zakat Calculator" },
             fr: { subtitle: "Le Tableau de Bord Islamique Ultime", greg: "Grégorien", time: "Heure Actuelle", loc: "Emplacement", hijri: "Hégire", curr: "Prière Actuelle", next: "Prochaine Prière", ayah: "Verset du Jour", hadith: "Hadith du Jour", dua: "Dua du Jour", qiyam: "Prières Nocturnes", mid: "Minuit", tahajjud: "Tahajjud", allah: "Nom d'Allah", ramadan: "Ramadan", days: "Jours Restants", makkah: "Mecque en Direct", live_stream: "Lieux Saints en Direct", watch: "Regarder le Stream", qibla: "Direction de la Qibla", north: "du vrai nord", ar_find: "🧭 Ouvrir la Boussole Qibla", getapp: "Obtenir l'App", install: "Installer l'App", pref: "Préférences", theme: "Thème", dynamic: "Dynamique", size: "Taille du Texte", lang: "Langue", nopray: "* Prière non permise *", audio_pref: "Audio & Alertes", wudu_alert: "Alerte Wudu 10-Min", daily_source: "Inspiration Quotidienne", sunnah_mon: "Jeûne Sunnah : Lundi", sunnah_thu: "Jeûne Sunnah : Jeudi", sunnah_white: "Jeûne Sunnah : Jours Blancs", daily_times: "Heures de Prière", tracker_title: "Suivi des Prières", last_7: "7 Derniers Jours:", last_30: "30 Derniers Jours:", past_days: "Jours Passés", no_data: "Aucune donnée.", tasbih: "Tasbih Numérique", resources: "Outils et Ressources", revert_guide: "Guide de Prière Étape par Étape", zakat_calc: "Calculatrice de Zakat" },
             de: { subtitle: "Das Ultimative Islamische Dashboard", greg: "Gregorianisch", time: "Aktuelle Zeit", loc: "Ort", hijri: "Hidschra", curr: "Aktuelles Gebet", next: "Nächstes Gebet In", ayah: "Vers des Tages", hadith: "Hadith des Tages", dua: "Dua des Tages", qiyam: "Nachtgebete", mid: "Mitternacht", tahajjud: "Tahajjud", allah: "Name Allahs", ramadan: "Ramadan", days: "Verbleibende Tage", makkah: "Mekka Live", live_stream: "Heilige Stätten Live", watch: "Stream Ansehen", qibla: "Qibla-Richtung", north: "vom wahren Norden", ar_find: "🧭 Qibla-Kompass Öffnen", getapp: "App Holen", install: "App Installieren", pref: "Einstellungen", theme: "Thema", dynamic: "Dynamisch", size: "Textgröße", lang: "Sprache", nopray: "* Beten ist nicht erlaubt *", audio_pref: "Audio & Warnungen", wudu_alert: "10-Min Wudu-Alarm", daily_source: "Tägliche Inspiration", sunnah_mon: "Sunnah Fasten: Montag", sunnah_thu: "Sunnah Fasten: Donnerstag", sunnah_white: "Sunnah Fasten: Weiße Tage", daily_times: "Tägliche Gebetszeiten", tracker_title: "Gebets-Tracker", last_7: "Letzte 7 Tage:", last_30: "Letzte 30 Tage:", past_days: "Vergangene Tage", no_data: "Noch keine Daten.", tasbih: "Digitaler Tasbih", resources: "Werkzeuge & Ressourcen", revert_guide: "Schritt-für-Schritt Gebetsanleitung", zakat_calc: "Zakat Rechner" },
-            es: { subtitle: "El Panel de Oración Islámica Definitivo", greg: "Gregoriano", time: "Hora Actual", loc: "Ubicación", hijri: "Hégira", curr: "Oración Actual", next: "Próxima Oración En", ayah: "Versículo del Día", hadith: "Hadiz del Día", dua: "Dua del Día", qiyam: "Oraciones Nocturnas", mid: "Medianoche", tahajjud: "Tahajjud", allah: "Nombre de Alá", ramadan: "Ramadán", days: "Días Restantes", makkah: "La Meca en Vivo", live_stream: "Lugares Santos en Vivo", watch: "Ver Transmisión", qibla: "Dirección Qibla", north: "desde el norte", ar_find: "🧭 Abrir Brújula Qibla", getapp: "Obtener App", install: "Instalar App", pref: "Preferencias", theme: "Tema", dynamic: "Dinámico", size: "Tamaño", lang: "Idioma", nopray: "* No está permitido orar *", audio_pref: "Audio y Alertas", wudu_alert: "Alerta Wudu 10-Min", daily_source: "Inspiración Diaria", sunnah_mon: "Ayuno Sunnah: Lunes", sunnah_thu: "Ayuno Sunnah: Jueves", sunnah_white: "Ayuno Sunnah: Días Blancos", daily_times: "Horarios de Oración", tracker_title: "Rastreador de Oraciones", last_7: "Últimos 7 Días:", last_30: "Últimos 30 Días:", past_days: "Días Pasados", no_data: "Aún no hay datos.", tasbih: "Tasbih Digital", resources: "Herramientas y Recursos", revert_guide: "Guía de Oración Paso a Paso", zakat_calc: "Calculadora de Zakat" },
+            es: { subtitle: "El Panel de Oración Islámica Definitivo", greg: "Gregoriano", time: "Hora Actual", loc: "Ubicación", hijri: "Hégira", curr: "Oración Actual", next: "Próxima Oración En", ayah: "Versículo del Día", hadith: "Hadiz del Día", dua: "Dua del Día", qiyam: "Oraciones Nocturnas", mid: "Medianoche", tahajjud: "Tahajjud", allah: "Nombre de Alá", ramadan: "Ramadán", days: "Días Restantes", makkah: "La Meca en Vivo", live_stream: "Lugares Santos en Vivo", watch: "Ver Transmisión", qibla: "Dirección Qibla", north: "desde el norte", ar_find: "🧭 Abrir Brújula Qibla", getapp: "Obtener App", install: "Instalar App", pref: "Preferencias", theme: "Tema", dynamic: "Dinámico", size: "Tamaño", lang: "Idioma", nopray: "* No está permitido orar *", audio_pref: "Audio y Alertas", wudu_alert: "Alerta Wudu 10-Min", daily_source: "Inspiration Diaria", sunnah_mon: "Ayuno Sunnah: Lunes", sunnah_thu: "Ayuno Sunnah: Jueves", sunnah_white: "Ayuno Sunnah: Días Blancos", daily_times: "Horarios de Oración", tracker_title: "Rastreador de Oraciones", last_7: "Últimos 7 Días:", last_30: "Últimos 30 Días:", past_days: "Días Pasados", no_data: "Aún no hay datos.", tasbih: "Tasbih Digital", resources: "Herramientas y Recursos", revert_guide: "Guía de Oración Paso a Paso", zakat_calc: "Calculadora de Zakat" },
             ar: { subtitle: "لوحة أوقات الصلاة الإسلامية المطلقة", greg: "ميلادي", time: "الوقت الحالي", loc: "الموقع", hijri: "هجري", curr: "الصلاة الحالية", next: "الصلاة القادمة في", ayah: "آية اليوم", hadith: "حديث اليوم", dua: "دعاء اليوم", qiyam: "قيام الليل", mid: "منتصف الليل", tahajjud: "تهجد", allah: "اسم الله", ramadan: "رمضان", days: "أيام متبقية", makkah: "مكة مباشر", live_stream: "البث المباشر للأماكن المقدسة", watch: "شاهد البث", qibla: "اتجاه القبلة", north: "من الشمال الحقيقي", ar_find: "🧭 فتح بوصلة القبلة", getapp: "احصل على التطبيق", install: "تثبيت التطبيق", pref: "الإعدادات", theme: "السمة", dynamic: "ديناميكي", size: "حجم النص", lang: "اللغة", nopray: "* الصلاة غير جائزة *", audio_pref: "الصوت والتنبيهات", wudu_alert: "تنبيه الوضوء 10 دقائق", daily_source: "إلهام يومي", sunnah_mon: "صيام السنة: الإثنين", sunnah_thu: "صيام السنة: الخميس", sunnah_white: "صيام السنة: الأيام البيض", daily_times: "مواقيت الصلاة اليومية", tracker_title: "متتبع الصلاة", last_7: "آخر 7 أيام:", last_30: "آخر 30 يوم:", past_days: "الأيام الماضية", no_data: "لا توجد بيانات بعد.", tasbih: "مسبحة رقمية", resources: "الأدوات والموارد", revert_guide: "دليل الصلاة خطوة بخطوة", zakat_calc: "حاسبة الزكاة" }
         };
 
@@ -812,7 +827,6 @@
             { text: "Speak good or remain silent.", ref: "Sahih al-Bukhari 6018" }
         ];
 
-        // 50 Authentic & Popular Duas
         const dailyDuas = [
             { text: "Rabbana atina fid-dunya hasanatan wa fil 'akhirati hasanatan waqina 'adhaban-nar\n(Our Lord, give us in this world [that which is] good and in the Hereafter [that which is] good and protect us from the punishment of the Fire.)", ref: "Quran 2:201" },
             { text: "Rabbi inni lima anzalta ilayya min khayrin faqir\n(My Lord, indeed I am, for whatever good You would send down to me, in need.)", ref: "Quran 28:24" },
@@ -874,7 +888,6 @@
 
         const DOM = {};
 
-        // === WAKE LOCK API LOGIC ===
         async function requestWakeLock() {
             if ('wakeLock' in navigator) {
                 try {
@@ -885,7 +898,6 @@
         }
         document.addEventListener('visibilitychange', async () => { if (document.visibilityState === 'visible') requestWakeLock(); });
 
-        // === ONBOARDING LOGIC ===
         function checkOnboarding() {
             if (!localStorage.getItem('adhan_onboarded')) {
                 document.getElementById('onboarding-modal').classList.add('active');
@@ -919,7 +931,6 @@
             }
         }
 
-        // === UI & MODALS LOGIC ===
         function initUI() {
             DOM.liveClock = document.getElementById('live-clock');
             DOM.gregDate = document.getElementById('greg-date');
@@ -977,6 +988,42 @@
                 localStorage.setItem('adhan_volume', vol);
                 document.querySelectorAll('audio').forEach(a => a.volume = vol);
             });
+
+            // Handle Custom Background Upload with Canvas Compression to stay under 5MB limit
+            document.getElementById('custom-bg-upload').addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if(!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 1920; const MAX_HEIGHT = 1080;
+                        let width = img.width; let height = img.height;
+
+                        if (width > height && width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } 
+                        else if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                        
+                        canvas.width = width; canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.6); // 60% quality compression
+                        
+                        try {
+                            localStorage.setItem('adhan_custom_bg', dataUrl);
+                            document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('active', b.dataset.themeVal === 'custom'));
+                            localStorage.setItem('adhan_theme', 'custom');
+                            applySettings();
+                        } catch(err) {
+                            alert("Image too large to save. Try a smaller image.");
+                        }
+                    }
+                    img.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            });
         }
 
         function applySettings() {
@@ -995,6 +1042,19 @@
 
             document.documentElement.setAttribute('data-theme', theme);
             if (theme !== 'dynamic') document.documentElement.removeAttribute('data-time-of-day');
+
+            document.getElementById('custom-bg-section').style.display = (theme === 'custom') ? 'block' : 'none';
+
+            if (theme === 'custom') {
+                const customBg = localStorage.getItem('adhan_custom_bg');
+                if (customBg) {
+                    document.documentElement.style.setProperty('--bg-image', `url(${customBg})`);
+                } else {
+                    document.documentElement.style.removeProperty('--bg-image');
+                }
+            } else {
+                document.documentElement.style.removeProperty('--bg-image');
+            }
 
             let rootSize = '16px';
             if (size === 'small') rootSize = '14px';
@@ -1281,10 +1341,10 @@
             seq.forEach(p => {
                 const displayTime = addOffsetToString(timings[p]);
                 if(p === "Sunrise") {
-                    htmlStr += `<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 8px;"><span style="color: var(--danger); font-weight: bold; text-transform: uppercase; font-size: 0.85rem;">${p}</span><div style="display: flex; align-items: center;"><span style="color: var(--danger); font-family: 'Courier New', monospace; font-size: 1.25rem; font-weight: bold;">${displayTime}</span><div style="width: 32px; margin-left: 15px;"></div></div></div>`;
+                    htmlStr += `<div style="display: flex; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 8px;"><span style="color: var(--danger); font-weight: bold; text-transform: uppercase; font-size: 0.85rem; flex: 1;">${p}</span><div style="display: flex; align-items: center; justify-content: flex-end; width: 140px;"><span style="color: var(--danger); font-family: 'Courier New', monospace; font-size: 1.25rem; font-weight: bold;">${displayTime}</span><div style="width: 32px; margin-left: 15px;"></div></div></div>`;
                 } else {
                     const isChecked = prayerData[dateStr][p] ? 'checked' : '';
-                    htmlStr += `<label style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 8px; cursor: pointer; transition: background 0.2s; border-radius: 6px; padding-left: 5px; padding-right: 5px;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'"><span style="color: var(--text-main); font-weight: bold; text-transform: uppercase; font-size: 0.85rem;">${p}</span><div style="display: flex; align-items: center;"><span style="color: var(--gold); font-family: 'Courier New', monospace; font-size: 1.25rem; font-weight: bold;">${displayTime}</span><div style="width: 32px; margin-left: 15px;"><input type="checkbox" id="chk_${p}" ${isChecked} onchange="togglePrayer('${p}', '${dateStr}')" style="transform: scale(1.6); margin: 0; accent-color: var(--gold); cursor: pointer;"></div></div></label>`;
+                    htmlStr += `<label style="display: flex; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 8px; cursor: pointer; transition: background 0.2s; border-radius: 6px; padding-left: 5px; padding-right: 5px;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'"><span style="color: var(--text-main); font-weight: bold; text-transform: uppercase; font-size: 0.85rem; flex: 1;">${p}</span><div style="display: flex; align-items: center; justify-content: flex-end; width: 140px;"><span style="color: var(--gold); font-family: 'Courier New', monospace; font-size: 1.25rem; font-weight: bold;">${displayTime}</span><div style="width: 32px; margin-left: 15px; display: flex; justify-content: center;"><input type="checkbox" id="chk_${p}" ${isChecked} onchange="togglePrayer('${p}', '${dateStr}')" style="transform: scale(1.6); margin: 0; accent-color: var(--gold); cursor: pointer;"></div></div></label>`;
                 }
             });
             
