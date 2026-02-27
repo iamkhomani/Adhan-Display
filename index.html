@@ -44,6 +44,7 @@
     }
     </script>
 
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Adhan Display">
@@ -526,7 +527,7 @@
 
             <div class="setting-group" style="margin-top: 35px; border-top: 1px solid var(--border-color); padding-top: 25px;">
                 <label>Data Management</label>
-                <button onclick="exportPrayerData()" class="btn-gold" style="width: 100%; margin: 0;">📥 Export Prayer Data (CSV)</button>
+                <button onclick="exportPrayerData()" class="btn-gold" style="width: 100%; max-width: 100%; margin: 0;">📥 Export Prayer Data (CSV)</button>
                 <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px; text-align: center;">Download a spreadsheet of your tracked Salah history.</div>
             </div>
 
@@ -1205,12 +1206,17 @@
             document.getElementById('install-card-section').style.display = 'none';
         }
 
+        // FIX: Ensure Promise resolution logic is satisfied for newer Chrome/Chromium versions
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
         const isIos = () => { return /iphone|ipad|ipod/.test( window.navigator.userAgent.toLowerCase() ); };
 
         document.getElementById('install-btn').addEventListener('click', async () => {
-            if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; } 
+            if (deferredPrompt) { 
+                await deferredPrompt.prompt(); 
+                const { outcome } = await deferredPrompt.userChoice;
+                deferredPrompt = null; 
+            } 
             else if (isIos()) { alert("To install on iOS: Tap the 'Share' icon at the bottom of Safari, scroll down, and select 'Add to Home Screen'."); } 
             else { alert("Tap your browser's menu (⋮) and select 'Install' or 'Add to Home Screen'."); }
         });
