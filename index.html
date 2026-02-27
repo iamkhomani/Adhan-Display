@@ -15,6 +15,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#050505">
     
+    <title>Adhan Display | Smart Islamic Dashboard & Prayer Tracker</title>
+    <meta name="description" content="Turn any screen into a smart Adhan dashboard. The ultimate free Islamic prayer tracker, offline live prayer times, Qibla compass, and daily inspiration. No subscriptions required.">
+    <meta name="keywords" content="adhan dashboard, prayer tracker, islamic smart clock, salah tracker, qibla compass, web adhan display, waqtly alternative, bilaal alternative, free prayer app">
+    <meta name="author" content="Adhan Display">
+    
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Adhan Display | Smart Islamic Dashboard & Prayer Tracker">
+    <meta property="og:description" content="Turn any device into a beautiful, free Adhan display and Salah tracker with offline support and a live Qibla compass.">
+    <meta property="og:image" content="images/adhan display muslim prayer times dashboard background.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Adhan Display | Smart Islamic Dashboard">
+    <meta name="twitter:description" content="Turn any device into a free Adhan display and Salah tracker.">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Adhan Display",
+      "description": "A smart Islamic dashboard featuring live prayer times, offline Salah tracking, and Qibla direction.",
+      "applicationCategory": "LifestyleApplication",
+      "operatingSystem": "Any",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
+
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Adhan Display">
@@ -24,9 +53,6 @@
     <link rel="manifest" href="manifest.json">
 
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&display=swap" rel="stylesheet">
-
-    <title>Adhan Display: Live Prayer Times & Qibla</title>
-    <meta name="description" content="A free, luxury Islamic dashboard featuring live prayer times, Qibla direction, Quran verses, and Makkah streaming for any device.">
     
     <style>
         /* === THEME VARIABLES === */
@@ -120,7 +146,7 @@
             transition: all 0.5s ease;
         }
 
-        /* Fixed Top Controls (Prevents Overlapping) */
+        /* Fixed Top Controls */
         .top-left-logo { position: absolute; top: 20px; left: 20px; width: clamp(50px, 8vw, 70px); height: auto; z-index: 10; }
 
         .top-controls {
@@ -159,6 +185,7 @@
         body.focus-mode #status-label, body.focus-mode #next-label { font-size: clamp(1.2rem, 3vw, 1.8rem) !important; letter-spacing: 2px !important; }
         body.focus-mode #curr-time { font-size: clamp(1.8rem, 5vw, 2.5rem) !important; margin-bottom: 20px !important; }
         body.focus-mode #focus-btn { border-color: var(--gold) !important; background: var(--gold) !important; color: #050505 !important; z-index: 1000 !important; }
+        body.focus-mode .fullscreen-toggle { z-index: 1000 !important; }
 
         @media (max-width: 850px) {
             body.focus-mode .prayer-hero { flex-direction: column !important; padding: 40px 20px !important; gap: 30px !important; }
@@ -422,9 +449,9 @@
                 </div>
                 
                 <div id="custom-bg-section" style="display: none; margin-top: 15px; padding: 15px; border: 1px dashed var(--gold); border-radius: 8px;">
-                    <label style="font-size: 0.85rem; text-transform: none; color: var(--gold);">Upload Custom Image (Max ~2MB)</label>
+                    <label style="font-size: 0.85rem; text-transform: none; color: var(--gold);">Upload Custom Image</label>
                     <input type="file" id="custom-bg-upload" accept="image/*" class="opt-btn" style="padding: 8px; width: 100%; margin-top: 5px;">
-                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 5px;">Image is processed and saved locally to your device.</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">Image is automatically compressed and saved locally.</div>
                 </div>
             </div>
 
@@ -486,6 +513,13 @@
                     <button class="opt-btn text-source-btn" data-source-val="hadith">Hadith</button>
                 </div>
             </div>
+
+            <div class="setting-group" style="margin-top: 35px; border-top: 1px solid var(--border-color); padding-top: 25px;">
+                <label>Data Management</label>
+                <button onclick="exportPrayerData()" class="btn-gold" style="width: 100%; margin: 0;">📥 Export Prayer Data (CSV)</button>
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px; text-align: center;">Download a spreadsheet of your tracked Salah history.</div>
+            </div>
+
         </div>
     </div>
 
@@ -720,7 +754,7 @@
             nl: { subtitle: "Het Ultieme Islamitische Gebedstijden Dashboard", greg: "Gregoriaans", time: "Huidige Tijd", loc: "Locatie", hijri: "Hidzjra", curr: "Huidig Gebed", next: "Volgend Gebed In", ayah: "Vers van de Dag", hadith: "Hadith van de Dag", dua: "Smeekbede van de Dag", qiyam: "Nachtgebeden", mid: "Middernacht", tahajjud: "Tahajjud", allah: "Naam van Allah", ramadan: "Ramadan", days: "Dagen Te Gaan", makkah: "Mekka Live", live_stream: "Heilige Plaatsen Live", watch: "Bekijk Stream", qibla: "Qibla Richting", north: "van ware noorden", ar_find: "🧭 Open Qibla Kompas", getapp: "Download de App", install: "Installeer App", pref: "Instellingen", theme: "Thema", dynamic: "Dynamisch", size: "Tekstgrootte", lang: "Taal", nopray: "* Bidden is niet toegestaan *", audio_pref: "Audio & Meldingen", wudu_alert: "10-Min Wudu Melding", daily_source: "Dagelijkse Inspiratie", sunnah_mon: "Sunnah Vasten: Maandag", sunnah_thu: "Sunnah Vasten: Donderdag", sunnah_white: "Sunnah Vasten: Witte Dagen", daily_times: "Dagelijkse Gebedstijden", tracker_title: "Gebedstracker & Geschiedenis", last_7: "Laatste 7 Dagen:", last_30: "Laatste 30 Dagen:", past_days: "Verleden Dagen", no_data: "Nog geen data.", tasbih: "Digitale Tasbih", resources: "Tools & Hulpbronnen", revert_guide: "Stap-voor-Stap Gebedsgids", zakat_calc: "Zakat Calculator" },
             fr: { subtitle: "Le Tableau de Bord Islamique Ultime", greg: "Grégorien", time: "Heure Actuelle", loc: "Emplacement", hijri: "Hégire", curr: "Prière Actuelle", next: "Prochaine Prière", ayah: "Verset du Jour", hadith: "Hadith du Jour", dua: "Dua du Jour", qiyam: "Prières Nocturnes", mid: "Minuit", tahajjud: "Tahajjud", allah: "Nom d'Allah", ramadan: "Ramadan", days: "Jours Restants", makkah: "Mecque en Direct", live_stream: "Lieux Saints en Direct", watch: "Regarder le Stream", qibla: "Direction de la Qibla", north: "du vrai nord", ar_find: "🧭 Ouvrir la Boussole Qibla", getapp: "Obtenir l'App", install: "Installer l'App", pref: "Préférences", theme: "Thème", dynamic: "Dynamique", size: "Taille du Texte", lang: "Langue", nopray: "* Prière non permise *", audio_pref: "Audio & Alertes", wudu_alert: "Alerte Wudu 10-Min", daily_source: "Inspiration Quotidienne", sunnah_mon: "Jeûne Sunnah : Lundi", sunnah_thu: "Jeûne Sunnah : Jeudi", sunnah_white: "Jeûne Sunnah : Jours Blancs", daily_times: "Heures de Prière", tracker_title: "Suivi des Prières", last_7: "7 Derniers Jours:", last_30: "30 Derniers Jours:", past_days: "Jours Passés", no_data: "Aucune donnée.", tasbih: "Tasbih Numérique", resources: "Outils et Ressources", revert_guide: "Guide de Prière Étape par Étape", zakat_calc: "Calculatrice de Zakat" },
             de: { subtitle: "Das Ultimative Islamische Dashboard", greg: "Gregorianisch", time: "Aktuelle Zeit", loc: "Ort", hijri: "Hidschra", curr: "Aktuelles Gebet", next: "Nächstes Gebet In", ayah: "Vers des Tages", hadith: "Hadith des Tages", dua: "Dua des Tages", qiyam: "Nachtgebete", mid: "Mitternacht", tahajjud: "Tahajjud", allah: "Name Allahs", ramadan: "Ramadan", days: "Verbleibende Tage", makkah: "Mekka Live", live_stream: "Heilige Stätten Live", watch: "Stream Ansehen", qibla: "Qibla-Richtung", north: "vom wahren Norden", ar_find: "🧭 Qibla-Kompass Öffnen", getapp: "App Holen", install: "App Installieren", pref: "Einstellungen", theme: "Thema", dynamic: "Dynamisch", size: "Textgröße", lang: "Sprache", nopray: "* Beten ist nicht erlaubt *", audio_pref: "Audio & Warnungen", wudu_alert: "10-Min Wudu-Alarm", daily_source: "Tägliche Inspiration", sunnah_mon: "Sunnah Fasten: Montag", sunnah_thu: "Sunnah Fasten: Donnerstag", sunnah_white: "Sunnah Fasten: Weiße Tage", daily_times: "Tägliche Gebetszeiten", tracker_title: "Gebets-Tracker", last_7: "Letzte 7 Tage:", last_30: "Letzte 30 Tage:", past_days: "Vergangene Tage", no_data: "Noch keine Daten.", tasbih: "Digitaler Tasbih", resources: "Werkzeuge & Ressourcen", revert_guide: "Schritt-für-Schritt Gebetsanleitung", zakat_calc: "Zakat Rechner" },
-            es: { subtitle: "El Panel de Oración Islámica Definitivo", greg: "Gregoriano", time: "Hora Actual", loc: "Ubicación", hijri: "Hégira", curr: "Oración Actual", next: "Próxima Oración En", ayah: "Versículo del Día", hadith: "Hadiz del Día", dua: "Dua del Día", qiyam: "Oraciones Nocturnas", mid: "Medianoche", tahajjud: "Tahajjud", allah: "Nombre de Alá", ramadan: "Ramadán", days: "Días Restantes", makkah: "La Meca en Vivo", live_stream: "Lugares Santos en Vivo", watch: "Ver Transmisión", qibla: "Dirección Qibla", north: "desde el norte", ar_find: "🧭 Abrir Brújula Qibla", getapp: "Obtener App", install: "Instalar App", pref: "Preferencias", theme: "Tema", dynamic: "Dinámico", size: "Tamaño", lang: "Idioma", nopray: "* No está permitido orar *", audio_pref: "Audio y Alertas", wudu_alert: "Alerta Wudu 10-Min", daily_source: "Inspiration Diaria", sunnah_mon: "Ayuno Sunnah: Lunes", sunnah_thu: "Ayuno Sunnah: Jueves", sunnah_white: "Ayuno Sunnah: Días Blancos", daily_times: "Horarios de Oración", tracker_title: "Rastreador de Oraciones", last_7: "Últimos 7 Días:", last_30: "Últimos 30 Días:", past_days: "Días Pasados", no_data: "Aún no hay datos.", tasbih: "Tasbih Digital", resources: "Herramientas y Recursos", revert_guide: "Guía de Oración Paso a Paso", zakat_calc: "Calculadora de Zakat" },
+            es: { subtitle: "El Panel de Oración Islámica Definitivo", greg: "Gregoriano", time: "Hora Actual", loc: "Ubicación", hijri: "Hégira", curr: "Oración Actual", next: "Próxima Oración En", ayah: "Versículo del Día", hadith: "Hadiz del Día", dua: "Dua del Día", qiyam: "Oraciones Nocturnas", mid: "Medianoche", tahajjud: "Tahajjud", allah: "Nombre de Alá", ramadan: "Ramadán", days: "Días Restantes", makkah: "La Meca en Vivo", live_stream: "Lugares Santos en Vivo", watch: "Ver Transmisión", qibla: "Dirección Qibla", north: "desde el norte", ar_find: "🧭 Abrir Brújula Qibla", getapp: "Obtener App", install: "Instalar App", pref: "Preferencias", theme: "Tema", dynamic: "Dinámico", size: "Tamaño", lang: "Idioma", nopray: "* No está permitido orar *", audio_pref: "Audio y Alertas", wudu_alert: "Alerta Wudu 10-Min", daily_source: "Inspiración Diaria", sunnah_mon: "Ayuno Sunnah: Lunes", sunnah_thu: "Ayuno Sunnah: Jueves", sunnah_white: "Ayuno Sunnah: Días Blancos", daily_times: "Horarios de Oración", tracker_title: "Rastreador de Oraciones", last_7: "Últimos 7 Días:", last_30: "Últimos 30 Días:", past_days: "Días Pasados", no_data: "Aún no hay datos.", tasbih: "Tasbih Digital", resources: "Herramientas y Recursos", revert_guide: "Guía de Oración Paso a Paso", zakat_calc: "Calculadora de Zakat" },
             ar: { subtitle: "لوحة أوقات الصلاة الإسلامية المطلقة", greg: "ميلادي", time: "الوقت الحالي", loc: "الموقع", hijri: "هجري", curr: "الصلاة الحالية", next: "الصلاة القادمة في", ayah: "آية اليوم", hadith: "حديث اليوم", dua: "دعاء اليوم", qiyam: "قيام الليل", mid: "منتصف الليل", tahajjud: "تهجد", allah: "اسم الله", ramadan: "رمضان", days: "أيام متبقية", makkah: "مكة مباشر", live_stream: "البث المباشر للأماكن المقدسة", watch: "شاهد البث", qibla: "اتجاه القبلة", north: "من الشمال الحقيقي", ar_find: "🧭 فتح بوصلة القبلة", getapp: "احصل على التطبيق", install: "تثبيت التطبيق", pref: "الإعدادات", theme: "السمة", dynamic: "ديناميكي", size: "حجم النص", lang: "اللغة", nopray: "* الصلاة غير جائزة *", audio_pref: "الصوت والتنبيهات", wudu_alert: "تنبيه الوضوء 10 دقائق", daily_source: "إلهام يومي", sunnah_mon: "صيام السنة: الإثنين", sunnah_thu: "صيام السنة: الخميس", sunnah_white: "صيام السنة: الأيام البيض", daily_times: "مواقيت الصلاة اليومية", tracker_title: "متتبع الصلاة", last_7: "آخر 7 أيام:", last_30: "آخر 30 يوم:", past_days: "الأيام الماضية", no_data: "لا توجد بيانات بعد.", tasbih: "مسبحة رقمية", resources: "الأدوات والموارد", revert_guide: "دليل الصلاة خطوة بخطوة", zakat_calc: "حاسبة الزكاة" }
         };
 
@@ -888,6 +922,7 @@
 
         const DOM = {};
 
+        // === WAKE LOCK API LOGIC ===
         async function requestWakeLock() {
             if ('wakeLock' in navigator) {
                 try {
@@ -898,6 +933,7 @@
         }
         document.addEventListener('visibilitychange', async () => { if (document.visibilityState === 'visible') requestWakeLock(); });
 
+        // === ONBOARDING LOGIC ===
         function checkOnboarding() {
             if (!localStorage.getItem('adhan_onboarded')) {
                 document.getElementById('onboarding-modal').classList.add('active');
@@ -931,6 +967,7 @@
             }
         }
 
+        // === UI & MODALS LOGIC ===
         function initUI() {
             DOM.liveClock = document.getElementById('live-clock');
             DOM.gregDate = document.getElementById('greg-date');
@@ -952,8 +989,7 @@
             const focusBtn = document.getElementById('focus-btn');
             const fsBtn = document.getElementById('fullscreen-btn');
 
-            settingsBtn.addEventListener('click', () => settingsModal.classList.add('active'));
-            closeSettingsBtn.addEventListener('click', () => {
+            function closeSettings() {
                 settingsModal.classList.remove('active');
                 const newMethod = document.getElementById('calc-method').value;
                 const newOffset = document.getElementById('manual-offset').value;
@@ -970,7 +1006,18 @@
                     localStorage.removeItem(`calendar_${config.lat}_${config.lon}`);
                     fetchPrayerData();
                 }
+            }
+
+            settingsBtn.addEventListener('click', () => settingsModal.classList.add('active'));
+            closeSettingsBtn.addEventListener('click', closeSettings);
+            
+            // Close Settings if user clicks outside the modal box
+            settingsModal.addEventListener('click', (e) => {
+                if (e.target === settingsModal) {
+                    closeSettings();
+                }
             });
+
             focusBtn.addEventListener('click', () => {
                 document.body.classList.toggle('focus-mode');
                 if(document.body.classList.contains('focus-mode')) window.scrollTo(0,0);
@@ -989,7 +1036,7 @@
                 document.querySelectorAll('audio').forEach(a => a.volume = vol);
             });
 
-            // Handle Custom Background Upload with Canvas Compression to stay under 5MB limit
+            // Handle Custom Background Upload with Canvas Compression
             document.getElementById('custom-bg-upload').addEventListener('change', (event) => {
                 const file = event.target.files[0];
                 if(!file) return;
@@ -1025,6 +1072,41 @@
                 reader.readAsDataURL(file);
             });
         }
+
+        // === CSV EXPORT LOGIC ===
+        window.exportPrayerData = function() {
+            const data = JSON.parse(localStorage.getItem('adhan_tracker')) || {};
+            const dates = Object.keys(data).sort();
+            
+            if (dates.length === 0) {
+                alert("No prayer data to export yet.");
+                return;
+            }
+            
+            let csvContent = "Date,Fajr,Dhuhr,Asr,Maghrib,Isha\n";
+            
+            dates.forEach(date => {
+                const p = data[date];
+                let row = [
+                    date,
+                    p.Fajr ? 'Yes' : 'No',
+                    p.Dhuhr ? 'Yes' : 'No',
+                    p.Asr ? 'Yes' : 'No',
+                    p.Maghrib ? 'Yes' : 'No',
+                    p.Isha ? 'Yes' : 'No'
+                ];
+                csvContent += row.join(",") + "\n";
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", "adhan_display_tracker.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
 
         function applySettings() {
             const theme = localStorage.getItem('adhan_theme') || 'dynamic';
