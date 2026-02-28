@@ -667,17 +667,17 @@
 
             <div class="setting-group" style="margin-top: 35px; border-top: 1px solid var(--border-color); padding-top: 25px;">
                 <label>Data Management & Cloud Sync</label>
-                <button onclick="exportPrayerData()" class="btn-gold" style="width: 100%; max-width: 100%; margin: 0 0 10px 0;">📥 Export CSV (Spreadsheet)</button>
+                <button onclick="exportPrayerData()" class="btn-gold" style="width: 100%; max-width: 100%; margin: 0 0 10px 0;">📥 Export CSV (For Spreadsheets)</button>
                 
                 <div style="display: flex; gap: 10px;">
-                    <button onclick="exportBackupJSON()" class="opt-btn" style="flex: 1; padding: 12px; background: rgba(52, 152, 219, 0.2); color: #3498db; border-color: #3498db;">☁️ Save Backup File</button>
+                    <button onclick="exportBackupJSON()" class="opt-btn" style="flex: 1; padding: 12px; background: rgba(52, 152, 219, 0.2); color: #3498db; border-color: #3498db;">☁️ Export Backup (For New Device)</button>
                     
                     <label class="opt-btn" style="flex: 1; padding: 12px; background: rgba(46, 204, 113, 0.2); color: #2ecc71; border-color: #2ecc71; text-align: center; cursor: pointer; margin: 0;">
-                        ☁️ Restore Backup
+                        ☁️ Import Backup
                         <input type="file" id="import-json-upload" accept=".json" style="display: none;" onchange="importBackupJSON(event)">
                     </label>
                 </div>
-                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px; text-align: center;">Use Backup/Restore files to sync data between your phone and computer.</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px; text-align: center;">Use Backup/Restore to perfectly transfer your settings and trackers to a new device.</div>
             </div>
 
         </div>
@@ -1202,7 +1202,6 @@
         }
         document.addEventListener('visibilitychange', async () => { if (document.visibilityState === 'visible') requestWakeLock(); });
 
-        // Activity Tracking for Screensaver
         function resetInactivity() {
             document.body.classList.remove('ambient-active');
             if (inactivityTimer) clearTimeout(inactivityTimer);
@@ -1408,6 +1407,7 @@
             const backup = {};
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
+                // Do not export the base64 background image as it causes file size bloat
                 if (key.startsWith('adhan_') && key !== 'adhan_custom_bg') {
                     backup[key] = localStorage.getItem(key);
                 }
@@ -1779,7 +1779,6 @@
                 : 'https://www.youtube.com/results?search_query=madina+live';
         };
 
-        // Adhkar Counter
         window.countAdhkar = function(btn) {
             const max = parseInt(btn.getAttribute('data-max'));
             let current = parseInt(btn.getAttribute('data-current') || '0');
@@ -1866,7 +1865,6 @@
         window.openMonthlyTimetable = function() {
             if(!state.monthlyCache || state.monthlyCache.length === 0) return;
             
-            // List View Generation
             let html = `<tr><th>Day</th><th>Fajr</th><th>Sunrise</th><th>Dhuhr</th><th>Asr</th><th>Maghrib</th><th>Isha</th></tr>`;
             state.monthlyCache.forEach(day => {
                 const date = day.date.gregorian.day;
@@ -1883,18 +1881,17 @@
             });
             document.getElementById('monthly-table').innerHTML = html;
             
-            // Grid View Generation
             let gridHtml = '';
             const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
             daysOfWeek.forEach(d => gridHtml += `<div class="cal-header">${d}</div>`);
             
-            const firstDayStr = state.monthlyCache[0].date.gregorian.date; // DD-MM-YYYY
+            const firstDayStr = state.monthlyCache[0].date.gregorian.date; 
             const parts = firstDayStr.split('-');
             const firstDateObj = new Date(parts[2], parts[1]-1, parts[0]);
             let startDay = firstDateObj.getDay(); 
-            if(startDay === 0) startDay = 7; // Make Monday index 1
+            if(startDay === 0) startDay = 7; 
             
-            for(let i=1; i<startDay; i++) { gridHtml += `<div></div>`; } // Empty slots
+            for(let i=1; i<startDay; i++) { gridHtml += `<div></div>`; } 
             
             const today = new Date().getDate();
             state.monthlyCache.forEach(day => {
@@ -2005,7 +2002,6 @@
             const isHaidh = localStorage.getItem('adhan_haidh_mode') === 'true';
             localStorage.setItem('adhan_haidh_mode', !isHaidh);
             
-            // Mark today's data as exempt
             const d = new Date(); const todayStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
             if(!prayerData[todayStr]) { prayerData[todayStr] = { Fajr: false, Dhuhr: false, Asr: false, Maghrib: false, Isha: false, Fast: false, Kahf: false }; }
             prayerData[todayStr].Exempt = !isHaidh;
@@ -2041,8 +2037,7 @@
                 }
             });
 
-            // Surah Al-Kahf check (Fridays)
-            const dObj = new Date(dateStr + 'T12:00:00'); // Force midday to avoid timezone shifting
+            const dObj = new Date(dateStr + 'T12:00:00'); 
             if(dObj.getDay() === 5) {
                 const isKahf = prayerData[dateStr]['Kahf'] ? 'checked' : '';
                 htmlStr += `<label style="display: flex; justify-content: space-between; align-items: center; padding: 15px 10px; margin-top: 10px; cursor: pointer; background: rgba(212, 175, 55, 0.1); border: 1px solid var(--gold); border-radius: 6px;">
@@ -2265,7 +2260,6 @@
             if(!state.nextPrayer) return;
             const diffMs = state.nextPrayer.time - now;
 
-            // Tahajjud Alarm check (30 mins before Fajr)
             if (state.nextPrayer.name === "Fajr" && localStorage.getItem('adhan_tahajjud_alarm') === 'true' && !state.tahajjudAlarmPlayed) {
                 const tahajjudMs = diffMs - (30 * 60000);
                 if (tahajjudMs <= 0 && tahajjudMs > -60000) {
