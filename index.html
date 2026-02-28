@@ -320,7 +320,6 @@
         #monthly-table th { color: var(--gold); font-size: 0.9rem; letter-spacing: 1px; }
         #monthly-table td { font-family: 'Courier New', monospace; font-size: 0.95rem; }
 
-        /* FIX: Made the Grid highly responsive using minmax to prevent clipping on tiny screens */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; margin-top: 15px; }
         .cal-header { font-weight: bold; color: var(--gold); text-align: center; padding: 5px; font-size: clamp(0.6rem, 2vw, 0.8rem); text-transform: uppercase; }
         .cal-day { border: 1px solid var(--border-color); border-radius: 4px; padding: 5px 2px; text-align: center; background: rgba(0,0,0,0.2); display: flex; flex-direction: column; justify-content: space-between; min-height: 50px; }
@@ -655,6 +654,17 @@
                         <input type="checkbox" id="screensaver-toggle" style="accent-color: var(--gold); transform: scale(1.4); cursor: pointer;">
                     </label>
                 </div>
+            </div>
+
+            <div class="setting-group" style="margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 25px;">
+                <label>Prayer Tracker Settings</label>
+                <div class="toggle-row">
+                    <span style="font-size: 0.95rem; font-weight: 500;">Auto-Add Missed Prayers to Qada</span>
+                    <label class="switch" style="cursor: pointer;">
+                        <input type="checkbox" id="auto-qada-toggle" style="accent-color: var(--gold); transform: scale(1.4); cursor: pointer;">
+                    </label>
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">If left unchecked by 4:00 AM, the app automatically assumes a prayer was missed and adds it to your Qada count.</div>
             </div>
 
             <div class="setting-group">
@@ -1192,6 +1202,59 @@
 
         const DOM = {};
 
+        // NEW: Background logic to automatically add missed prayers to Qada
+        function processAutoQada() {
+            const autoQadaEnabled = localStorage.getItem('adhan_auto_qada') !== 'false'; 
+            if (!autoQadaEnabled) return;
+
+            const now = new Date();
+            // We use a 4 AM cutoff. This ensures Isha is safely pushed to the previous day 
+            // so a user checking the app at 1 AM doesn't get incorrectly penalized for missing yesterday's prayers.
+            const todayStrObj = new Date(now.getTime() - 4 * 3600000); 
+            const todayStr = todayStrObj.getFullYear() + '-' + String(todayStrObj.getMonth() + 1).padStart(2, '0') + '-' + String(todayStrObj.getDate()).padStart(2, '0');
+
+            let lastCalcDateStr = localStorage.getItem('adhan_last_qada_date');
+            
+            if (!lastCalcDateStr) {
+                // First time running this feature, set to today so it starts tracking tomorrow
+                localStorage.setItem('adhan_last_qada_date', todayStr);
+                return;
+            }
+
+            if (lastCalcDateStr === todayStr) return; // Already up to date
+
+            let qadaUpdated = false;
+            let d = new Date(lastCalcDateStr);
+            d.setDate(d.getDate() + 1); // Start from the day *after* the last calculated date
+
+            const limit = new Date(todayStr);
+
+            while (d <= limit) {
+                let checkStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+                if (checkStr === todayStr) break; // We don't process "today" until tomorrow
+
+                let dayRecord = prayerData[checkStr];
+                let isExempt = dayRecord ? dayRecord.Exempt : false;
+
+                if (!isExempt) {
+                    TRACK_PRAYERS.forEach(p => {
+                        if (!dayRecord || !dayRecord[p]) {
+                            qadaData[p] = (qadaData[p] || 0) + 1;
+                            qadaUpdated = true;
+                        }
+                    });
+                }
+                d.setDate(d.getDate() + 1);
+            }
+
+            if (qadaUpdated) {
+                localStorage.setItem('adhan_qada', JSON.stringify(qadaData));
+                renderQada();
+            }
+            
+            localStorage.setItem('adhan_last_qada_date', todayStr);
+        }
+
         async function requestWakeLock() {
             if ('wakeLock' in navigator) {
                 try {
@@ -1206,7 +1269,7 @@
             document.body.classList.remove('ambient-active');
             if (inactivityTimer) clearTimeout(inactivityTimer);
             if (localStorage.getItem('adhan_screensaver') === 'true') {
-                inactivityTimer = setTimeout(() => { document.body.classList.add('ambient-active'); }, 5 * 60 * 1000); // 5 mins
+                inactivityTimer = setTimeout(() => { document.body.classList.add('ambient-active'); }, 5 * 60 * 1000); 
             }
         }
         window.addEventListener('mousemove', resetInactivity);
@@ -1407,7 +1470,6 @@
             const backup = {};
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
-                // Do not export the base64 background image as it causes file size bloat
                 if (key.startsWith('adhan_') && key !== 'adhan_custom_bg') {
                     backup[key] = localStorage.getItem(key);
                 }
@@ -1513,6 +1575,7 @@
             const autodim = localStorage.getItem('adhan_autodim') === 'true';
             const screensaver = localStorage.getItem('adhan_screensaver') === 'true';
             const tahajjud = localStorage.getItem('adhan_tahajjud_alarm') === 'true';
+            const autoQada = localStorage.getItem('adhan_auto_qada') !== 'false'; // Default to true
 
             config.method = localStorage.getItem('adhan_method') || 3;
             config.offset = parseInt(localStorage.getItem('adhan_offset')) || 0;
@@ -1545,6 +1608,7 @@
             document.getElementById('autodim-toggle').checked = autodim;
             document.getElementById('screensaver-toggle').checked = screensaver;
             document.getElementById('tahajjud-toggle').checked = tahajjud;
+            document.getElementById('auto-qada-toggle').checked = autoQada;
 
             document.getElementById('calc-method').value = config.method;
             document.getElementById('manual-offset').value = config.offset;
@@ -1593,6 +1657,7 @@
         document.getElementById('tahajjud-toggle').addEventListener('change', (e) => { localStorage.setItem('adhan_tahajjud_alarm', e.target.checked); if(e.target.checked && "Notification" in window) Notification.requestPermission(); });
         document.getElementById('autodim-toggle').addEventListener('change', (e) => { localStorage.setItem('adhan_autodim', e.target.checked); applySettings(); });
         document.getElementById('screensaver-toggle').addEventListener('change', (e) => { localStorage.setItem('adhan_screensaver', e.target.checked); resetInactivity(); });
+        document.getElementById('auto-qada-toggle').addEventListener('change', (e) => { localStorage.setItem('adhan_auto_qada', e.target.checked); if(e.target.checked) processAutoQada(); });
 
         if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
             document.getElementById('install-card-section').style.display = 'none';
@@ -1600,8 +1665,6 @@
 
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => { 
-            // The browser triggers this to show the default installation banner.
-            // We prevent it so we can show our custom "Install App" button instead.
             e.preventDefault(); 
             deferredPrompt = e; 
         });
@@ -2061,9 +2124,32 @@
             updateStatistics();
         }
 
+        // NEW: Logic added to track manual toggles for Auto-Qada management
         window.togglePrayer = function(prayerName, dateStr) {
             const isNowChecked = document.getElementById('chk_' + prayerName).checked;
-            prayerData[dateStr][prayerName] = isNowChecked; localStorage.setItem('adhan_tracker', JSON.stringify(prayerData));
+            
+            if (prayerName !== 'Fast' && prayerName !== 'Kahf' && prayerName !== 'Exempt') {
+                const autoQadaEnabled = localStorage.getItem('adhan_auto_qada') !== 'false';
+                if (autoQadaEnabled) {
+                    const now = new Date();
+                    const todayStrObj = new Date(now.getTime() - 4 * 3600000); 
+                    const todayStr = todayStrObj.getFullYear() + '-' + String(todayStrObj.getMonth() + 1).padStart(2, '0') + '-' + String(todayStrObj.getDate()).padStart(2, '0');
+                    
+                    if (dateStr < todayStr) {
+                        const wasChecked = prayerData[dateStr] ? prayerData[dateStr][prayerName] : false;
+                        if (isNowChecked && !wasChecked) {
+                            qadaData[prayerName] = Math.max(0, qadaData[prayerName] - 1);
+                        } else if (!isNowChecked && wasChecked) {
+                            qadaData[prayerName] += 1;
+                        }
+                        localStorage.setItem('adhan_qada', JSON.stringify(qadaData));
+                        renderQada();
+                    }
+                }
+            }
+
+            prayerData[dateStr][prayerName] = isNowChecked; 
+            localStorage.setItem('adhan_tracker', JSON.stringify(prayerData));
             
             if(prayerName !== 'Fast' && prayerName !== 'Kahf') {
                 const prayersDone = TRACK_PRAYERS.filter(p => prayerData[dateStr][p]).length;
@@ -2141,6 +2227,7 @@
         }
 
         async function init() {
+            processAutoQada(); // NEW: Check for missed prayers before doing anything else
             initUI();
             try { applySettings(); } catch(e) {}
             requestWakeLock(); 
