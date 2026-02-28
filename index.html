@@ -45,7 +45,6 @@
     </script>
 
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Adhan Display">
     <link rel="apple-touch-icon" href="images/adhan display muslim prayer times dashboard logo.png">
@@ -140,7 +139,7 @@
         }
         
         body.night-dimmed {
-            filter: brightness(0.5); /* Auto-dimming at night */
+            filter: brightness(0.5);
         }
 
         body::before {
@@ -321,12 +320,13 @@
         #monthly-table th { color: var(--gold); font-size: 0.9rem; letter-spacing: 1px; }
         #monthly-table td { font-family: 'Courier New', monospace; font-size: 0.95rem; }
 
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 15px; }
-        .cal-header { font-weight: bold; color: var(--gold); text-align: center; padding: 5px; font-size: 0.8rem; text-transform: uppercase; }
-        .cal-day { border: 1px solid var(--border-color); border-radius: 4px; padding: 5px; text-align: center; background: rgba(0,0,0,0.2); display: flex; flex-direction: column; justify-content: space-between; min-height: 50px; }
+        /* FIX: Made the Grid highly responsive using minmax to prevent clipping on tiny screens */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; margin-top: 15px; }
+        .cal-header { font-weight: bold; color: var(--gold); text-align: center; padding: 5px; font-size: clamp(0.6rem, 2vw, 0.8rem); text-transform: uppercase; }
+        .cal-day { border: 1px solid var(--border-color); border-radius: 4px; padding: 5px 2px; text-align: center; background: rgba(0,0,0,0.2); display: flex; flex-direction: column; justify-content: space-between; min-height: 50px; }
         .cal-day.active { border-color: var(--gold); background: var(--highlight-bg); box-shadow: 0 0 10px rgba(212,175,55,0.3); }
-        .cal-greg { font-size: 0.9rem; font-weight: bold; color: var(--text-main); }
-        .cal-hijri { font-size: 0.75rem; color: var(--text-muted); }
+        .cal-greg { font-size: clamp(0.7rem, 2.5vw, 0.9rem); font-weight: bold; color: var(--text-main); }
+        .cal-hijri { font-size: 0.7rem; color: var(--text-muted); }
 
         .adhkar-row { padding: 15px 0; border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px; }
         .adhkar-arabic { font-family: 'Tajawal', sans-serif; font-size: 1.4rem; color: var(--gold); text-align: right; line-height: 1.6; }
@@ -403,7 +403,7 @@
     </div>
     
     <div id="onboarding-modal" class="modal-overlay" style="z-index: 3000;">
-        <div class="settings-panel" style="text-align: center; max-width: 420px; padding-top: 45px;">
+        <div class="settings-panel" style="text-align: center; max-width: 420px; padding-top: 45px; padding-right: 45px;">
             <h2 style="color:var(--gold); margin-top:0; font-family:'Cinzel',serif; font-size: 1.8rem; letter-spacing: 1px;">Welcome</h2>
             <p style="color:var(--text-muted); font-size:0.95rem; margin-bottom:30px; line-height: 1.5;">Personalize your Adhan Display experience. This data is only stored locally.</p>
             
@@ -446,11 +446,11 @@
     <div id="monthly-modal" class="modal-overlay">
         <div class="settings-panel" style="max-width: 800px; padding: 25px;">
             <button class="close-btn" onclick="document.getElementById('monthly-modal').classList.remove('active')">×</button>
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom:1px solid var(--border-color); padding-bottom:15px; margin-bottom: 15px;">
-                <h3 style="color:var(--gold); margin:0;">Monthly Calendar</h3>
-                <div style="display: flex; gap: 5px;">
-                    <button class="opt-btn active" id="btn-cal-list" onclick="toggleCalView('list')" style="padding: 5px 15px; min-width: auto;">List</button>
-                    <button class="opt-btn" id="btn-cal-grid" onclick="toggleCalView('grid')" style="padding: 5px 15px; min-width: auto;">Grid</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom:1px solid var(--border-color); padding-bottom:15px; margin-bottom: 15px; padding-right: 45px;">
+                <h3 style="color:var(--gold); margin:0; font-size: 1.2rem;">Monthly Calendar</h3>
+                <div style="display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end;">
+                    <button class="opt-btn active" id="btn-cal-list" onclick="toggleCalView('list')" style="padding: 5px 15px; min-width: auto; margin: 0;">List</button>
+                    <button class="opt-btn" id="btn-cal-grid" onclick="toggleCalView('grid')" style="padding: 5px 15px; min-width: auto; margin: 0;">Grid</button>
                 </div>
             </div>
             <div id="monthly-list-view" style="overflow-x: auto; max-height: 60vh;">
@@ -467,7 +467,7 @@
     <div id="adhkar-modal" class="modal-overlay">
         <div class="settings-panel" style="max-width: 600px; padding: 25px;">
             <button class="close-btn" onclick="document.getElementById('adhkar-modal').classList.remove('active')">×</button>
-            <h3 style="color:var(--gold); margin-top:0; border-bottom:1px solid var(--border-color); padding-bottom:15px;">Morning & Evening Adhkar</h3>
+            <h3 style="color:var(--gold); margin-top:0; border-bottom:1px solid var(--border-color); padding-bottom:15px; padding-right: 45px;">Morning & Evening Adhkar</h3>
             <div style="max-height: 60vh; overflow-y: auto; padding-right: 10px;">
                 <div class="adhkar-row">
                     <div class="adhkar-arabic">أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ<br>اللّهُ لاَ إِلَـهَ إِلاَّ هُوَ الْحَيُّ الْقَيُّومُ... (آية الكرسي)</div>
@@ -497,7 +497,7 @@
     <div id="settings-modal" class="modal-overlay">
         <div class="settings-panel">
             <button id="close-settings" class="close-btn" title="Close Settings">×</button>
-            <h3 data-i18n="pref" style="color:var(--gold); margin-top:0; border-bottom:1px solid var(--gold); padding-bottom:15px; margin-bottom: 25px; font-size: 1.4rem;">Preferences</h3>
+            <h3 data-i18n="pref" style="color:var(--gold); margin-top:0; border-bottom:1px solid var(--gold); padding-bottom:15px; margin-bottom: 25px; font-size: 1.4rem; padding-right: 45px;">Preferences</h3>
             
             <div class="setting-group" style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
                 <label style="margin-bottom: 15px;">Customize Dashboard (Show/Hide)</label>
@@ -1599,7 +1599,12 @@
         }
 
         let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
+        window.addEventListener('beforeinstallprompt', (e) => { 
+            // The browser triggers this to show the default installation banner.
+            // We prevent it so we can show our custom "Install App" button instead.
+            e.preventDefault(); 
+            deferredPrompt = e; 
+        });
         const isIos = () => { return /iphone|ipad|ipod/.test( window.navigator.userAgent.toLowerCase() ); };
 
         document.getElementById('install-btn').addEventListener('click', async () => {
