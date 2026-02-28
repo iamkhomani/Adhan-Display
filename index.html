@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-BEKQEF4RR5"></script>
     <script>
@@ -301,14 +301,21 @@
 
         footer { margin-top: auto; text-align: center; padding: 40px 20px; border-top: 1px solid var(--gold); background: var(--glass-header); width: 100%; box-sizing: border-box; }
 
+        /* Monthly Table Modal Styles */
+        #monthly-table th, #monthly-table td { padding: 10px; border-bottom: 1px solid var(--border-color); text-align: center; }
+        #monthly-table th { color: var(--gold); font-size: 0.9rem; letter-spacing: 1px; }
+        #monthly-table td { font-family: 'Courier New', monospace; font-size: 0.95rem; }
+
         /* Anchor scroll offset for fixed headers/controls */
         #tracker { scroll-margin-top: 80px; }
         #qibla { scroll-margin-top: 80px; }
         #times-card { scroll-margin-top: 80px; }
+        #quran-card { scroll-margin-top: 80px; }
+        #qada-card { scroll-margin-top: 80px; }
 
         @media (min-width: 768px) {
             .prayer-hero, .history-card { grid-column: span 12; }
-            .times-card, .tasbih-card, .qibla-card, .tools-card, .text-widget, .dua-widget, .night-widget, .names-widget, .ramadan-widget, .video-card { grid-column: span 6; }
+            .times-card, .tasbih-card, .qibla-card, .tools-card, .text-widget, .dua-widget, .night-widget, .names-widget, .ramadan-card, .video-card, .quran-card, .qada-card, .events-card { grid-column: span 6; }
             #install-card-section { grid-column: span 12; }
             .fullscreen-toggle { right: 135px; }
         }
@@ -318,7 +325,8 @@
             .history-card { grid-column: span 12; }
             .tasbih-card, .qibla-card, .text-widget { grid-column: span 4; } 
             .night-widget, .names-widget, .dua-widget { grid-column: span 4; } 
-            .ramadan-widget { grid-column: span 12; } 
+            .ramadan-card { grid-column: span 12; } 
+            .quran-card, .qada-card, .events-card { grid-column: span 4; }
             .tools-card, .video-card { grid-column: span 6; } 
             #install-card-section { grid-column: span 12; }
         }
@@ -395,11 +403,28 @@
         </div>
     </div>
 
+    <div id="monthly-modal" class="modal-overlay">
+        <div class="settings-panel" style="max-width: 800px; padding: 25px;">
+            <button class="close-btn" onclick="document.getElementById('monthly-modal').classList.remove('active')">×</button>
+            <h3 style="color:var(--gold); margin-top:0; border-bottom:1px solid var(--border-color); padding-bottom:15px;">Monthly Timetable</h3>
+            <div style="overflow-x: auto; max-height: 60vh;">
+                <table id="monthly-table" style="width: 100%; border-collapse: collapse;">
+                    </table>
+            </div>
+        </div>
+    </div>
+
     <div id="settings-modal" class="modal-overlay">
         <div class="settings-panel">
             <button id="close-settings" class="close-btn" title="Close Settings">×</button>
             <h3 data-i18n="pref" style="color:var(--gold); margin-top:0; border-bottom:1px solid var(--gold); padding-bottom:15px; margin-bottom: 25px; font-size: 1.4rem;">Preferences</h3>
             
+            <div class="setting-group" style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                <label style="margin-bottom: 15px;">Customize Dashboard (Show/Hide)</label>
+                <div id="widget-toggles-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; padding-right: 5px;">
+                    </div>
+            </div>
+
             <div class="setting-group">
                 <label>Locations</label>
                 <div id="location-list" style="margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px;"></div>
@@ -499,6 +524,15 @@
                         <button class="opt-btn adhan-btn" data-adhan-val="alafasy" style="flex: 1;">Alafasy</button>
                         <button class="preview-btn" onclick="previewAudio('alafasy', this)" title="Play/Stop">▶</button>
                     </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="opt-btn adhan-btn" data-adhan-val="custom" style="flex: 1;">Custom Upload</button>
+                        <button class="preview-btn" onclick="previewAudio('custom', this)" title="Play/Stop">▶</button>
+                    </div>
+                    <div id="custom-audio-section" style="display: none; padding: 10px; border: 1px dashed var(--gold); border-radius: 8px; margin-top: 5px;">
+                        <input type="file" id="custom-adhan-upload" accept="audio/*" class="opt-btn" style="padding: 8px; width: 100%;">
+                        <div id="custom-audio-status" style="font-size: 0.75rem; color: var(--success); margin-top: 8px;"></div>
+                    </div>
+
                     <button class="opt-btn adhan-btn" data-adhan-val="none" style="width: 100%;">None</button>
                 </div>
                 
@@ -550,7 +584,7 @@
             </div>
         </header>
 
-        <section class="info-panel">
+        <section class="info-panel card-item" id="info-panel">
             <div class="date-box">
                 <div class="date-label" data-i18n="greg">Gregorian</div>
                 <div class="date-val" id="greg-date">--/--/----</div>
@@ -573,17 +607,7 @@
         <div id="sunnah-banner" class="banner">🌙 <span id="sunnah-text">Sunnah Fasting Today</span></div>
         <div id="jumuah-banner" class="banner">🕌 It's Jumu'ah! Remember to read Surah Al-Kahf and send Salawat.</div>
 
-        <section id="ramadan-panel" class="card" style="display: none; border-color: var(--success); text-align: center;">
-            <div id="fasting-label" style="color:var(--success); text-transform:uppercase; font-size:0.8rem; letter-spacing: 1px; width: 100%;">Fasting Timer</div>
-            <div id="fasting-timer" style="font-size: clamp(1.8rem, 5vw, 2.5rem); font-family: 'Courier New', monospace; font-weight: bold; color: var(--text-main); margin-top: 5px; width: 100%;">--:--:--</div>
-            <div style="font-size: 0.85rem; color: var(--gold-dim); margin-top: 15px; width: 100%;" id="ashra-label">Ashra: Mercy (Days 1-10)</div>
-            <div class="progress-container" style="height: 10px; margin-top: 5px; margin-left: auto; margin-right: auto;">
-                <div class="progress-bar" id="ashra-progress-fill" style="background: var(--success); width: 0%;"></div>
-            </div>
-            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; width: 100%; font-weight: bold;" id="ramadan-day-label">Day -- of 30</div>
-        </section>
-
-        <section class="card prayer-hero" id="hero">
+        <section class="card prayer-hero card-item" id="hero">
             <div class="hero-main">
                 <div class="date-label" id="status-label" data-i18n="curr">Current Prayer</div>
                 <div class="prayer-name-display" id="curr-name">Loading...</div>
@@ -603,7 +627,7 @@
             </div>
         </section>
 
-        <section class="card times-card" id="times-card">
+        <section class="card times-card card-item" id="times-card">
             <div class="widget-title" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--gold); width: 100%; margin: 0 0 15px 0; padding-bottom: 12px;">
                 <button onclick="changeTrackerDate(-1)" style="background: var(--progress-bg); border: 1px solid var(--border-color); color: var(--gold); width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-weight: bold; transition: all 0.2s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border-color)'"><</button>
                 <div style="text-align: center; line-height: 1.3;">
@@ -615,9 +639,10 @@
             <div id="daily-times-list" style="width: 100%; display: flex; flex-direction: column;">
                 <div style="text-align: center; color: var(--text-muted); font-size: 0.95rem; padding: 20px;">Loading times...</div>
             </div>
+            <button onclick="openMonthlyTimetable()" class="btn-gold" style="width: 100%; max-width: 100%; margin-top: 15px; font-size: 0.85rem;">📅 View Full Month</button>
         </section>
 
-        <section class="card history-card" id="tracker" style="width: 100%;">
+        <section class="card history-card card-item" id="tracker" style="width: 100%;">
             <div style="width: 100%; border-bottom: 1px solid var(--gold); padding-bottom: 10px; margin-bottom: 20px;">
                 <div class="widget-title" style="border: none; margin: 0; padding: 0; text-align: left; font-size: 1rem;" data-i18n="tracker_title">Prayer Tracker & History</div>
             </div>
@@ -641,7 +666,32 @@
             </div>
         </section>
 
-        <section class="card tasbih-card">
+        <section class="card quran-card card-item" id="quran-card">
+            <div class="widget-title">Quran Reading Tracker</div>
+            <div style="display: flex; flex-direction: column; gap: 15px; width: 100%; justify-content: center; flex: 1;">
+                <div style="display: flex; gap: 10px; width: 100%;">
+                    <input type="text" id="quran-surah" placeholder="Surah Name or Number" style="flex: 2;">
+                    <input type="number" id="quran-ayah" placeholder="Ayah" style="flex: 1;">
+                </div>
+                <button onclick="saveQuranProgress()" class="btn-gold" style="width: 100%; max-width: 100%; margin: 0;">💾 Save Progress</button>
+                <div id="quran-status" style="color: var(--success); font-size: 0.85rem; text-align: center; height: 15px;"></div>
+            </div>
+        </section>
+
+        <section class="card qada-card card-item" id="qada-card">
+            <div class="widget-title">Missed Prayers (Qada)</div>
+            <div id="qada-list" style="width: 100%; display: flex; flex-direction: column; gap: 5px;">
+                </div>
+        </section>
+
+        <section class="card events-card card-item" id="events-card">
+            <div class="widget-title">Upcoming Islamic Events</div>
+            <div id="events-list" style="width: 100%; display: flex; flex-direction: column; gap: 5px; flex: 1; justify-content: center;">
+                <div style="color: var(--text-muted); text-align: center;">Calculating...</div>
+            </div>
+        </section>
+
+        <section class="card tasbih-card card-item" id="tasbih-card">
             <div class="widget-title" data-i18n="tasbih">Digital Tasbih</div>
             <div style="display:flex; flex-direction:column; align-items:center; justify-content: center; height: 100%; padding: 20px 0;">
                 <button id="tasbih-btn" class="tasbih-circle" onclick="incrementTasbih()" aria-label="Tap to count Tasbih">0</button>
@@ -649,7 +699,7 @@
             </div>
         </section>
 
-        <section class="card qibla-card" id="qibla">
+        <section class="card qibla-card card-item" id="qibla">
             <div class="widget-title" data-i18n="qibla">Qibla Direction</div>
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1;">
                 <div id="qibla-degree" style="font-size:4rem; font-weight:bold; color:var(--gold); margin: 15px 0; text-shadow: 0 2px 10px var(--shadow-color);">--°</div>
@@ -658,7 +708,7 @@
             </div>
         </section>
 
-        <article class="card text-widget">
+        <article class="card text-widget card-item" id="text-widget">
             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; border-bottom: 1px solid var(--gold); padding-bottom: 8px; margin-bottom: 15px;">
                 <span style="width: 24px;"></span>
                 <span class="widget-title" id="daily-title" data-i18n="ayah" style="border: none; margin: 0; padding: 0;">Ayah of the Day</span>
@@ -668,7 +718,7 @@
             <div id="daily-ref" style="color:var(--gold); font-size:0.85rem; margin-top:10px; width:100%; text-align:right; font-weight: bold;"></div>
         </article>
 
-        <section class="card night-widget">
+        <section class="card night-widget card-item" id="night-widget">
             <div class="widget-title" data-i18n="qiyam">Night Prayers (Qiyam)</div>
             <div style="display:flex; justify-content:space-around; width:100%; align-items: center; height: 100%;">
                 <div style="text-align:center; background: var(--glass-header); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); flex: 1; margin: 0 10px;">
@@ -682,7 +732,7 @@
             </div>
         </section>
 
-        <article class="card names-widget">
+        <article class="card names-widget card-item" id="names-widget">
             <div class="widget-title" data-i18n="allah">Name of Allah</div>
             <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; flex: 1;">
                 <div id="allah-ar" style="font-size:3rem; color:var(--gold); font-family: 'Tajawal', sans-serif; text-shadow: 0 2px 10px var(--shadow-color);">--</div>
@@ -691,7 +741,7 @@
             </div>
         </article>
 
-        <article class="card dua-widget">
+        <article class="card dua-widget card-item" id="dua-widget">
             <div style="display: flex; justify-content: center; align-items: center; width: 100%; border-bottom: 1px solid var(--gold); padding-bottom: 8px; margin-bottom: 15px;">
                 <span class="widget-title" data-i18n="dua" style="border: none; margin: 0; padding: 0;">Dua of the Day</span>
             </div>
@@ -699,17 +749,30 @@
             <div id="dua-ref" style="color:var(--gold); font-size:0.85rem; margin-top:10px; width:100%; text-align:right; font-weight: bold;"></div>
         </article>
 
-        <article class="card ramadan-widget" id="ramadan-countdown-container">
-            <div class="widget-title" data-i18n="ramadan">Ramadan Countdown</div>
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1;">
+        <article class="card ramadan-card card-item" id="ramadan-card">
+            <div id="ramadan-countdown-container" style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; width: 100%;">
+                <div class="widget-title" data-i18n="ramadan">Ramadan Countdown</div>
                 <div id="ramadan-val" style="font-size: clamp(3rem, 8vw, 4.5rem); font-weight: bold; color: var(--gold); line-height: 1; margin-bottom: 5px;">--</div>
                 <div style="font-size:1rem; color:var(--text-muted); text-transform: uppercase; letter-spacing: 2px;" data-i18n="days">Days Remaining</div>
             </div>
+            <div id="ramadan-panel" style="display: none; border-color: var(--success); text-align: center; width: 100%;">
+                <div id="fasting-label" style="color:var(--success); text-transform:uppercase; font-size:0.8rem; letter-spacing: 1px; width: 100%;">Fasting Timer</div>
+                <div id="fasting-timer" style="font-size: clamp(1.8rem, 5vw, 2.5rem); font-family: 'Courier New', monospace; font-weight: bold; color: var(--text-main); margin-top: 5px; width: 100%;">--:--:--</div>
+                <div style="font-size: 0.85rem; color: var(--gold-dim); margin-top: 15px; width: 100%;" id="ashra-label">Ashra: Mercy (Days 1-10)</div>
+                <div class="progress-container" style="height: 10px; margin-top: 5px; margin-left: auto; margin-right: auto;">
+                    <div class="progress-bar" id="ashra-progress-fill" style="background: var(--success); width: 0%;"></div>
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; width: 100%; font-weight: bold;" id="ramadan-day-label">Day -- of 30</div>
+            </div>
         </article>
 
-        <section class="card tools-card">
+        <section class="card tools-card card-item" id="tools-card">
             <div class="widget-title" data-i18n="resources">Tools & Resources</div>
-            <div style="display: flex; flex-direction: column; gap: 15px; width: 100%; justify-content: center; flex: 1;">
+            <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; justify-content: center; flex: 1;">
+                <div style="display: flex; gap: 10px; width: 100%;">
+                    <a href="https://www.google.com/maps/search/mosques+near+me/" target="_blank" class="btn-gold" style="flex: 1; max-width: 100%; font-size: 0.8rem; margin: 0; padding: 10px;">📍 Nearby Mosques</a>
+                    <a href="https://www.google.com/maps/search/halal+food+near+me/" target="_blank" class="btn-gold" style="flex: 1; max-width: 100%; font-size: 0.8rem; margin: 0; padding: 10px;">🍔 Halal Food</a>
+                </div>
                 <a href="https://www.myprayer.org/pages/my-prayer-book" target="_blank" class="btn-gold" style="max-width: 100%; margin: 0;">📖 <span data-i18n="revert_guide">Step-by-Step Prayer Guide</span></a>
                 <div style="display: flex; gap: 10px; width: 100%;">
                     <a href="https://apps.apple.com/us/app/namaz-app-learn-salah-prayer/id1447056625" target="_blank" class="btn-gold" style="flex: 1; max-width: 100%; font-size: 0.8rem; margin: 0;">📱 Namaz App (iOS)</a>
@@ -719,7 +782,7 @@
             </div>
         </section>
 
-        <section class="card video-card" id="live">
+        <section class="card video-card card-item" id="live">
             <div class="widget-title" data-i18n="live_stream">Holy Sites Live</div>
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; width: 100%;">
                 <div style="display: flex; gap: 10px; margin-bottom: 20px; width: 100%;">
@@ -733,7 +796,7 @@
             </div>
         </section>
 
-        <section id="install-card-section" class="card install-card" style="padding: 30px;">
+        <section id="install-card-section" class="card install-card card-item" style="padding: 30px;">
             <div class="widget-title" style="margin-bottom: 15px; border: none; font-size: 1.2rem;" data-i18n="getapp">Get the App</div>
             <p style="text-align: center; color: var(--text-muted); font-size: 0.95rem; margin-top: 0; margin-bottom: 20px;">Install Adhan Display on your home screen for quick offline access.</p>
             <button id="install-btn" class="btn-gold" style="width: auto; padding: 14px 40px; border-radius: 50px; font-size: 1rem;" data-i18n="install">Install App</button>
@@ -747,6 +810,8 @@
         <nav class="footer-nav">
             <a href="#hero">Prayer Times</a>
             <a href="#tracker">Salah Tracker</a>
+            <a href="#quran-card">Quran Tracker</a>
+            <a href="#qada-card">Missed Prayers</a>
             <a href="#qibla">Qibla Compass</a>
         </nav>
         
@@ -952,6 +1017,51 @@
             { text: "Allahumma ij'al fi qalbi nuran wa fi basari nuran wa fi sam'i nuran\n(O Allah, place light in my heart, and light in my sight, and light in my hearing.)", ref: "Muslim" }
         ];
 
+        // NEW: Custom Audio DB Helper
+        const customAudioDB = {
+            async init() {
+                return new Promise((resolve) => {
+                    const req = indexedDB.open('AdhanAudioDB', 1);
+                    req.onupgradeneeded = e => e.target.result.createObjectStore('audio');
+                    req.onsuccess = e => resolve(e.target.result);
+                });
+            },
+            async save(blob) {
+                const db = await this.init();
+                return new Promise(resolve => {
+                    const tx = db.transaction('audio', 'readwrite');
+                    tx.objectStore('audio').put(blob, 'custom_mp3');
+                    tx.oncomplete = () => resolve();
+                });
+            },
+            async get() {
+                const db = await this.init();
+                return new Promise(resolve => {
+                    const req = db.transaction('audio').objectStore('audio').get('custom_mp3');
+                    req.onsuccess = e => resolve(e.target.result);
+                });
+            }
+        };
+
+        // UI Cards List for Widget Toggles
+        const allCards = [
+            { id: 'hero', name: 'Prayer Times Hero' },
+            { id: 'times-card', name: 'Daily Times' },
+            { id: 'tracker', name: 'Prayer Tracker' },
+            { id: 'quran-card', name: 'Quran Tracker' },
+            { id: 'qada-card', name: 'Missed Prayers (Qada)' },
+            { id: 'tasbih-card', name: 'Digital Tasbih' },
+            { id: 'qibla', name: 'Qibla Compass' },
+            { id: 'events-card', name: 'Islamic Events' },
+            { id: 'text-widget', name: 'Ayah / Hadith of the Day' },
+            { id: 'dua-widget', name: 'Dua of the Day' },
+            { id: 'night-widget', name: 'Night Prayers' },
+            { id: 'names-widget', name: 'Name of Allah' },
+            { id: 'ramadan-card', name: 'Ramadan Tracker' },
+            { id: 'tools-card', name: 'Tools & Resources' },
+            { id: 'live', name: 'Holy Sites Live' }
+        ];
+
         let config = { lat: 52.0907, lon: 5.1214, city: 'Netherlands', method: 3, offset: 0, hijriOffset: 0 };
         let state = { prayers: {}, monthlyCache: [], nextPrayer: null, prevPrayerTime: null, namesList: [], isRamadan: false, notified10Min: false, adhanPlayed: false, dailyAlertTriggered: false, qiblaDegree: 0 };
         let wakeLock = null;
@@ -1104,6 +1214,64 @@
                 }
                 reader.readAsDataURL(file);
             });
+
+            // Handle Custom Audio File Upload
+            document.getElementById('custom-adhan-upload').addEventListener('change', async (event) => {
+                const file = event.target.files[0];
+                if(!file) return;
+                await customAudioDB.save(file);
+                document.getElementById('custom-audio-status').innerText = `Saved: ${file.name}`;
+                localStorage.setItem('adhan_audio', 'custom');
+                applySettings();
+            });
+
+            initQuranTracker();
+            renderQada();
+        }
+
+        // NEW: Toggle Widget Visibility Logic
+        function renderWidgetToggles() {
+            const hiddenWidgets = JSON.parse(localStorage.getItem('adhan_hidden_widgets')) || [];
+            let html = '';
+            allCards.forEach(card => {
+                const isHidden = hiddenWidgets.includes(card.id);
+                html += `
+                <label class="toggle-row" style="padding: 10px; border-color: rgba(255,255,255,0.1);">
+                    <span style="font-size: 0.9rem;">${card.name}</span>
+                    <input type="checkbox" onchange="toggleWidget('${card.id}', this.checked)" ${!isHidden ? 'checked' : ''} style="accent-color: var(--gold); transform: scale(1.3);">
+                </label>`;
+                
+                // Also apply it to the DOM immediately
+                const el = document.getElementById(card.id);
+                if(el) {
+                    if (isHidden) el.classList.add('hidden-widget');
+                    else el.classList.remove('hidden-widget');
+                }
+            });
+            document.getElementById('widget-toggles-list').innerHTML = html;
+        }
+
+        window.toggleWidget = function(id, isVisible) {
+            let hiddenWidgets = JSON.parse(localStorage.getItem('adhan_hidden_widgets')) || [];
+            if(!isVisible && !hiddenWidgets.includes(id)) { hiddenWidgets.push(id); }
+            else if(isVisible) { hiddenWidgets = hiddenWidgets.filter(w => w !== id); }
+            localStorage.setItem('adhan_hidden_widgets', JSON.stringify(hiddenWidgets));
+            
+            const el = document.getElementById(id);
+            if(el) {
+                if (!isVisible) el.style.display = 'none';
+                else el.style.display = '';
+            }
+        };
+
+        // Apply saved visibility on load
+        function applyWidgetVisibility() {
+            const hiddenWidgets = JSON.parse(localStorage.getItem('adhan_hidden_widgets')) || [];
+            allCards.forEach(card => {
+                const el = document.getElementById(card.id);
+                if (el && hiddenWidgets.includes(card.id)) el.style.display = 'none';
+                else if(el) el.style.display = '';
+            });
         }
 
         window.exportPrayerData = function() {
@@ -1115,7 +1283,7 @@
                 return;
             }
             
-            let csvContent = "Date,Fajr,Dhuhr,Asr,Maghrib,Isha\n";
+            let csvContent = "Date,Fajr,Dhuhr,Asr,Maghrib,Isha,Fasted\n";
             
             dates.forEach(date => {
                 const p = data[date];
@@ -1125,7 +1293,8 @@
                     p.Dhuhr ? 'Yes' : 'No',
                     p.Asr ? 'Yes' : 'No',
                     p.Maghrib ? 'Yes' : 'No',
-                    p.Isha ? 'Yes' : 'No'
+                    p.Isha ? 'Yes' : 'No',
+                    p.Fast ? 'Yes' : 'No'
                 ];
                 csvContent += row.join(",") + "\n";
             });
@@ -1141,7 +1310,7 @@
         };
 
         function applySettings() {
-            const theme = localStorage.getItem('adhan_theme') || 'dynamic';
+            const theme = localStorage.getItem('adhan_theme') || 'light';
             const lang = localStorage.getItem('adhan_lang') || 'en';
             const size = localStorage.getItem('adhan_size') || 'normal';
             const audio = localStorage.getItem('adhan_audio') || 'default';
@@ -1158,6 +1327,7 @@
             if (theme !== 'dynamic') document.documentElement.removeAttribute('data-time-of-day');
 
             document.getElementById('custom-bg-section').style.display = (theme === 'custom') ? 'block' : 'none';
+            document.getElementById('custom-audio-section').style.display = (audio === 'custom') ? 'block' : 'none';
 
             if (theme === 'custom') {
                 const customBg = localStorage.getItem('adhan_custom_bg');
@@ -1194,6 +1364,8 @@
             document.querySelectorAll('.adhan-btn').forEach(b => b.classList.toggle('active', b.dataset.adhanVal === audio));
             document.querySelectorAll('.text-source-btn').forEach(b => b.classList.toggle('active', b.dataset.sourceVal === source));
 
+            renderWidgetToggles();
+            applyWidgetVisibility();
             applyTranslations(lang);
         }
 
@@ -1364,20 +1536,43 @@
             document.documentElement.setAttribute('data-time-of-day', timeOfDay);
         }
 
-        window.previewAudio = function(type, btnElement) { 
-            const audioEl = document.getElementById('audio-' + type); const isPlaying = !audioEl.paused;
+        window.previewAudio = async function(type, btnElement) { 
             document.querySelectorAll('audio').forEach(a => { a.pause(); a.currentTime = 0; }); 
             document.querySelectorAll('.preview-btn').forEach(b => { b.innerText = '▶'; b.title = 'Play'; });
+
+            if (type === 'custom') {
+                const blob = await customAudioDB.get();
+                if(!blob) { alert("Please upload a custom audio file first."); return; }
+                const url = URL.createObjectURL(blob);
+                const customAudio = new Audio(url);
+                customAudio.volume = parseFloat(localStorage.getItem('adhan_volume') || 1);
+                customAudio.play();
+                btnElement.innerText = '⏹'; btnElement.title = 'Stop';
+                customAudio.onended = () => { btnElement.innerText = '▶'; btnElement.title = 'Play'; };
+                return;
+            }
+
+            const audioEl = document.getElementById('audio-' + type); const isPlaying = !audioEl.paused;
             if (!isPlaying && audioEl) { 
                 audioEl.play().catch(e => console.log(e)); btnElement.innerText = '⏹'; btnElement.title = 'Stop';
                 audioEl.onended = () => { btnElement.innerText = '▶'; btnElement.title = 'Play'; };
             }
         };
 
-        function playAudio(triggerType) {
+        async function playAudio(triggerType) {
             const audioPref = localStorage.getItem('adhan_audio') || 'default';
             if (triggerType === 'adhan' && audioPref !== 'none') {
-                const audioEl = document.getElementById('audio-' + audioPref) || document.getElementById('audio-default');
+                if (audioPref === 'custom') {
+                    const blob = await customAudioDB.get();
+                    if(blob) {
+                        const url = URL.createObjectURL(blob);
+                        const customAudio = new Audio(url);
+                        customAudio.volume = parseFloat(localStorage.getItem('adhan_volume') || 1);
+                        customAudio.play().catch(e => console.log(e));
+                        return;
+                    }
+                }
+                const audioEl = document.getElementById('audio-' + (audioPref === 'custom' ? 'default' : audioPref)) || document.getElementById('audio-default');
                 audioEl.play().catch(e => console.log(e));
             } else if (triggerType === 'chime') { document.getElementById('audio-chime').play().catch(e => console.log(e)); }
         }
@@ -1405,6 +1600,43 @@
         let prayerData = JSON.parse(localStorage.getItem('adhan_tracker')) || {};
         let trackerOffsetDays = 0;
 
+        // NEW: Qada Tracker Logic
+        const qadaPrayers = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
+        let qadaData = JSON.parse(localStorage.getItem('adhan_qada')) || { Fajr: 0, Dhuhr: 0, Asr: 0, Maghrib: 0, Isha: 0 };
+        function renderQada() {
+            let html = '';
+            qadaPrayers.forEach(p => {
+                html += `<div style="display:flex; justify-content:space-between; align-items:center; padding: 10px; border-bottom: 1px solid var(--border-color); background: rgba(0,0,0,0.1); border-radius: 8px;">
+                    <span style="font-weight:bold; color:var(--text-main); text-transform: uppercase; font-size: 0.9rem;">${p}</span>
+                    <div style="display:flex; align-items:center; gap: 10px;">
+                        <button class="opt-btn" style="min-width:35px; padding:5px; margin:0;" onclick="updateQada('${p}', -1)">-</button>
+                        <span style="color:var(--gold); font-family:monospace; font-size:1.3rem; min-width:30px; text-align:center; font-weight:bold;">${qadaData[p]}</span>
+                        <button class="opt-btn" style="min-width:35px; padding:5px; margin:0;" onclick="updateQada('${p}', 1)">+</button>
+                    </div>
+                </div>`;
+            });
+            document.getElementById('qada-list').innerHTML = html;
+        }
+        window.updateQada = function(prayer, delta) {
+            qadaData[prayer] = Math.max(0, qadaData[prayer] + delta);
+            localStorage.setItem('adhan_qada', JSON.stringify(qadaData));
+            renderQada();
+        };
+
+        // NEW: Quran Tracker Logic
+        function initQuranTracker() {
+            const data = JSON.parse(localStorage.getItem('adhan_quran')) || { surah: '', ayah: '' };
+            document.getElementById('quran-surah').value = data.surah;
+            document.getElementById('quran-ayah').value = data.ayah;
+        }
+        window.saveQuranProgress = function() {
+            const surah = document.getElementById('quran-surah').value;
+            const ayah = document.getElementById('quran-ayah').value;
+            localStorage.setItem('adhan_quran', JSON.stringify({ surah, ayah }));
+            document.getElementById('quran-status').innerText = 'Progress Saved!';
+            setTimeout(() => { document.getElementById('quran-status').innerText = ''; }, 3000);
+        };
+
         window.jumpToDate = function(targetDateStr) {
             const parts = targetDateStr.split('-');
             const targetDate = new Date(parts[0], parts[1] - 1, parts[2]);
@@ -1417,6 +1649,26 @@
         };
 
         window.changeTrackerDate = async function(delta) { trackerOffsetDays += delta; await updateTrackerView(); }
+
+        window.openMonthlyTimetable = function() {
+            if(!state.monthlyCache || state.monthlyCache.length === 0) return;
+            let html = `<tr><th>Day</th><th>Fajr</th><th>Sunrise</th><th>Dhuhr</th><th>Asr</th><th>Maghrib</th><th>Isha</th></tr>`;
+            state.monthlyCache.forEach(day => {
+                const date = day.date.gregorian.day;
+                const t = day.timings;
+                html += `<tr>
+                    <td>${date}</td>
+                    <td>${addOffsetToString(t.Fajr)}</td>
+                    <td>${addOffsetToString(t.Sunrise)}</td>
+                    <td>${addOffsetToString(t.Dhuhr)}</td>
+                    <td>${addOffsetToString(t.Asr)}</td>
+                    <td>${addOffsetToString(t.Maghrib)}</td>
+                    <td>${addOffsetToString(t.Isha)}</td>
+                </tr>`;
+            });
+            document.getElementById('monthly-table').innerHTML = html;
+            document.getElementById('monthly-modal').classList.add('active');
+        };
 
         async function fetchPrayerData() {
             const now = new Date(); const month = now.getMonth() + 1; const year = now.getFullYear();
@@ -1433,16 +1685,49 @@
                 const h = todayData.date.hijri;
                 let hDay = parseInt(h.day) + config.hijriOffset;
                 if(hDay > 30) hDay -= 30; if(hDay < 1) hDay += 30; 
-                
+                const hMonth = parseInt(h.month.number);
+
                 if(DOM.hijriDate) DOM.hijriDate.innerText = `${hDay} ${h.month.en} ${h.year}`;
-                if(parseInt(h.month.number) === 9) { state.isRamadan = true; activateRamadanMode(hDay); } 
-                else { state.isRamadan = false; calcRamadanCountdown(parseInt(h.month.number), hDay); }
+                if(hMonth === 9) { state.isRamadan = true; activateRamadanMode(hDay); } 
+                else { state.isRamadan = false; calcRamadanCountdown(hMonth, hDay); }
+                
+                updateIslamicEvents(hDay, hMonth);
                 
                 document.getElementById('midnight-time').innerText = addOffsetToString(state.prayers.Midnight); 
                 document.getElementById('last-third-time').innerText = addOffsetToString(state.prayers.Lastthird);
                 
                 determinePrayerState(); updateDynamicTheme(); updateTrackerView();
             }
+        }
+
+        // NEW: Update Islamic Events Countdown
+        function updateIslamicEvents(hDay, hMonth) {
+            const events = [
+                { name: "Ashura", m: 1, d: 10 },
+                { name: "Ramadan", m: 9, d: 1 },
+                { name: "Eid al-Fitr", m: 10, d: 1 },
+                { name: "Day of Arafah", m: 12, d: 9 },
+                { name: "Eid al-Adha", m: 12, d: 10 }
+            ];
+            
+            let html = '';
+            events.forEach(ev => {
+                let mDiff = ev.m - hMonth;
+                if (mDiff < 0 || (mDiff === 0 && hDay > ev.d)) mDiff = (ev.m + 12) - hMonth;
+                
+                if (mDiff === 0 && hDay === ev.d) {
+                    html += `<div style="display:flex; justify-content:space-between; padding: 12px; background: rgba(212,175,55,0.15); border-radius: 8px; border: 1px solid var(--gold);"><strong>${ev.name}</strong> <span style="color:var(--gold);">Is Today!</span></div>`;
+                } else {
+                    let daysLeft = Math.floor((mDiff * 29.5) + (ev.d - hDay));
+                    if(daysLeft > 0) {
+                        html += `<div style="display:flex; justify-content:space-between; align-items:center; padding: 12px; border-bottom: 1px solid var(--border-color); background: rgba(0,0,0,0.1); border-radius: 8px;">
+                            <span style="font-weight: 500;">${ev.name}</span> 
+                            <span style="color:var(--gold); font-family:monospace; font-size:1.1rem; font-weight:bold;">~${daysLeft} days</span>
+                        </div>`;
+                    }
+                }
+            });
+            document.getElementById('events-list').innerHTML = html;
         }
 
         async function updateTrackerView() {
@@ -1460,7 +1745,8 @@
         }
 
         function renderPrayerTracker(timings, dateStr) {
-            if (!prayerData[dateStr]) { prayerData[dateStr] = { Fajr: false, Dhuhr: false, Asr: false, Maghrib: false, Isha: false }; localStorage.setItem('adhan_tracker', JSON.stringify(prayerData)); }
+            // FIX: Added 'Fast' to tracked data array
+            if (!prayerData[dateStr]) { prayerData[dateStr] = { Fajr: false, Dhuhr: false, Asr: false, Maghrib: false, Isha: false, Fast: false }; localStorage.setItem('adhan_tracker', JSON.stringify(prayerData)); }
             
             let htmlStr = '';
             const seq = ["Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha"];
@@ -1484,6 +1770,13 @@
                     </label>`;
                 }
             });
+
+            // NEW: Fasting Toggle
+            const isFasting = prayerData[dateStr]['Fast'] ? 'checked' : '';
+            htmlStr += `<label style="display: flex; justify-content: space-between; align-items: center; padding: 15px 10px; margin-top: 10px; cursor: pointer; background: rgba(46, 204, 113, 0.1); border: 1px solid var(--success); border-radius: 6px;">
+                <span style="color: var(--success); font-weight: bold; font-size: 0.9rem;">Fasting (Fard / Sunnah)?</span>
+                <input type="checkbox" id="chk_Fast" ${isFasting} onchange="togglePrayer('Fast', '${dateStr}')" style="transform: scale(1.5); margin: 0; accent-color: var(--success); cursor: pointer;">
+            </label>`;
             
             document.getElementById('daily-times-list').innerHTML = htmlStr;
             updateStatistics();
@@ -1492,8 +1785,11 @@
         window.togglePrayer = function(prayerName, dateStr) {
             const isNowChecked = document.getElementById('chk_' + prayerName).checked;
             prayerData[dateStr][prayerName] = isNowChecked; localStorage.setItem('adhan_tracker', JSON.stringify(prayerData));
-            const prayersDone = TRACK_PRAYERS.filter(p => prayerData[dateStr][p]).length;
-            if (prayersDone === 5 && isNowChecked && typeof confetti !== 'undefined') confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#D4AF37', '#2ecc71', '#ffffff'] });
+            
+            if(prayerName !== 'Fast') {
+                const prayersDone = TRACK_PRAYERS.filter(p => prayerData[dateStr][p]).length;
+                if (prayersDone === 5 && isNowChecked && typeof confetti !== 'undefined') confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#D4AF37', '#2ecc71', '#ffffff'] });
+            }
             updateStatistics();
         };
 
@@ -1519,6 +1815,8 @@
 
             allDates.forEach((date, index) => {
                 const dayRecord = prayerData[date]; const prayersDone = TRACK_PRAYERS.filter(p => dayRecord[p]).length;
+                const fasted = dayRecord.Fast ? ' 🌙' : '';
+                
                 if (index < 7) { weekCompleted += prayersDone; weekMax += 5; }
                 if (index < 30) { monthCompleted += prayersDone; monthMax += 5; }
                 if (date !== actualTodayStr) {
@@ -1527,7 +1825,7 @@
                     const starIcon = prayersDone === 5 ? ' ⭐' : '';
                     
                     historyHTML += `<div class="history-row" onclick="jumpToDate('${date}')" title="Edit ${date}">
-                        <span style="color: var(--text-main); font-weight: 500;">${date}</span>
+                        <span style="color: var(--text-main); font-weight: 500;">${date}${fasted}</span>
                         <span style="color: ${color}; font-weight: bold;">${prayersDone} / 5${starIcon}</span>
                     </div>`;
                 }
