@@ -1,4 +1,4 @@
-import {
+﻿import {
     state,
     initializeState,
     toggleTheme
@@ -407,7 +407,7 @@ function render() {
         <div class="ad2-shell">
             <header class="ad2-header">
                 <a href="#home" class="ad2-brand" data-route="home">
-                    <span class="ad2-brand-mark">☾</span>
+                    <span class="ad2-brand-mark"><img src="/images/adhan%20display%20muslim%20prayer%20times%20dashboard%20logo.png" alt="Adhan Display"></span>
                     <span>
                         <strong>Adhan Display</strong>
                     </span>
@@ -431,7 +431,7 @@ function render() {
                     title="Toggle dark mode"
                     aria-label="Toggle dark mode"
                 >
-                    ${state.ui.darkMode ? '☀' : '☾'}
+                    ${state.ui.darkMode ? 'â˜€' : 'â˜¾'}
                 </button>
 
                 <button
@@ -481,7 +481,7 @@ function render() {
 
             <footer class="ad2-footer">
                 <span>Adhan Display</span>
-                <span>Prayer • Quran • Islamic Life</span>
+                <span>Prayer â€¢ Quran â€¢ Islamic Life</span>
             </footer>
         </div>
     `;
@@ -702,7 +702,7 @@ function renderDashboard() {
                 >
                     ${
                         next?.name
-                            ? `Next prayer: ${escapeHtml(next.name)} · in --`
+                            ? `Next prayer: ${escapeHtml(next.name)} Â· in --`
                             : 'Next prayer unavailable'
                     }
                 </div>
@@ -750,7 +750,7 @@ function renderPlaceholder(title, description) {
             </div>
 
             <div class="ad2-empty-state">
-                <div class="ad2-empty-icon">☾</div>
+                <div class="ad2-empty-icon">â˜¾</div>
                 <h2>Coming together in 2.0</h2>
                 <p>
                     This section is part of the new Adhan Display
@@ -1054,7 +1054,7 @@ function updateCountdown() {
                 totalSeconds % 60;
 
             element.textContent =
-                `Next prayer: ${state.prayer.next.name} · in ` +
+                `Next prayer: ${state.prayer.next.name} Â· in ` +
                 `${String(hours).padStart(2, '0')}:` +
                 `${String(minutes).padStart(2, '0')}:` +
                 `${String(seconds).padStart(2, '0')}`;
@@ -1187,3 +1187,4 @@ initialize().then(() => {
   }
 })();
 /* AD2_SPA_ANALYTICS_END */
+
