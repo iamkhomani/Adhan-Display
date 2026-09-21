@@ -431,7 +431,7 @@ function render() {
                     title="Toggle dark mode"
                     aria-label="Toggle dark mode"
                 >
-                    ${state.ui.darkMode ? 'â˜€' : 'â˜¾'}
+                    ${state.ui.darkMode ? '&#9728;' : '&#9790;'}
                 </button>
 
                 <button
@@ -481,7 +481,7 @@ function render() {
 
             <footer class="ad2-footer">
                 <span>Adhan Display</span>
-                <span>Prayer â€¢ Quran â€¢ Islamic Life</span>
+                <span>Prayer &middot; Quran &middot; Islamic Life</span>
             </footer>
         </div>
     `;
@@ -663,10 +663,6 @@ function renderDashboard() {
         `;
     }
 
-    const nextTime = next
-        ? formatTime(next.time)
-        : '--:--';
-
     const current = getCurrentPrayer(data);
 
     const currentTime = current?.time
@@ -686,33 +682,37 @@ function renderDashboard() {
             <section class="ad2-prayer-hero">
 
                 <div class="ad2-hero-copy">
-                    <span class="ad2-eyebrow">DASHBOARD</span>
 
-                <h1>
-                    ${escapeHtml(current?.name || 'Prayer')}
-                </h1>
+                    <span class="ad2-eyebrow">
+                        DASHBOARD
+                    </span>
 
-                <div class="ad2-hero-time">
-                    ${currentTime}
-                </div>
+                    <h1>
+                        ${escapeHtml(current?.name || 'Prayer')}
+                    </h1>
 
-                <div
-                    id="ad2-countdown"
-                    class="ad2-countdown"
-                >
-                    ${
-                        next?.name
-                            ? `Next prayer: ${escapeHtml(next.name)} Â· in --`
-                            : 'Next prayer unavailable'
-                    }
-                </div>
+                    <div class="ad2-hero-time">
+                        ${currentTime}
+                    </div>
 
-                <p class="ad2-hero-date">
+                    <div
+                        id="ad2-countdown"
+                        class="ad2-countdown"
+                    >
+                        ${
+                            next?.name
+                                ? `Next prayer: ${escapeHtml(next.name)} &middot; in --`
+                                : 'Next prayer unavailable'
+                        }
+                    </div>
+
+                    <p class="ad2-hero-date">
                         ${escapeHtml(
                             data.date?.readable ||
                             new Date().toLocaleDateString()
                         )}
                     </p>
+
                 </div>
 
                 <div class="ad2-prayer-orbit">
@@ -723,7 +723,38 @@ function renderDashboard() {
 
             </section>
 
-            
+            <section
+                class="ad2-shahada"
+                aria-labelledby="ad2-shahada-title"
+            >
+
+                <div class="ad2-shahada-inner">
+
+                    <span class="ad2-shahada-eyebrow">
+                        THE SHAHADA
+                    </span>
+
+                    <h2
+                        id="ad2-shahada-title"
+                        class="ad2-shahada-arabic"
+                        lang="ar"
+                        dir="rtl"
+                    >
+                        أشهد أن لا إله إلا الله، وأشهد أن محمدًا رسول الله
+                    </h2>
+
+                    <p class="ad2-shahada-transliteration">
+                        Ashhadu an la ilaha illallah, wa ashhadu anna muhammadan rasulullah
+                    </p>
+
+                    <p class="ad2-shahada-translation">
+                        I bear witness that there is no deity worthy of worship except Allah,
+                        and I bear witness that Muhammad is the Messenger of Allah.
+                    </p>
+
+                </div>
+
+            </section>
 
         </section>
     `;
@@ -750,7 +781,7 @@ function renderPlaceholder(title, description) {
             </div>
 
             <div class="ad2-empty-state">
-                <div class="ad2-empty-icon">â˜¾</div>
+                <div class="ad2-empty-icon">&#9790;</div>
                 <h2>Coming together in 2.0</h2>
                 <p>
                     This section is part of the new Adhan Display
@@ -1054,7 +1085,9 @@ function updateCountdown() {
                 totalSeconds % 60;
 
             element.textContent =
-                `Next prayer: ${state.prayer.next.name} Â· in ` +
+                `Next prayer: ${state.prayer.next.name} ` +
+                String.fromCharCode(183) +
+                ` in ` +
                 `${String(hours).padStart(2, '0')}:` +
                 `${String(minutes).padStart(2, '0')}:` +
                 `${String(seconds).padStart(2, '0')}`;
@@ -1187,4 +1220,5 @@ initialize().then(() => {
   }
 })();
 /* AD2_SPA_ANALYTICS_END */
+
 

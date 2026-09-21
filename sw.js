@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = 'adhan-display-v2-shell-logo-1';
+﻿const CACHE_NAME = 'adhan-display-v2-shell-logo-shahada-1';
 
 const APP_SHELL = [
     '/',
@@ -101,4 +101,5 @@ self.addEventListener('fetch', event => {
             })
     );
 });
+
 
