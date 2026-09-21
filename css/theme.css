@@ -1,0 +1,301 @@
+/* =========================================================
+   ADHAN DISPLAY 2.0
+   GLOBAL THEME
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   LIGHT THEME
+   Warm ivory + soft white + charcoal + gold
+   --------------------------------------------------------- */
+
+:root {
+    color-scheme: light;
+
+    --bg: #f3f0e8;
+    --background: #f3f0e8;
+
+    --surface: #fffdf8;
+    --surface-alt: #ebe7dc;
+
+    --text: #171717;
+    --text-muted: #6e6a60;
+    --muted: #6e6a60;
+
+    --border: rgba(35, 32, 25, 0.11);
+
+    --accent: #b58a2a;
+
+    --shadow:
+        0 20px 60px
+        rgba(35, 32, 25, 0.08);
+}
+
+
+/* ---------------------------------------------------------
+   LIGHT BODY
+   --------------------------------------------------------- */
+
+:root[data-theme="light"] body {
+    background:
+        radial-gradient(
+            circle at 88% 4%,
+            rgba(181, 138, 42, 0.075),
+            transparent 27%
+        ),
+        radial-gradient(
+            circle at 8% 80%,
+            rgba(181, 138, 42, 0.035),
+            transparent 25%
+        ),
+        var(--bg);
+
+    color: var(--text);
+}
+
+
+/* ---------------------------------------------------------
+   LIGHT HEADER
+   --------------------------------------------------------- */
+
+:root[data-theme="light"] .ad2-header {
+    background:
+        rgba(243, 240, 232, 0.88);
+
+    border-color:
+        rgba(35, 32, 25, 0.08);
+
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+}
+
+
+/* ---------------------------------------------------------
+   LIGHT FOOTER
+   --------------------------------------------------------- */
+
+:root[data-theme="light"] .ad2-footer {
+    border-color:
+        rgba(35, 32, 25, 0.09);
+}
+
+
+/* ---------------------------------------------------------
+   LIGHT FORM CONTROLS
+   --------------------------------------------------------- */
+
+:root[data-theme="light"] button,
+:root[data-theme="light"] input,
+:root[data-theme="light"] select {
+    color-scheme: light;
+}
+
+
+/* ---------------------------------------------------------
+   DARK THEME
+   --------------------------------------------------------- */
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
+
+    --bg: #0c0d0e;
+    --background: #0c0d0e;
+
+    --surface: #151718;
+    --surface-alt: #1d1f20;
+
+    --text: #f3f2ee;
+    --text-muted: #a7a7a3;
+    --muted: #a7a7a3;
+
+    --border: rgba(255, 255, 255, 0.09);
+
+    --accent: #d6b85a;
+
+    --shadow:
+        0 20px 60px
+        rgba(0, 0, 0, 0.35);
+}
+
+
+/* ---------------------------------------------------------
+   DARK BODY
+   --------------------------------------------------------- */
+
+:root[data-theme="dark"] body {
+    background:
+        radial-gradient(
+            circle at 85% 5%,
+            rgba(214, 184, 90, 0.07),
+            transparent 28%
+        ),
+        var(--bg);
+
+    color: var(--text);
+}
+
+
+/* ---------------------------------------------------------
+   DARK HEADER
+   --------------------------------------------------------- */
+
+:root[data-theme="dark"] .ad2-header {
+    background:
+        rgba(12, 13, 14, 0.86);
+
+    border-color:
+        rgba(255, 255, 255, 0.07);
+
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+}
+
+
+/* ---------------------------------------------------------
+   DARK FOOTER
+   --------------------------------------------------------- */
+
+:root[data-theme="dark"] .ad2-footer {
+    border-color:
+        rgba(255, 255, 255, 0.07);
+}
+
+
+/* ---------------------------------------------------------
+   DARK FORM CONTROLS
+   --------------------------------------------------------- */
+
+:root[data-theme="dark"] button,
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] select {
+    color-scheme: dark;
+}
+
+
+/* ---------------------------------------------------------
+   THEME TOGGLE
+   --------------------------------------------------------- */
+
+.ad2-theme-toggle {
+    width: 38px;
+    height: 38px;
+
+    display: grid;
+    place-items: center;
+
+    flex: 0 0 auto;
+
+    border: 1px solid var(--border);
+    border-radius: 11px;
+
+    background: var(--surface);
+    color: var(--text);
+
+    cursor: pointer;
+
+    transition:
+        .2s ease;
+}
+
+.ad2-theme-toggle:hover {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+}
+
+
+/* ---------------------------------------------------------
+   HEADER ACTIONS
+   --------------------------------------------------------- */
+
+.ad2-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* =========================================================
+   HOME DARK MODE
+   Keep Home cards aligned with the V2 dark theme.
+   ========================================================= */
+
+:root[data-theme="dark"] .ad2-prayer-time-card,
+:root[data-theme="dark"] .ad2-feature-card {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+:root[data-theme="dark"] .ad2-prayer-time-card span,
+:root[data-theme="dark"] .ad2-feature-card p {
+    color: var(--text-muted);
+}
+
+:root[data-theme="dark"] .ad2-prayer-time-card strong,
+:root[data-theme="dark"] .ad2-feature-card h2 {
+    color: var(--text);
+}
+
+:root[data-theme="dark"] .ad2-feature-card {
+    box-shadow: none;
+}
+
+:root[data-theme="dark"] .ad2-feature-card .ad2-button {
+    background: var(--accent);
+    color: #111;
+}
+
+:root[data-theme="dark"] .ad2-feature-card .ad2-button-secondary {
+    background: var(--surface-alt);
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+
+/* =========================================================
+   HEADER POLISH
+   ========================================================= */
+
+/* Dark navigation uses the V2 theme variables instead of
+   the legacy --ad-* variables. */
+
+:root[data-theme="dark"] .ad2-brand strong {
+    color: var(--text);
+}
+
+:root[data-theme="dark"] .ad2-nav-link {
+    color: var(--text-muted);
+}
+
+:root[data-theme="dark"] .ad2-nav-link:hover,
+:root[data-theme="dark"] .ad2-nav-link.is-active {
+    color: var(--text);
+}
+
+:root[data-theme="dark"] .ad2-nav-link.is-active::after {
+    background: var(--accent);
+}
+
+:root[data-theme="dark"] .ad2-header-actions {
+    gap: 16px;
+}
+
+:root[data-theme="dark"] .ad2-theme-toggle {
+    margin-left: 4px;
+    flex-shrink: 0;
+}
+
+/* Give the desktop header a little more breathing room. */
+
+@media (min-width: 721px) {
+    .ad2-header {
+        min-height: 88px;
+    }
+
+    .ad2-nav {
+        gap: 32px;
+    }
+
+    .ad2-header-actions {
+        gap: 18px;
+    }
+}
+

@@ -1,0 +1,156 @@
+.ad2-shell {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.ad2-header {
+    width: min(
+        var(--ad-content),
+        calc(100% - 48px)
+    );
+
+    margin: 0 auto;
+
+    min-height: 82px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 32px;
+}
+
+.ad2-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ad2-brand-mark {
+    width: 40px;
+    height: 40px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 50%;
+
+    background: var(--ad-text);
+    color: var(--ad-gold);
+
+    font-size: 20px;
+}
+
+.ad2-brand strong {
+    display: block;
+    font-size: 15px;
+    letter-spacing: -.02em;
+}
+
+.ad2-brand small {
+    display: block;
+    margin-top: 2px;
+
+    color: var(--ad-text-soft);
+
+    font-size: 11px;
+}
+
+.ad2-nav {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+}
+
+.ad2-nav-link {
+    position: relative;
+
+    color: var(--ad-text-soft);
+
+    font-size: 13px;
+    font-weight: 600;
+
+    transition:
+        color .2s ease;
+}
+
+.ad2-nav-link:hover,
+.ad2-nav-link.is-active {
+    color: var(--ad-text);
+}
+
+.ad2-nav-link.is-active::after {
+    content: "";
+
+    position: absolute;
+
+    left: 50%;
+    bottom: -10px;
+
+    width: 4px;
+    height: 4px;
+
+    transform: translateX(-50%);
+
+    border-radius: 50%;
+
+    background: var(--ad-gold);
+}
+
+.ad2-main {
+    width: min(
+        var(--ad-content),
+        calc(100% - 48px)
+    );
+
+    flex: 1;
+
+    margin: 0 auto;
+}
+
+.ad2-page {
+    padding: 42px 0 80px;
+}
+
+.ad2-footer {
+    width: min(
+        var(--ad-content),
+        calc(100% - 48px)
+    );
+
+    margin: auto auto 0;
+
+    padding: 24px 0 30px;
+
+    display: flex;
+    justify-content: space-between;
+
+    border-top: 1px solid var(--ad-border);
+
+    color: var(--ad-text-soft);
+    font-size: 11px;
+}
+
+/* =========================================================
+   FULL-WIDTH HEADER
+   Full viewport header with content aligned to the main grid.
+   ========================================================= */
+
+.ad2-header {
+    width: 100%;
+    max-width: none;
+
+    padding-left:
+        max(
+            24px,
+            calc((100vw - var(--ad-content)) / 2)
+        );
+
+    padding-right:
+        max(
+            24px,
+            calc((100vw - var(--ad-content)) / 2)
+        );
+}
+

@@ -1,0 +1,547 @@
+@media (max-width: 1000px) {
+
+    .ad2-nav {
+        gap: 16px;
+    }
+
+    .ad2-prayer-grid {
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+    }
+
+    .ad2-prayer-hero {
+        grid-template-columns: 1fr;
+    }
+
+    .ad2-prayer-orbit {
+        min-height: 180px;
+        padding-bottom: 50px;
+    }
+
+    .ad2-hero-copy {
+        padding: 55px;
+    }
+}
+
+@media (max-width: 720px) {
+
+    .ad2-header {
+        width: min(
+            var(--ad-content),
+            calc(100% - 28px)
+        );
+
+        min-height: 70px;
+    }
+
+    .ad2-main,
+    .ad2-footer {
+        width: min(
+            var(--ad-content),
+            calc(100% - 28px)
+        );
+    }
+
+    .ad2-nav {
+        display: none;
+    }
+
+    .ad2-page {
+        padding-top: 25px;
+    }
+
+    .ad2-prayer-hero {
+        min-height: 520px;
+    }
+
+    .ad2-hero-copy {
+        padding: 38px 28px;
+    }
+
+    .ad2-prayer-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .ad2-content-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ad2-section {
+        margin-top: 45px;
+    }
+
+    .ad2-footer {
+        flex-direction: column;
+        gap: 8px;
+    }
+}
+
+@media (max-width: 430px) {
+
+    .ad2-prayer-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .ad2-prayer-time-card {
+        padding: 17px;
+    }
+
+    .ad2-prayer-time-card strong {
+        font-size: 18px;
+    }
+
+    .ad2-hero-copy h1 {
+        font-size: 54px;
+    }
+}
+
+
+/* =========================================================
+   V2 PRAYER + QURAN RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1000px) {
+
+    .prayer-grid-large,
+    .prayer-tools-grid,
+    .surah-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .prayer-hero {
+        grid-template-columns: 1fr;
+    }
+
+    .prayer-hero-meta {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 700px) {
+
+    .page-heading,
+    .quran-heading {
+        flex-direction: column;
+        margin-bottom: 28px;
+    }
+
+    .page-heading h1,
+    .quran-heading h1 {
+        font-size: 2.25rem;
+    }
+
+    .page-location {
+        white-space: normal;
+    }
+
+    .prayer-hero {
+        padding: 28px;
+        border-radius: 22px;
+    }
+
+    .prayer-hero-time {
+        font-size: 4rem;
+    }
+
+    .prayer-grid-large,
+    .prayer-tools-grid,
+    .surah-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .prayer-settings-panel,
+    .quran-continue {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .quran-reader-shell {
+        padding: 20px;
+        border-radius: 20px;
+    }
+
+    .reader-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .reader-arabic-title {
+        align-self: stretch;
+        text-align: right;
+    }
+
+    .ayah {
+        grid-template-columns: 34px 1fr;
+        gap: 14px;
+    }
+
+    .ayah-arabic {
+        font-size: 1.65rem;
+        line-height: 2;
+    }
+
+    .prayer-hero-meta {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+@media (max-width: 760px) {
+
+    .prayer-month-panel {
+        padding: 16px;
+    }
+
+    .prayer-section-heading {
+        align-items: flex-start;
+    }
+
+    .prayer-next-indicator {
+        font-size: .65rem;
+    }
+
+}
+
+
+@media (max-width: 520px) {
+
+    .prayer-center-hero::after {
+        display: none;
+    }
+
+    .prayer-month-panel {
+        margin-top: 28px;
+    }
+
+}
+
+
+
+/* =========================================================
+   PRAYER TOOLS RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    .prayer-tool-view {
+        padding-top: 24px;
+    }
+
+    .prayer-tool-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .qibla-tool-layout {
+        grid-template-columns: 1fr;
+        gap: 34px;
+        min-height: auto;
+        padding: 28px;
+    }
+
+    .qibla-info {
+        align-items: center;
+        text-align: center;
+    }
+
+    .qibla-info > p {
+        max-width: 480px;
+    }
+
+    .qibla-location {
+        text-align: left;
+    }
+
+    .tracker-prayers {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+}
+
+
+@media (max-width: 700px) {
+
+    .prayer-tool-view {
+        padding: 18px 0 48px;
+    }
+
+    .prayer-tool-header {
+        gap: 18px;
+        margin-bottom: 22px;
+    }
+
+    .prayer-tool-header h2 {
+        font-size: 2rem;
+    }
+
+    .prayer-month-full {
+        overflow-x: auto;
+        border-radius: 18px;
+    }
+
+    .prayer-month-full-head,
+    .prayer-month-full-row {
+        min-width: 760px;
+    }
+
+    .prayer-month-full-head {
+        padding: 0 16px;
+    }
+
+    .prayer-month-full-row {
+        padding: 0 16px;
+    }
+
+    .qibla-tool-layout {
+        padding: 22px 16px;
+        border-radius: 22px;
+    }
+
+    .qibla-compass-ring {
+        width: min(320px, 78vw);
+    }
+
+    .qibla-degree {
+        font-size: 4rem;
+    }
+
+    .tracker-summary {
+        gap: 8px;
+    }
+
+    .tracker-stat {
+        min-height: 96px;
+        padding: 16px;
+        border-radius: 16px;
+    }
+
+    .tracker-stat span {
+        margin-bottom: 10px;
+        font-size: 0.62rem;
+    }
+
+    .tracker-stat strong {
+        font-size: 1.5rem;
+    }
+
+    .tracker-day {
+        padding: 16px;
+        border-radius: 16px;
+    }
+
+    .tracker-prayers {
+        gap: 6px;
+    }
+
+    .tracker-prayer {
+        min-height: 58px;
+        padding: 8px 4px;
+        border-radius: 11px;
+        font-size: 0.72rem;
+    }
+
+    .tracker-check {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+
+@media (max-width: 480px) {
+
+    .tracker-prayers {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .tracker-prayer:last-child {
+        grid-column: 1 / -1;
+    }
+
+    .tracker-summary {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .tracker-stat {
+        padding: 13px 10px;
+    }
+
+    .tracker-stat strong {
+        font-size: 1.25rem;
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE NAVIGATION
+   ========================================================= */
+
+.ad2-mobile-menu-toggle {
+    display: none;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 4px;
+
+    border: 1px solid var(--border);
+    border-radius: 11px;
+
+    background: var(--surface);
+    color: var(--text);
+
+    cursor: pointer;
+}
+
+.ad2-mobile-menu-toggle span {
+    display: block;
+    width: 15px;
+    height: 1.5px;
+
+    border-radius: 999px;
+    background: currentColor;
+
+    transition:
+        transform 180ms ease,
+        opacity 180ms ease;
+}
+
+.ad2-mobile-menu {
+    display: none;
+}
+
+@media (max-width: 720px) {
+
+    .ad2-header-actions {
+        gap: 8px;
+    }
+
+    .ad2-mobile-menu-toggle {
+        display: flex;
+    }
+
+    .ad2-mobile-menu {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+
+        background: rgba(0, 0, 0, 0.48);
+
+        opacity: 0;
+        pointer-events: none;
+
+        transition:
+            opacity 180ms ease;
+    }
+
+    .ad2-mobile-menu.is-open {
+        display: block;
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .ad2-mobile-menu-panel {
+        width: min(320px, calc(100% - 32px));
+        margin: 82px 16px 0 auto;
+        padding: 22px;
+
+        border: 1px solid var(--border);
+        border-radius: 22px;
+
+        background: var(--surface);
+
+        box-shadow:
+            0 24px 70px rgba(0, 0, 0, 0.28);
+
+        transform: translateY(-10px);
+        transition:
+            transform 180ms ease;
+    }
+
+    .ad2-mobile-menu.is-open .ad2-mobile-menu-panel {
+        transform: translateY(0);
+    }
+
+    .ad2-mobile-menu-heading {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+
+        padding-bottom: 16px;
+        margin-bottom: 8px;
+
+        border-bottom: 1px solid var(--border);
+
+        color: var(--text-muted);
+        font-size: 12px;
+    }
+
+    .ad2-mobile-menu-heading .ad2-eyebrow {
+        color: var(--accent);
+    }
+
+    .ad2-mobile-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .ad2-mobile-nav .ad2-nav-link {
+        display: flex;
+        align-items: center;
+
+        min-height: 48px;
+        padding: 0 14px;
+
+        border-radius: 12px;
+
+        color: var(--text-muted);
+        font-size: 14px;
+        font-weight: 600;
+
+        transition:
+            background 180ms ease,
+            color 180ms ease;
+    }
+
+    .ad2-mobile-nav .ad2-nav-link:hover,
+    .ad2-mobile-nav .ad2-nav-link.is-active {
+        background: color-mix(
+            in srgb,
+            var(--accent) 10%,
+            var(--surface)
+        );
+
+        color: var(--text);
+    }
+
+    .ad2-mobile-nav .ad2-nav-link.is-active::after {
+        display: none;
+    }
+
+    body.ad2-mobile-menu-open {
+        overflow: hidden;
+    }
+}
+
+
+/* =========================================================
+   FULL-WIDTH MOBILE HEADER
+   ========================================================= */
+
+@media (max-width: 720px) {
+
+    .ad2-header {
+        width: 100%;
+        max-width: none;
+
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+}
+

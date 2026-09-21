@@ -1,0 +1,25 @@
+# Local development
+.env
+.env.*
+*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Backup files
+*.bak
+*.bak-*
+.backups/
+
+# Local test artifacts
+github-v2.previous-*/
