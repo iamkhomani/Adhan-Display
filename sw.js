@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = 'adhan-display-v2-shell-logo-shahada-qibla-2';
+﻿const CACHE_NAME = 'adhan-display-v2-shell-logo-shahada-qibla-tafsir-3';
 
 const APP_SHELL = [
     '/',

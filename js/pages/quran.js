@@ -1,4 +1,4 @@
-import {
+﻿import {
     state,
     saveQuranState
 } from '../state.js';
@@ -1364,6 +1364,16 @@ function renderAyah(
                     >
                         ${bookmarked ? '★' : '☆'}
                     </button>
+                    <button
+                        class="
+                            q2-ayah-button
+                            q2-ayah-tafsir
+                        "
+                        data-q2-tafsir="${index}"
+                        title="Read tafsir"
+                    >
+                        Tafsir
+                    </button>
 
                 </div>
 
@@ -1398,6 +1408,586 @@ function renderAyah(
     `;
 }
 
+
+
+async function loadTafsir(ayah) {
+
+    const surahNumber =
+        Number(
+            ayah.surah?.number ||
+            state.quran.selectedSurah
+        );
+
+    const ayahNumber =
+        Number(
+            ayah.numberInSurah
+        );
+
+    if (
+        !surahNumber ||
+        !ayahNumber
+    ) {
+        throw new Error(
+            'Unable to determine the ayah reference.'
+        );
+    }
+
+    const verseKey =
+        `${surahNumber}:${ayahNumber}`;
+
+    /*
+     * Quran Foundation / Quran.com
+     * Resource 169 = Tafsir Ibn Kathir
+     */
+    const url =
+        `https://api.quran.com/api/v4/tafsirs/169/by_ayah/${encodeURIComponent(verseKey)}`;
+
+    const result =
+        await fetchJson(url);
+
+    return {
+        ...result.tafsir,
+        verseKey
+    };
+}
+
+
+function sanitizeTafsirHtml(
+    html = ''
+) {
+
+    const template =
+        document.createElement(
+            'template'
+        );
+
+    template.innerHTML =
+        String(html);
+
+    const allowed =
+        new Set([
+            'P',
+            'BR',
+            'STRONG',
+            'EM',
+            'B',
+            'I',
+            'H2',
+            'H3',
+            'UL',
+            'OL',
+            'LI',
+            'A'
+        ]);
+
+    template.content
+        .querySelectorAll('*')
+        .forEach(element => {
+
+            if (
+                !allowed.has(
+                    element.tagName
+                )
+            ) {
+
+                element.replaceWith(
+                    document.createTextNode(
+                        element.textContent ||
+                        ''
+                    )
+                );
+
+                return;
+            }
+
+            [
+                ...element.attributes
+            ].forEach(attribute => {
+
+                if (
+                    element.tagName === 'A' &&
+                    attribute.name === 'href'
+                ) {
+
+                    const value =
+                        attribute.value ||
+                        '';
+
+                    if (
+                        !value.startsWith(
+                            'https://'
+                        )
+                    ) {
+
+                        element.removeAttribute(
+                            'href'
+                        );
+
+                    } else {
+
+                        element.setAttribute(
+                            'target',
+                            '_blank'
+                        );
+
+                        element.setAttribute(
+                            'rel',
+                            'noopener noreferrer'
+                        );
+                    }
+
+                } else {
+
+                    element.removeAttribute(
+                        attribute.name
+                    );
+                }
+            });
+        });
+
+    return template.innerHTML;
+}
+
+
+function closeTafsirModal() {
+
+    document
+        .querySelector(
+            '[data-q2-tafsir-modal]'
+        )
+        ?.remove();
+
+    document.body.classList.remove(
+        'q2-tafsir-open'
+    );
+}
+
+
+function bindTafsirClose(
+    modal
+) {
+
+    modal
+        .querySelectorAll(
+            '[data-q2-tafsir-close]'
+        )
+        .forEach(button => {
+
+            button.addEventListener(
+                'click',
+                closeTafsirModal
+            );
+        });
+
+    modal
+        .querySelector(
+            '.q2-tafsir-backdrop'
+        )
+        ?.addEventListener(
+            'click',
+            closeTafsirModal
+        );
+}
+
+
+function renderTafsirModal(
+    ayah,
+    tafsir
+) {
+
+    closeTafsirModal();
+
+    const surahName =
+        ayah.surah?.englishName ||
+        ayah.surah?.name ||
+        'Quran';
+
+    const verseKey =
+        tafsir.verseKey ||
+        `${ayah.surah?.number || state.quran.selectedSurah}:${ayah.numberInSurah}`;
+
+    const sourceName =
+        tafsir.resource_name ||
+        tafsir.resourceName ||
+        tafsir.translated_name?.name ||
+        'Tafsir Ibn Kathir';
+
+    const text =
+        sanitizeTafsirHtml(
+            tafsir.text ||
+            ''
+        );
+
+    const modal =
+        document.createElement(
+            'div'
+        );
+
+    modal.className =
+        'q2-tafsir-modal';
+
+    modal.setAttribute(
+        'data-q2-tafsir-modal',
+        ''
+    );
+
+    modal.innerHTML = `
+
+        <div
+            class="q2-tafsir-backdrop"
+            data-q2-tafsir-close
+        ></div>
+
+
+        <section
+            class="q2-tafsir-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="q2-tafsir-title"
+        >
+
+            <header
+                class="q2-tafsir-header"
+            >
+
+                <div>
+
+                    <span class="q2-eyebrow">
+                        TAFSIR
+                    </span>
+
+                    <h2
+                        id="q2-tafsir-title"
+                    >
+                        ${escapeHtml(
+                            sourceName
+                        )}
+                    </h2>
+
+                    <p>
+                        ${escapeHtml(
+                            surahName
+                        )}
+                        ·
+                        ${escapeHtml(
+                            verseKey
+                        )}
+                    </p>
+
+                </div>
+
+
+                <button
+                    class="q2-tafsir-close"
+                    type="button"
+                    data-q2-tafsir-close
+                    aria-label="Close tafsir"
+                >
+                    ×
+                </button>
+
+            </header>
+
+
+            <div
+                class="q2-tafsir-ayah"
+            >
+
+                <div
+                    class="q2-tafsir-arabic"
+                    dir="rtl"
+                >
+                    ${escapeHtml(
+                        ayah.text ||
+                        ''
+                    )}
+                </div>
+
+
+                ${
+                    ayah.translation
+                        ? `
+                            <div
+                                class="q2-tafsir-translation"
+                            >
+                                ${escapeHtml(
+                                    ayah.translation.text ||
+                                    ''
+                                )}
+                            </div>
+                        `
+                        : ''
+                }
+
+            </div>
+
+
+            <div
+                class="q2-tafsir-content"
+            >
+
+                ${
+                    text ||
+                    '<p>No tafsir text was returned for this ayah.</p>'
+                }
+
+            </div>
+
+
+            <footer
+                class="q2-tafsir-footer"
+            >
+
+                <span>
+                    Source:
+                    ${escapeHtml(
+                        sourceName
+                    )}
+                </span>
+
+                <a
+                    href="https://quran.com/${encodeURIComponent(verseKey)}/tafsirs/169"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    View source
+                </a>
+
+            </footer>
+
+        </section>
+    `;
+
+    document.body.appendChild(
+        modal
+    );
+
+    document.body.classList.add(
+        'q2-tafsir-open'
+    );
+
+    bindTafsirClose(
+        modal
+    );
+
+    modal
+        .querySelector(
+            '.q2-tafsir-close'
+        )
+        ?.focus();
+}
+
+
+async function openTafsir(
+    ayah
+) {
+
+    closeTafsirModal();
+
+    const verseKey =
+        `${ayah.surah?.number || state.quran.selectedSurah}:${ayah.numberInSurah}`;
+
+    const modal =
+        document.createElement(
+            'div'
+        );
+
+    modal.className =
+        'q2-tafsir-modal';
+
+    modal.setAttribute(
+        'data-q2-tafsir-modal',
+        ''
+    );
+
+    modal.innerHTML = `
+
+        <div
+            class="q2-tafsir-backdrop"
+            data-q2-tafsir-close
+        ></div>
+
+
+        <section
+            class="q2-tafsir-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="q2-tafsir-loading-title"
+        >
+
+            <header
+                class="q2-tafsir-header"
+            >
+
+                <div>
+
+                    <span class="q2-eyebrow">
+                        TAFSIR
+                    </span>
+
+                    <h2
+                        id="q2-tafsir-loading-title"
+                    >
+                        Tafsir Ibn Kathir
+                    </h2>
+
+                    <p>
+                        ${escapeHtml(
+                            ayah.surah?.englishName ||
+                            'Quran'
+                        )}
+                        ·
+                        ${escapeHtml(
+                            verseKey
+                        )}
+                    </p>
+
+                </div>
+
+
+                <button
+                    class="q2-tafsir-close"
+                    type="button"
+                    data-q2-tafsir-close
+                    aria-label="Close tafsir"
+                >
+                    ×
+                </button>
+
+            </header>
+
+
+            <div
+                class="q2-tafsir-loading"
+            >
+
+                <div
+                    class="q2-spinner"
+                ></div>
+
+                <p>
+                    Loading tafsir...
+                </p>
+
+            </div>
+
+        </section>
+    `;
+
+    document.body.appendChild(
+        modal
+    );
+
+    document.body.classList.add(
+        'q2-tafsir-open'
+    );
+
+    bindTafsirClose(
+        modal
+    );
+
+    try {
+
+        const tafsir =
+            await loadTafsir(
+                ayah
+            );
+
+        if (
+            !document.body.contains(
+                modal
+            )
+        ) {
+            return;
+        }
+
+        renderTafsirModal(
+            ayah,
+            tafsir
+        );
+
+    } catch (error) {
+
+        if (
+            !document.body.contains(
+                modal
+            )
+        ) {
+            return;
+        }
+
+        const dialog =
+            modal.querySelector(
+                '.q2-tafsir-dialog'
+            );
+
+        if (!dialog) {
+            return;
+        }
+
+        dialog.innerHTML = `
+
+            <header
+                class="q2-tafsir-header"
+            >
+
+                <div>
+
+                    <span
+                        class="q2-eyebrow"
+                    >
+                        TAFSIR
+                    </span>
+
+                    <h2>
+                        Tafsir unavailable
+                    </h2>
+
+                    <p>
+                        ${escapeHtml(
+                            ayah.surah?.englishName ||
+                            'Quran'
+                        )}
+                        ·
+                        ${escapeHtml(
+                            verseKey
+                        )}
+                    </p>
+
+                </div>
+
+
+                <button
+                    class="q2-tafsir-close"
+                    type="button"
+                    data-q2-tafsir-close
+                    aria-label="Close tafsir"
+                >
+                    ×
+                </button>
+
+            </header>
+
+
+            <div
+                class="q2-tafsir-error"
+            >
+
+                <p>
+                    ${escapeHtml(
+                        error?.message ||
+                        'The tafsir could not be loaded.'
+                    )}
+                </p>
+
+            </div>
+        `;
+
+        bindTafsirClose(
+            modal
+        );
+    }
+}
 
 function renderReaderError(
     error
@@ -1501,6 +2091,95 @@ function bindReader() {
                 }
             );
         });
+
+
+     document
+
+
+         .querySelectorAll(
+
+
+             '[data-q2-tafsir]'
+
+
+         )
+
+
+         .forEach(button => {
+
+
+
+
+
+             button.addEventListener(
+
+
+                 'click',
+
+
+                 event => {
+
+
+
+
+
+                     event.stopPropagation();
+
+
+
+
+
+                     const ayah =
+
+
+                         state.quran.ayahs[
+
+
+                             Number(
+
+
+                                 button.dataset.q2Tafsir
+
+
+                             )
+
+
+                         ];
+
+
+
+
+
+                     if (ayah) {
+
+
+
+
+
+                         openTafsir(
+
+
+                             ayah
+
+
+                         );
+
+
+                     }
+
+
+                 }
+
+
+             );
+
+
+         });
+
+
+
+
+
 
 
     document
