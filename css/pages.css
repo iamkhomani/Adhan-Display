@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Page-specific styles will be added as
  * each Adhan Display 2.0 section is implemented.
  */
@@ -721,6 +721,12 @@
     gap: 14px;
 }
 
+.settings-about-mark img {
+    width: 34px;
+    height: 34px;
+    object-fit: contain;
+    display: block;
+}
 .settings-about-mark {
     width: 42px;
     height: 42px;

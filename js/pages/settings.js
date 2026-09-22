@@ -1,4 +1,4 @@
-import {
+﻿import {
     state,
     toggleTheme,
     saveQuranState
@@ -667,7 +667,12 @@ function renderAbout() {
         `
             <div class="settings-about">
                 <div>
-                    <span class="settings-about-mark">☾</span>
+                    <span class="settings-about-mark">
+                    <img
+                        src="/images/adhan%20display%20muslim%20prayer%20times%20dashboard%20logo.png"
+                        alt="Adhan Display"
+                    >
+                </span>
                     <div>
                         <strong>Adhan Display</strong>
                         <span>Modern prayer, Quran and Islamic life.</span>

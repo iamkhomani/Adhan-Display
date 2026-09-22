@@ -1,7 +1,8 @@
-import { state } from '../state.js';
+﻿import { state } from '../state.js';
 import { Storage } from '../storage.js';
 import { APP } from '../config.js';
 import { Tracker } from '../services/tracker.js';
+import { renderQiblaCard, bindQiblaCompass } from './prayer.js';
 
 const tracker = new Tracker();
 
@@ -138,43 +139,6 @@ export function renderMonthlyTimetable() {
 }
 
 export function renderQibla() {
-    const lat = Number(state.location.lat);
-    const lon = Number(state.location.lon);
-
-    const validLocation =
-        Number.isFinite(lat) &&
-        Number.isFinite(lon);
-
-    let direction = null;
-
-    if (validLocation) {
-        const r = Math.PI / 180;
-
-        const lat1 = lat * r;
-        const lon1 = lon * r;
-        const lat2 = APP.qibla.lat * r;
-        const lon2 = APP.qibla.lon * r;
-
-        const y =
-            Math.sin(lon2 - lon1) *
-            Math.cos(lat2);
-
-        const x =
-            Math.cos(lat1) *
-                Math.sin(lat2) -
-            Math.sin(lat1) *
-                Math.cos(lat2) *
-                Math.cos(lon2 - lon1);
-
-        direction =
-            Math.round(
-                (
-                    Math.atan2(y, x) / r +
-                    360
-                ) % 360
-            );
-    }
-
     return `
         <section class="prayer-tool-view">
 
@@ -195,69 +159,7 @@ export function renderQibla() {
                 </button>
             </div>
 
-            <div class="qibla-tool-layout">
-
-                <div class="qibla-compass">
-                    <div class="qibla-compass-ring">
-                        <span class="qibla-north">N</span>
-                        <span class="qibla-east">E</span>
-                        <span class="qibla-south">S</span>
-                        <span class="qibla-west">W</span>
-
-                        ${
-                            direction !== null
-                                ? `
-                                    <div
-                                        class="qibla-needle"
-                                        style="transform: rotate(${direction}deg)"
-                                    >
-                                        <span></span>
-                                    </div>
-                                `
-                                : ''
-                        }
-
-                        <div class="qibla-center">
-                            <span>KA'BAH</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="qibla-info">
-
-                    <span class="ad2-eyebrow">
-                        QIBLA DIRECTION
-                    </span>
-
-                    <strong class="qibla-degree">
-                        ${
-                            direction !== null
-                                ? `${direction}°`
-                                : '--'
-                        }
-                    </strong>
-
-                    <p>
-                        ${
-                            direction !== null
-                                ? 'Measured clockwise from true North.'
-                                : 'Location is not available.'
-                        }
-                    </p>
-
-                    <div class="qibla-location">
-                        <span>Location</span>
-                        <strong>
-                            ${escapeHtml(
-                                state.location.city ||
-                                'Current location'
-                            )}
-                        </strong>
-                    </div>
-
-                </div>
-
-            </div>
+            ${renderQiblaCard()}
 
         </section>
     `;
@@ -993,6 +895,13 @@ export function renderPrayerTool(action) {
 }
 
 export function bindPrayerTools() {
+
+    /*
+     * Worship Tools Qibla uses the exact same
+     * renderer and live compass as the Prayer page.
+     */
+    bindQiblaCompass();
+
 
     document
         .querySelectorAll('[data-tracker-history-prev]')

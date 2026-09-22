@@ -1,4 +1,4 @@
-import { state } from '../state.js';
+﻿import { state } from '../state.js';
 
 const GOOGLE_QIBLA_FINDER =
     'https://qiblafinder.withgoogle.com/intl/nl/onboarding/position';
@@ -369,7 +369,7 @@ function renderPrayerRows(entries, next) {
 }
 
 
-function renderQiblaCard() {
+export function renderQiblaCard() {
     const location = getLocation();
 
     if (!location) {
@@ -914,7 +914,7 @@ export function bindPrayerPage() {
 }
 
 
-function bindQiblaCompass() {
+export function bindQiblaCompass() {
     const button =
         document.querySelector(
             '[data-qibla-live]'
