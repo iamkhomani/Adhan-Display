@@ -1863,9 +1863,11 @@ mark.adhan-search-highlight {
 }
 
 .q2-ayah-tafsir {
-    min-width: 0;
-    padding-inline: .7rem;
+    min-width: 64px;
+    padding-inline: .85rem;
     font-size: .68rem;
+    white-space: nowrap;
+    text-align: center;
 }
 
 @media (max-width: 600px) {
