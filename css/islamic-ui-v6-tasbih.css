@@ -1,0 +1,399 @@
+/*
+ * Adhan Display
+ * Islamic UI V6
+ *
+ * Digital Tasbih visual rebuild
+ *
+ * JavaScript is intentionally untouched.
+ */
+
+
+/* ============================================================
+   TASBIH VIEW
+   ============================================================ */
+
+.islamic-page .tasbih-view {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    overflow: visible !important;
+    box-sizing: border-box !important;
+}
+
+
+/* ============================================================
+   TASBIH CONTAINER
+   ============================================================ */
+
+.islamic-page .tasbih-container {
+    width: 100% !important;
+    max-width: 680px !important;
+
+    margin: 24px auto 0 !important;
+    padding: 0 !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+
+    gap: 24px !important;
+
+    box-sizing: border-box !important;
+    overflow: visible !important;
+}
+
+
+/* ============================================================
+   COUNTER CARD
+   ============================================================ */
+
+.islamic-page .tasbih-counter {
+    width: 100% !important;
+    max-width: 460px !important;
+
+    min-height: 210px !important;
+
+    margin: 0 !important;
+    padding: 32px 24px !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    gap: 10px !important;
+
+    position: relative !important;
+
+    box-sizing: border-box !important;
+
+    overflow: visible !important;
+    transform: none !important;
+}
+
+
+/* Current count label */
+
+.islamic-page .tasbih-counter .ad2-eyebrow {
+    margin: 0 0 4px !important;
+
+    text-align: center !important;
+
+    font-size: .7rem !important;
+    line-height: 1.2 !important;
+    letter-spacing: .12em !important;
+}
+
+
+/* Actual number */
+
+.islamic-page .tasbih-counter [data-tasbih-count] {
+    display: block !important;
+
+    width: auto !important;
+    height: auto !important;
+
+    min-width: 0 !important;
+    min-height: 0 !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    position: static !important;
+
+    font-size: clamp(72px, 11vw, 120px) !important;
+    line-height: .9 !important;
+    font-weight: 700 !important;
+    letter-spacing: -.04em !important;
+
+    text-align: center !important;
+
+    transform: none !important;
+
+    overflow: visible !important;
+}
+
+
+/* ============================================================
+   TAP AREA
+   ============================================================ */
+
+.islamic-page .tasbih-tap-shell {
+    width: 100% !important;
+    max-width: 460px !important;
+
+    min-height: 0 !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    position: relative !important;
+
+    box-sizing: border-box !important;
+
+    overflow: visible !important;
+
+    transform: none !important;
+}
+
+
+/*
+ * Remove decorative pseudo elements that can make the
+ * existing button appear clipped or split.
+ */
+
+.islamic-page .tasbih-tap-shell::before,
+.islamic-page .tasbih-tap-shell::after {
+    display: none !important;
+    content: none !important;
+}
+
+
+/* ============================================================
+   COUNT BUTTON
+   ============================================================ */
+
+/*
+ * Target every interactive element inside the tap shell.
+ * This intentionally overrides the old Tasbih presentation
+ * without changing the JavaScript event binding.
+ */
+
+.islamic-page .tasbih-tap-shell button,
+.islamic-page .tasbih-tap-shell [role="button"] {
+    width: 100% !important;
+    max-width: 460px !important;
+
+    min-width: 0 !important;
+    min-height: 132px !important;
+
+    margin: 0 !important;
+    padding: 28px 32px !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    gap: 7px !important;
+
+    box-sizing: border-box !important;
+
+    border-radius: 24px !important;
+
+    text-align: center !important;
+
+    position: relative !important;
+
+    overflow: hidden !important;
+
+    transform: none !important;
+
+    cursor: pointer !important;
+
+    touch-action: manipulation !important;
+
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+
+/* Button text */
+
+.islamic-page .tasbih-tap-shell button strong,
+.islamic-page .tasbih-tap-shell button span,
+.islamic-page .tasbih-tap-shell [role="button"] strong,
+.islamic-page .tasbih-tap-shell [role="button"] span {
+    display: block !important;
+
+    width: auto !important;
+    max-width: 100% !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    position: static !important;
+
+    transform: none !important;
+
+    text-align: center !important;
+}
+
+
+/* Main button title */
+
+.islamic-page .tasbih-tap-shell button strong,
+.islamic-page .tasbih-tap-shell [role="button"] strong {
+    font-size: 1.05rem !important;
+    line-height: 1.2 !important;
+    font-weight: 700 !important;
+
+    letter-spacing: .04em !important;
+}
+
+
+/* Secondary button text */
+
+.islamic-page .tasbih-tap-shell button span,
+.islamic-page .tasbih-tap-shell [role="button"] span {
+    font-size: .78rem !important;
+    line-height: 1.3 !important;
+    font-weight: 500 !important;
+
+    opacity: .72 !important;
+}
+
+
+/* ============================================================
+   HOVER
+   ============================================================ */
+
+.islamic-page .tasbih-tap-shell button:hover,
+.islamic-page .tasbih-tap-shell [role="button"]:hover {
+    transform: translateY(-2px) !important;
+}
+
+
+/* ============================================================
+   ACTIVE / TAP
+   ============================================================ */
+
+.islamic-page .tasbih-tap-shell button:active,
+.islamic-page .tasbih-tap-shell [role="button"]:active {
+    transform: scale(.98) !important;
+}
+
+
+/* ============================================================
+   FOCUS
+   ============================================================ */
+
+.islamic-page .tasbih-tap-shell button:focus-visible,
+.islamic-page .tasbih-tap-shell [role="button"]:focus-visible {
+    outline: 3px solid currentColor !important;
+    outline-offset: 4px !important;
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 767px) {
+
+    .islamic-page .tasbih-container {
+        max-width: 100% !important;
+        margin-top: 16px !important;
+        gap: 18px !important;
+    }
+
+    .islamic-page .tasbih-counter {
+        max-width: 100% !important;
+        min-height: 180px !important;
+        padding: 28px 18px !important;
+    }
+
+    .islamic-page .tasbih-counter [data-tasbih-count] {
+        font-size: clamp(64px, 20vw, 96px) !important;
+    }
+
+    .islamic-page .tasbih-tap-shell {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .islamic-page .tasbih-tap-shell button,
+    .islamic-page .tasbih-tap-shell [role="button"] {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-height: 120px !important;
+
+        padding: 24px 20px !important;
+
+        border-radius: 22px !important;
+    }
+}
+
+
+/* ============================================================
+   SMALL MOBILE
+   ============================================================ */
+
+@media (max-width: 480px) {
+
+    .islamic-page .tasbih-container {
+        gap: 14px !important;
+    }
+
+    .islamic-page .tasbih-counter {
+        min-height: 155px !important;
+        padding: 24px 16px !important;
+    }
+
+    .islamic-page .tasbih-counter [data-tasbih-count] {
+        font-size: clamp(56px, 22vw, 82px) !important;
+    }
+
+    .islamic-page .tasbih-tap-shell button,
+    .islamic-page .tasbih-tap-shell [role="button"] {
+        min-height: 105px !important;
+        padding: 20px 16px !important;
+        border-radius: 20px !important;
+    }
+
+    .islamic-page .tasbih-tap-shell button strong,
+    .islamic-page .tasbih-tap-shell [role="button"] strong {
+        font-size: .95rem !important;
+    }
+
+    .islamic-page .tasbih-tap-shell button span,
+    .islamic-page .tasbih-tap-shell [role="button"] span {
+        font-size: .72rem !important;
+    }
+}
+
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .islamic-page .tasbih-tap-shell button,
+    .islamic-page .tasbih-tap-shell [role="button"] {
+        transition: none !important;
+        animation: none !important;
+    }
+
+    .islamic-page .tasbih-tap-shell button:hover,
+    .islamic-page .tasbih-tap-shell button:active,
+    .islamic-page .tasbih-tap-shell [role="button"]:hover,
+    .islamic-page .tasbih-tap-shell [role="button"]:active {
+        transform: none !important;
+    }
+}
+
+
+/* ============================================================
+   PRINT
+   ============================================================ */
+
+@media print {
+
+    .islamic-page .tasbih-view {
+        break-inside: avoid !important;
+    }
+
+    .islamic-page .tasbih-tap-shell button,
+    .islamic-page .tasbih-tap-shell [role="button"] {
+        box-shadow: none !important;
+    }
+}

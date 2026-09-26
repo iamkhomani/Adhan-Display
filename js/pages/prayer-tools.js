@@ -781,8 +781,6 @@ export function renderTracker() {
     const exemptionMode = !!settings.trackerExemptionMode;
 
     return `
-        ${prayerStatistics}
-
         <section class="prayer-tool-view">
 
             <div class="prayer-tool-header">
@@ -873,6 +871,8 @@ export function renderTracker() {
             </div>
 
         </section>
+
+        ${prayerStatistics}
 
         ${renderTrackerHistoryDay(exemptionMode)}
     `;

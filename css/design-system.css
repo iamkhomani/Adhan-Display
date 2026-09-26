@@ -1,0 +1,601 @@
+/*
+ * Adhan Display
+ * Design System v1
+ *
+ * Purpose:
+ * Central visual foundation for the application.
+ *
+ * Important:
+ * This file intentionally does not replace existing page styles.
+ * It provides shared tokens and safe base utilities that can be
+ * adopted progressively by individual components.
+ *
+ * Environment:
+ * TEST / DEVELOPMENT
+ */
+
+/* ============================================================
+   1. COLOR SYSTEM
+   ============================================================ */
+
+:root {
+    /* Brand */
+    --ad2-color-brand: #d4af37;
+    --ad2-color-brand-soft: rgba(212, 175, 55, 0.14);
+    --ad2-color-brand-border: rgba(212, 175, 55, 0.28);
+    --ad2-color-brand-strong: #e2c15b;
+
+    /* Backgrounds */
+    --ad2-color-bg: #0b0d0f;
+    --ad2-color-bg-elevated: #111417;
+    --ad2-color-bg-surface: #15191d;
+    --ad2-color-bg-soft: #1b2025;
+    --ad2-color-bg-subtle: rgba(255, 255, 255, 0.035);
+
+    /* Text */
+    --ad2-color-text: #f4f1e8;
+    --ad2-color-text-secondary: #b8b5ac;
+    --ad2-color-text-muted: #85837d;
+    --ad2-color-text-disabled: #5c5b57;
+
+    /* Borders */
+    --ad2-color-border: rgba(255, 255, 255, 0.08);
+    --ad2-color-border-strong: rgba(255, 255, 255, 0.14);
+    --ad2-color-border-soft: rgba(255, 255, 255, 0.05);
+
+    /* Semantic */
+    --ad2-color-success: #65c18c;
+    --ad2-color-success-soft: rgba(101, 193, 140, 0.12);
+
+    --ad2-color-warning: #e0b85c;
+    --ad2-color-warning-soft: rgba(224, 184, 92, 0.12);
+
+    --ad2-color-danger: #d87979;
+    --ad2-color-danger-soft: rgba(216, 121, 121, 0.12);
+
+    --ad2-color-info: #7fa8d8;
+    --ad2-color-info-soft: rgba(127, 168, 216, 0.12);
+
+    /* ========================================================
+       2. TYPOGRAPHY
+       ======================================================== */
+
+    --ad2-font-sans:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+    --ad2-font-arabic:
+        "Noto Naskh Arabic",
+        "Noto Sans Arabic",
+        Tahoma,
+        Arial,
+        sans-serif;
+
+    --ad2-font-mono:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+
+    --ad2-text-xs: 0.68rem;
+    --ad2-text-sm: 0.78rem;
+    --ad2-text-base: 0.92rem;
+    --ad2-text-md: 1rem;
+    --ad2-text-lg: 1.15rem;
+    --ad2-text-xl: 1.45rem;
+    --ad2-text-2xl: 1.8rem;
+    --ad2-text-3xl: 2.25rem;
+    --ad2-text-4xl: 3rem;
+
+    --ad2-leading-tight: 1.15;
+    --ad2-leading-normal: 1.45;
+    --ad2-leading-relaxed: 1.7;
+
+    --ad2-weight-normal: 400;
+    --ad2-weight-medium: 500;
+    --ad2-weight-semibold: 600;
+    --ad2-weight-bold: 700;
+
+    /* ========================================================
+       3. SPACING
+       ======================================================== */
+
+    --ad2-space-1: 0.25rem;
+    --ad2-space-2: 0.5rem;
+    --ad2-space-3: 0.75rem;
+    --ad2-space-4: 1rem;
+    --ad2-space-5: 1.25rem;
+    --ad2-space-6: 1.5rem;
+    --ad2-space-7: 1.75rem;
+    --ad2-space-8: 2rem;
+    --ad2-space-10: 2.5rem;
+    --ad2-space-12: 3rem;
+    --ad2-space-16: 4rem;
+
+    /* ========================================================
+       4. RADIUS
+       ======================================================== */
+
+    --ad2-radius-sm: 8px;
+    --ad2-radius-md: 12px;
+    --ad2-radius-lg: 16px;
+    --ad2-radius-xl: 20px;
+    --ad2-radius-2xl: 24px;
+    --ad2-radius-pill: 999px;
+
+    /* ========================================================
+       5. SHADOWS
+       ======================================================== */
+
+    --ad2-shadow-sm:
+        0 2px 8px rgba(0, 0, 0, 0.18);
+
+    --ad2-shadow-md:
+        0 8px 24px rgba(0, 0, 0, 0.22);
+
+    --ad2-shadow-lg:
+        0 16px 48px rgba(0, 0, 0, 0.28);
+
+    --ad2-shadow-brand:
+        0 8px 28px rgba(212, 175, 55, 0.12);
+
+    /* ========================================================
+       6. BORDERS
+       ======================================================== */
+
+    --ad2-border-width: 1px;
+
+    /* ========================================================
+       7. TRANSITIONS
+       ======================================================== */
+
+    --ad2-transition-fast: 120ms ease;
+    --ad2-transition-normal: 180ms ease;
+    --ad2-transition-slow: 260ms ease;
+
+    /* ========================================================
+       8. LAYOUT
+       ======================================================== */
+
+    --ad2-content-max-width: 1440px;
+    --ad2-content-padding: clamp(1rem, 2vw, 2rem);
+
+    /* ========================================================
+       9. CONTROL SIZES
+       ======================================================== */
+
+    --ad2-control-height-sm: 34px;
+    --ad2-control-height-md: 42px;
+    --ad2-control-height-lg: 50px;
+
+    /* ========================================================
+       10. FOCUS
+       ======================================================== */
+
+    --ad2-focus-ring:
+        0 0 0 3px rgba(212, 175, 55, 0.22);
+
+    --ad2-focus-outline:
+        2px solid var(--ad2-color-brand);
+}
+
+
+/* ============================================================
+   GLOBAL FOUNDATION
+   ============================================================ */
+
+html {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: var(--ad2-font-sans);
+    color: var(--ad2-color-text);
+}
+
+
+/* ============================================================
+   ACCESSIBILITY
+   ============================================================ */
+
+:where(
+    button,
+    a,
+    input,
+    select,
+    textarea,
+    [tabindex]
+):focus-visible {
+    outline: var(--ad2-focus-outline);
+    outline-offset: 2px;
+    box-shadow: var(--ad2-focus-ring);
+}
+
+:where(button, input, select, textarea):disabled {
+    cursor: not-allowed;
+}
+
+
+/* ============================================================
+   SHARED CARD FOUNDATION
+   ============================================================ */
+
+.ad2-card {
+    background: var(--ad2-color-bg-surface);
+    border: var(--ad2-border-width) solid var(--ad2-color-border);
+    border-radius: var(--ad2-radius-lg);
+    box-shadow: var(--ad2-shadow-sm);
+}
+
+.ad2-card-soft {
+    background: var(--ad2-color-bg-subtle);
+    border: var(--ad2-border-width) solid var(--ad2-color-border-soft);
+    border-radius: var(--ad2-radius-lg);
+}
+
+.ad2-card-interactive {
+    transition:
+        transform var(--ad2-transition-normal),
+        border-color var(--ad2-transition-normal),
+        box-shadow var(--ad2-transition-normal);
+}
+
+.ad2-card-interactive:hover {
+    border-color: var(--ad2-color-border-strong);
+    box-shadow: var(--ad2-shadow-md);
+    transform: translateY(-1px);
+}
+
+
+/* ============================================================
+   SHARED BUTTON FOUNDATION
+   ============================================================ */
+
+.ad2-button {
+    appearance: none;
+    border: var(--ad2-border-width) solid var(--ad2-color-border);
+    border-radius: var(--ad2-radius-md);
+    min-height: var(--ad2-control-height-md);
+    padding: 0 var(--ad2-space-4);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--ad2-space-2);
+    font: inherit;
+    font-size: var(--ad2-text-sm);
+    font-weight: var(--ad2-weight-semibold);
+    line-height: 1;
+    color: var(--ad2-color-text);
+    background: var(--ad2-color-bg-surface);
+    cursor: pointer;
+    transition:
+        background-color var(--ad2-transition-fast),
+        border-color var(--ad2-transition-fast),
+        color var(--ad2-transition-fast),
+        transform var(--ad2-transition-fast),
+        box-shadow var(--ad2-transition-fast);
+}
+
+.ad2-button:hover {
+    background: var(--ad2-color-bg-soft);
+    border-color: var(--ad2-color-border-strong);
+}
+
+.ad2-button:active {
+    transform: translateY(1px);
+}
+
+.ad2-button-primary {
+    color: #17140b;
+    background: var(--ad2-color-brand);
+    border-color: var(--ad2-color-brand);
+}
+
+.ad2-button-primary:hover {
+    background: var(--ad2-color-brand-strong);
+    border-color: var(--ad2-color-brand-strong);
+}
+
+.ad2-button-secondary {
+    background: transparent;
+    border-color: var(--ad2-color-brand-border);
+    color: var(--ad2-color-brand-strong);
+}
+
+.ad2-button-secondary:hover {
+    background: var(--ad2-color-brand-soft);
+}
+
+.ad2-button-danger {
+    color: #f6dddd;
+    background: var(--ad2-color-danger-soft);
+    border-color: rgba(216, 121, 121, 0.25);
+}
+
+
+/* ============================================================
+   SHARED FORM FOUNDATION
+   ============================================================ */
+
+.ad2-input,
+.ad2-select,
+.ad2-textarea {
+    width: 100%;
+    min-height: var(--ad2-control-height-md);
+    padding: 0 var(--ad2-space-3);
+    border: var(--ad2-border-width) solid var(--ad2-color-border);
+    border-radius: var(--ad2-radius-md);
+    background: var(--ad2-color-bg-surface);
+    color: var(--ad2-color-text);
+    font: inherit;
+    font-size: var(--ad2-text-base);
+    transition:
+        border-color var(--ad2-transition-fast),
+        box-shadow var(--ad2-transition-fast),
+        background-color var(--ad2-transition-fast);
+}
+
+.ad2-textarea {
+    padding-top: var(--ad2-space-3);
+    padding-bottom: var(--ad2-space-3);
+    min-height: 100px;
+    resize: vertical;
+}
+
+.ad2-input::placeholder,
+.ad2-textarea::placeholder {
+    color: var(--ad2-color-text-muted);
+}
+
+.ad2-input:hover,
+.ad2-select:hover,
+.ad2-textarea:hover {
+    border-color: var(--ad2-color-border-strong);
+}
+
+.ad2-input:focus,
+.ad2-select:focus,
+.ad2-textarea:focus {
+    border-color: var(--ad2-color-brand-border);
+    box-shadow: var(--ad2-focus-ring);
+}
+
+
+/* ============================================================
+   SHARED LABEL FOUNDATION
+   ============================================================ */
+
+.ad2-label {
+    display: block;
+    margin-bottom: var(--ad2-space-2);
+    color: var(--ad2-color-text-secondary);
+    font-size: var(--ad2-text-sm);
+    font-weight: var(--ad2-weight-medium);
+}
+
+
+/* ============================================================
+   SHARED STATUS FOUNDATION
+   ============================================================ */
+
+.ad2-status {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ad2-space-2);
+    min-height: 30px;
+    padding: 0 var(--ad2-space-3);
+    border-radius: var(--ad2-radius-pill);
+    font-size: var(--ad2-text-xs);
+    font-weight: var(--ad2-weight-semibold);
+}
+
+.ad2-status-success {
+    color: var(--ad2-color-success);
+    background: var(--ad2-color-success-soft);
+}
+
+.ad2-status-warning {
+    color: var(--ad2-color-warning);
+    background: var(--ad2-color-warning-soft);
+}
+
+.ad2-status-danger {
+    color: var(--ad2-color-danger);
+    background: var(--ad2-color-danger-soft);
+}
+
+.ad2-status-info {
+    color: var(--ad2-color-info);
+    background: var(--ad2-color-info-soft);
+}
+
+
+/* ============================================================
+   SHARED SECTION FOUNDATION
+   ============================================================ */
+
+.ad2-section-heading {
+    margin-bottom: var(--ad2-space-5);
+}
+
+.ad2-section-eyebrow {
+    display: block;
+    margin-bottom: var(--ad2-space-2);
+    color: var(--ad2-color-brand);
+    font-size: var(--ad2-text-xs);
+    font-weight: var(--ad2-weight-bold);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.ad2-section-title {
+    margin: 0;
+    color: var(--ad2-color-text);
+    font-size: var(--ad2-text-xl);
+    font-weight: var(--ad2-weight-semibold);
+    line-height: var(--ad2-leading-tight);
+}
+
+.ad2-section-description {
+    margin: var(--ad2-space-2) 0 0;
+    max-width: 760px;
+    color: var(--ad2-color-text-secondary);
+    font-size: var(--ad2-text-base);
+    line-height: var(--ad2-leading-relaxed);
+}
+
+
+/* ============================================================
+   SHARED GRID UTILITIES
+   ============================================================ */
+
+.ad2-grid {
+    display: grid;
+    gap: var(--ad2-space-5);
+}
+
+.ad2-grid-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ad2-grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ad2-grid-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+
+/* ============================================================
+   SHARED STACK UTILITIES
+   ============================================================ */
+
+.ad2-stack-2 > * + * {
+    margin-top: var(--ad2-space-2);
+}
+
+.ad2-stack-3 > * + * {
+    margin-top: var(--ad2-space-3);
+}
+
+.ad2-stack-4 > * + * {
+    margin-top: var(--ad2-space-4);
+}
+
+.ad2-stack-5 > * + * {
+    margin-top: var(--ad2-space-5);
+}
+
+.ad2-stack-6 > * + * {
+    margin-top: var(--ad2-space-6);
+}
+
+
+/* ============================================================
+   RESPONSIVE FOUNDATION
+   ============================================================ */
+
+@media (max-width: 1100px) {
+    .ad2-grid-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ad2-grid-3 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 700px) {
+    .ad2-grid-2,
+    .ad2-grid-3,
+    .ad2-grid-4 {
+        grid-template-columns: 1fr;
+    }
+
+    .ad2-button {
+        min-height: 44px;
+    }
+
+    .ad2-section-title {
+        font-size: var(--ad2-text-lg);
+    }
+}
+
+
+/* ============================================================
+   MOTION ACCESSIBILITY
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ============================================================
+   DISPLAY SIZE
+   Central interface scale controlled by html[data-size].
+   Normal preserves the existing interface scale.
+   ============================================================ */
+
+:root {
+    --ad2-display-scale: 1;
+}
+
+html[data-size="compact"] {
+    --ad2-display-scale: 0.95;
+}
+
+html[data-size="normal"] {
+    --ad2-display-scale: 1;
+}
+
+html[data-size="large"] {
+    --ad2-display-scale: 1.05;
+}
+
+html[data-size="compact"],
+html[data-size="normal"],
+html[data-size="large"] {
+    --ad2-text-xs: calc(0.68rem * var(--ad2-display-scale));
+    --ad2-text-sm: calc(0.78rem * var(--ad2-display-scale));
+    --ad2-text-base: calc(0.92rem * var(--ad2-display-scale));
+    --ad2-text-md: calc(1rem * var(--ad2-display-scale));
+    --ad2-text-lg: calc(1.15rem * var(--ad2-display-scale));
+    --ad2-text-xl: calc(1.45rem * var(--ad2-display-scale));
+    --ad2-text-2xl: calc(1.8rem * var(--ad2-display-scale));
+    --ad2-text-3xl: calc(2.25rem * var(--ad2-display-scale));
+    --ad2-text-4xl: calc(3rem * var(--ad2-display-scale));
+
+    --ad2-space-1: calc(0.25rem * var(--ad2-display-scale));
+    --ad2-space-2: calc(0.5rem * var(--ad2-display-scale));
+    --ad2-space-3: calc(0.75rem * var(--ad2-display-scale));
+    --ad2-space-4: calc(1rem * var(--ad2-display-scale));
+    --ad2-space-5: calc(1.25rem * var(--ad2-display-scale));
+    --ad2-space-6: calc(1.5rem * var(--ad2-display-scale));
+    --ad2-space-7: calc(1.75rem * var(--ad2-display-scale));
+    --ad2-space-8: calc(2rem * var(--ad2-display-scale));
+    --ad2-space-10: calc(2.5rem * var(--ad2-display-scale));
+    --ad2-space-12: calc(3rem * var(--ad2-display-scale));
+    --ad2-space-16: calc(4rem * var(--ad2-display-scale));
+
+    --ad2-control-height-sm: calc(34px * var(--ad2-display-scale));
+    --ad2-control-height-md: calc(42px * var(--ad2-display-scale));
+    --ad2-control-height-lg: calc(50px * var(--ad2-display-scale));
+}
+

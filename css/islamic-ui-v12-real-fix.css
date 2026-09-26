@@ -1,0 +1,704 @@
+/*
+ * Adhan Display
+ * Islamic UI V12
+ *
+ * REAL FIX
+ *
+ * Targets the actual Islamic tool markup:
+ *
+ * .islamic-tool-view
+ * .names-grid
+ * .name-card
+ * .name-number
+ * .tasbih-view
+ * .tasbih-container
+ * .tasbih-counter
+ * .tasbih-main-button
+ * .tasbih-actions
+ *
+ * This layer intentionally does NOT depend on .islamic-page.
+ */
+
+
+/* ============================================================
+   99 NAMES
+   ============================================================ */
+
+.islamic-tool-view .names-grid {
+    width: 100% !important;
+
+    display: grid !important;
+
+    grid-template-columns:
+        repeat(auto-fill, minmax(260px, 1fr)) !important;
+
+    gap: 18px !important;
+
+    align-items: stretch !important;
+}
+
+
+.islamic-tool-view .name-card {
+    box-sizing: border-box !important;
+
+    position: relative !important;
+
+    display: grid !important;
+
+    grid-template-columns: 42px minmax(0, 1fr) !important;
+
+    grid-template-rows:
+        auto auto auto !important;
+
+    column-gap: 14px !important;
+    row-gap: 6px !important;
+
+    align-items: center !important;
+
+    min-width: 0 !important;
+
+    padding: 22px !important;
+
+    overflow: hidden !important;
+}
+
+
+/*
+ * The circle and number are now one single flex item.
+ *
+ * No absolute positioning.
+ * No transform.
+ * No top/left offset.
+ */
+
+.islamic-tool-view .name-card .name-number {
+    box-sizing: border-box !important;
+
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+
+    justify-self: center !important;
+    align-self: center !important;
+
+    width: 42px !important;
+    height: 42px !important;
+
+    min-width: 42px !important;
+    min-height: 42px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    display: flex !important;
+
+    align-items: center !important;
+    justify-content: center !important;
+
+    flex: none !important;
+
+    text-align: center !important;
+
+    line-height: 1 !important;
+
+    font-size: .72rem !important;
+    font-weight: 700 !important;
+
+    border-radius: 50% !important;
+
+    position: static !important;
+
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+
+    transform: none !important;
+
+    float: none !important;
+
+    z-index: 1 !important;
+}
+
+
+/*
+ * Arabic name occupies the same first content row.
+ */
+
+.islamic-tool-view .name-card .name-arabic {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+
+    min-width: 0 !important;
+
+    margin: 0 !important;
+
+    align-self: center !important;
+
+    text-align: right !important;
+
+    position: static !important;
+
+    transform: none !important;
+}
+
+
+/*
+ * Transliteration.
+ */
+
+.islamic-tool-view .name-card > strong {
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+
+    display: block !important;
+
+    margin: 8px 0 0 !important;
+
+    min-width: 0 !important;
+
+    position: static !important;
+
+    transform: none !important;
+}
+
+
+/*
+ * Meaning.
+ */
+
+.islamic-tool-view .name-card > p {
+    grid-column: 1 / -1 !important;
+    grid-row: 3 !important;
+
+    margin: 0 !important;
+
+    min-width: 0 !important;
+
+    position: static !important;
+
+    transform: none !important;
+}
+
+
+/* Number circle appearance */
+
+:root:not([data-theme="dark"]) .islamic-tool-view .name-number {
+    background: #f3ead2 !important;
+
+    color: #35393c !important;
+
+    border: 1px solid #d3bd78 !important;
+}
+
+
+[data-theme="dark"] .islamic-tool-view .name-number {
+    color: #f4e5ae !important;
+
+    background: rgba(212, 175, 55, .10) !important;
+
+    border: 1px solid rgba(212, 175, 55, .30) !important;
+}
+
+
+/* ============================================================
+   ISLAMIC TOOL HEADER
+   ============================================================ */
+
+.islamic-tool-view .islamic-tool-header {
+    width: min(100%, 1100px) !important;
+
+    margin-left: auto !important;
+    margin-right: auto !important;
+
+    box-sizing: border-box !important;
+}
+
+
+:root:not([data-theme="dark"]) .islamic-tool-view .islamic-tool-header h1,
+:root:not([data-theme="dark"]) .islamic-tool-view .islamic-tool-header h2,
+:root:not([data-theme="dark"]) .islamic-tool-view .islamic-tool-header h3 {
+    color: #202020 !important;
+}
+
+
+:root:not([data-theme="dark"]) .islamic-tool-view .islamic-tool-header p {
+    color: #444444 !important;
+}
+
+
+/* ============================================================
+   LIGHT MODE
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .islamic-tool-view {
+    color: #202020 !important;
+}
+
+
+:root:not([data-theme="dark"]) .islamic-tool-view h1,
+:root:not([data-theme="dark"]) .islamic-tool-view h2,
+:root:not([data-theme="dark"]) .islamic-tool-view h3,
+:root:not([data-theme="dark"]) .islamic-tool-view h4,
+:root:not([data-theme="dark"]) .islamic-tool-view strong {
+    color: #202020 !important;
+}
+
+
+:root:not([data-theme="dark"]) .islamic-tool-view p {
+    color: #3f3f3f !important;
+}
+
+
+:root:not([data-theme="dark"]) .islamic-tool-view small,
+:root:not([data-theme="dark"]) .islamic-tool-view span {
+    color: #555555;
+}
+
+
+/*
+ * Eyebrows remain gold, but dark enough to be readable.
+ */
+
+:root:not([data-theme="dark"]) .islamic-tool-view .ad2-eyebrow {
+    color: #80620e !important;
+}
+
+
+/* ============================================================
+   BACK TO ISLAMIC
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .islamic-tool-view [data-islamic-tool-close] {
+    color: #35393c !important;
+
+    background: #f7f3e8 !important;
+
+    border: 1px solid #d6c486 !important;
+
+    text-shadow: none !important;
+
+    opacity: 1 !important;
+}
+
+
+:root:not([data-theme="dark"]) .islamic-tool-view [data-islamic-tool-close]:hover {
+    color: #171717 !important;
+
+    background: #eee6d1 !important;
+
+    border-color: #bfa64f !important;
+}
+
+
+/* ============================================================
+   ALL ISLAMIC SECONDARY BUTTONS
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .islamic-tool-view .ad2-button,
+:root:not([data-theme="dark"]) .islamic-tool-view button.ad2-button {
+    color: #35393c !important;
+
+    background: #f7f3e8 !important;
+
+    border-color: #d6c486 !important;
+
+    opacity: 1 !important;
+
+    text-shadow: none !important;
+}
+
+
+:root:not([data-theme="dark"]) .islamic-tool-view .ad2-button:hover,
+:root:not([data-theme="dark"]) .islamic-tool-view button.ad2-button:hover {
+    color: #171717 !important;
+
+    background: #eee6d1 !important;
+
+    border-color: #bfa64f !important;
+}
+
+
+/* ============================================================
+   99 NAMES SEARCH
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .islamic-tool-view .names-search {
+    color: #35393c !important;
+}
+
+
+:root:not([data-theme="dark"]) .islamic-tool-view .names-search input,
+:root:not([data-theme="dark"]) .islamic-tool-view #names-search {
+    color: #202020 !important;
+
+    background: #ffffff !important;
+
+    border-color: #cfcfcf !important;
+}
+
+
+:root:not([data-theme="dark"]) .islamic-tool-view #names-search::placeholder {
+    color: #777777 !important;
+}
+
+
+:root:not([data-theme="dark"]) .islamic-tool-view .names-count {
+    color: #555555 !important;
+}
+
+
+/* ============================================================
+   ADHKAR
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .islamic-tool-view .adhkar-card {
+    color: #202020 !important;
+}
+
+
+:root:not([data-theme="dark"]) .islamic-tool-view .adhkar-card p {
+    color: #353535 !important;
+}
+
+
+:root:not([data-theme="dark"]) .islamic-tool-view .adhkar-arabic {
+    color: #202020 !important;
+}
+
+
+:root:not([data-theme="dark"]) .islamic-tool-view .adhkar-count-button {
+    color: #35393c !important;
+
+    background: #f7f3e8 !important;
+
+    border-color: #d6c486 !important;
+}
+
+
+/* ============================================================
+   TASBIH
+   ============================================================ */
+
+.islamic-tool-view.tasbih-view {
+    width: 100% !important;
+
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+
+.islamic-tool-view.tasbih-view .tasbih-container {
+    width: 100% !important;
+
+    display: flex !important;
+
+    justify-content: center !important;
+    align-items: center !important;
+
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+
+.islamic-tool-view.tasbih-view .tasbih-counter {
+    width: min(100%, 760px) !important;
+
+    margin-left: auto !important;
+    margin-right: auto !important;
+
+    display: flex !important;
+
+    flex-direction: column !important;
+
+    align-items: center !important;
+    justify-content: flex-start !important;
+
+    text-align: center !important;
+}
+
+
+.islamic-tool-view.tasbih-view .tasbih-counter > .ad2-eyebrow {
+    width: 100% !important;
+
+    margin-left: auto !important;
+    margin-right: auto !important;
+
+    text-align: center !important;
+}
+
+
+.islamic-tool-view.tasbih-view [data-tasbih-count] {
+    display: block !important;
+
+    width: 100% !important;
+
+    margin-left: auto !important;
+    margin-right: auto !important;
+
+    text-align: center !important;
+
+    position: static !important;
+
+    transform: none !important;
+}
+
+
+.islamic-tool-view.tasbih-view .tasbih-tap-shell {
+    width: 340px !important;
+    max-width: 100% !important;
+
+    margin-left: auto !important;
+    margin-right: auto !important;
+
+    display: flex !important;
+
+    align-items: center !important;
+    justify-content: center !important;
+
+    position: static !important;
+
+    transform: none !important;
+}
+
+
+.islamic-tool-view.tasbih-view .tasbih-main-button {
+    box-sizing: border-box !important;
+
+    width: 340px !important;
+    max-width: 100% !important;
+
+    min-height: 150px !important;
+
+    margin: 0 auto !important;
+
+    display: flex !important;
+
+    align-items: center !important;
+    justify-content: center !important;
+
+    text-align: center !important;
+
+    position: static !important;
+
+    transform: none !important;
+
+    opacity: 1 !important;
+}
+
+
+.islamic-tool-view.tasbih-view .tasbih-main-button span {
+    display: block !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    text-align: center !important;
+
+    position: static !important;
+
+    transform: none !important;
+}
+
+
+.islamic-tool-view.tasbih-view .tasbih-actions {
+    width: 100% !important;
+
+    display: flex !important;
+
+    justify-content: center !important;
+    align-items: center !important;
+
+    gap: 12px !important;
+
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+
+:root:not([data-theme="dark"]) .islamic-tool-view.tasbih-view .tasbih-main-button {
+    color: #202020 !important;
+
+    background: #f7f3e8 !important;
+
+    border-color: #d6c486 !important;
+}
+
+
+:root:not([data-theme="dark"]) .islamic-tool-view.tasbih-view .tasbih-main-button span {
+    color: #202020 !important;
+}
+
+
+:root:not([data-theme="dark"]) .islamic-tool-view.tasbih-view .tasbih-actions .ad2-button {
+    color: #35393c !important;
+}
+
+
+/* ============================================================
+   QIYAM
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .islamic-tool-view.qiyam-tool {
+    color: #202020 !important;
+}
+
+
+:root:not([data-theme="dark"]) .islamic-tool-view.qiyam-tool h1,
+:root:not([data-theme="dark"]) .islamic-tool-view.qiyam-tool h2,
+:root:not([data-theme="dark"]) .islamic-tool-view.qiyam-tool h3,
+:root:not([data-theme="dark"]) .islamic-tool-view.qiyam-tool strong {
+    color: #202020 !important;
+}
+
+
+:root:not([data-theme="dark"]) .islamic-tool-view.qiyam-tool p,
+:root:not([data-theme="dark"]) .islamic-tool-view.qiyam-tool span {
+    color: #444444 !important;
+}
+
+
+/* ============================================================
+   RAMADAN
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .islamic-tool-view .ramadan-tool {
+    color: #202020 !important;
+}
+
+
+:root:not([data-theme="dark"]) .islamic-tool-view .ramadan-tool h1,
+:root:not([data-theme="dark"]) .islamic-tool-view .ramadan-tool h2,
+:root:not([data-theme="dark"]) .islamic-tool-view .ramadan-tool h3,
+:root:not([data-theme="dark"]) .islamic-tool-view .ramadan-tool strong {
+    color: #202020 !important;
+}
+
+
+:root:not([data-theme="dark"]) .islamic-tool-view .ramadan-tool p,
+:root:not([data-theme="dark"]) .islamic-tool-view .ramadan-tool span {
+    color: #444444 !important;
+}
+
+
+/* ============================================================
+   CALENDAR
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .islamic-tool-view .calendar-tool,
+:root:not([data-theme="dark"]) .islamic-tool-view .calendar-tool-page {
+    color: #202020 !important;
+}
+
+
+:root:not([data-theme="dark"]) .islamic-tool-view .calendar-tool h1,
+:root:not([data-theme="dark"]) .islamic-tool-view .calendar-tool h2,
+:root:not([data-theme="dark"]) .islamic-tool-view .calendar-tool h3,
+:root:not([data-theme="dark"]) .islamic-tool-view .calendar-tool strong {
+    color: #202020 !important;
+}
+
+
+:root:not([data-theme="dark"]) .islamic-tool-view .calendar-tool p,
+:root:not([data-theme="dark"]) .islamic-tool-view .calendar-tool span {
+    color: #444444 !important;
+}
+
+
+/* ============================================================
+   LINKS
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .islamic-tool-view a {
+    color: #70540b !important;
+}
+
+
+:root:not([data-theme="dark"]) .islamic-tool-view a:hover {
+    color: #4e3a07 !important;
+}
+
+
+/* ============================================================
+   FOCUS
+   ============================================================ */
+
+.islamic-tool-view :focus-visible {
+    outline-color: #b08b20 !important;
+
+    outline-offset: 3px !important;
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 767px) {
+
+    .islamic-tool-view .names-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .islamic-tool-view .name-card {
+        grid-template-columns: 38px minmax(0, 1fr) !important;
+
+        column-gap: 12px !important;
+
+        padding: 18px !important;
+    }
+
+    .islamic-tool-view .name-card .name-number {
+        width: 38px !important;
+        height: 38px !important;
+
+        min-width: 38px !important;
+        min-height: 38px !important;
+    }
+
+    .islamic-tool-view.tasbih-view .tasbih-main-button {
+        width: min(320px, 100%) !important;
+
+        min-height: 140px !important;
+    }
+
+    .islamic-tool-view.tasbih-view .tasbih-tap-shell {
+        width: min(320px, 100%) !important;
+    }
+}
+
+
+@media (max-width: 480px) {
+
+    .islamic-tool-view .name-card {
+        grid-template-columns: 34px minmax(0, 1fr) !important;
+
+        padding: 16px !important;
+    }
+
+    .islamic-tool-view .name-card .name-number {
+        width: 34px !important;
+        height: 34px !important;
+
+        min-width: 34px !important;
+        min-height: 34px !important;
+    }
+
+    .islamic-tool-view.tasbih-view .tasbih-main-button {
+        min-height: 125px !important;
+    }
+}
+
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .islamic-tool-view *,
+    .islamic-tool-view *::before,
+    .islamic-tool-view *::after {
+        transition: none !important;
+        animation: none !important;
+    }
+}

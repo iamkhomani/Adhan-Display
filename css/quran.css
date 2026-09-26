@@ -1,4 +1,4 @@
-﻿/* =========================================================
+/* =========================================================
    ADHAN DISPLAY 2.0
    QURAN
    ========================================================= */
@@ -601,41 +601,167 @@
 @media (max-width: 700px) {
 
     .q2-page {
-        padding-top: 20px;
+        padding-top: 26px;
+        padding-bottom: 110px;
     }
 
-    .q2-last-read,
-    .q2-browser-heading,
-    .q2-reader-toolbar {
+    .q2-heading {
+        margin-bottom: 24px;
+    }
+
+    .q2-heading h1 {
+        font-size: clamp(2.35rem, 11vw, 3rem);
+        line-height: 1;
+        letter-spacing: -.045em;
+    }
+
+    .q2-heading p {
+        margin-top: 12px;
+        font-size: .94rem;
+        line-height: 1.65;
+    }
+
+    .q2-last-read {
+        min-height: 0;
         align-items: flex-start;
         flex-direction: column;
+        gap: 14px;
+        padding: 22px;
+        margin-bottom: 16px;
+        border-radius: 20px;
+    }
+
+    .q2-last-read strong {
+        font-size: 1.1rem;
+    }
+
+    .q2-controls {
+        padding: 18px;
+        margin-bottom: 18px;
+        border-radius: 20px;
     }
 
     .q2-search-box {
         flex-direction: column;
+        gap: 9px;
+        margin-bottom: 16px;
     }
 
-    .q2-browser-heading input {
-        max-width: none;
+    .q2-search-box input {
+        min-height: 48px;
     }
 
-    .q2-surah-grid {
+    .q2-search-box .q2-primary-button {
+        width: 100%;
+        min-height: 46px;
+    }
+
+    .q2-select-row {
         grid-template-columns: 1fr;
+        gap: 11px;
     }
 
-    .q2-juz-grid {
-        grid-template-columns: repeat(3, 1fr);
+    .q2-select-row label {
+        gap: 6px;
     }
 
-    .q2-browser,
-    .q2-reader {
-        padding: 18px;
-        border-radius: 20px;
+    .q2-select-row select {
+        min-height: 46px;
+        font-size: .88rem;
     }
 
     .q2-reader-settings {
         align-items: flex-start;
         flex-direction: column;
+        gap: 14px;
+        margin-top: 16px;
+        padding-top: 16px;
+    }
+
+    .q2-reader-settings label:first-child {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .q2-tabs {
+        width: 100%;
+        margin-bottom: 16px;
+        padding: 4px;
+        gap: 4px;
+        border-radius: 13px;
+    }
+
+    .q2-tab {
+        flex: 1;
+        min-height: 42px;
+        padding: 0 8px;
+        font-size: .76rem;
+        font-weight: 600;
+    }
+
+    .q2-browser,
+    .q2-reader {
+        padding: 20px;
+        border-radius: 22px;
+    }
+
+    .q2-browser-heading {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+
+    .q2-browser-heading h2 {
+        font-size: 1.5rem;
+    }
+
+    .q2-browser-heading input {
+        max-width: none;
+        min-height: 46px;
+    }
+
+    .q2-surah-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .q2-surah-card {
+        grid-template-columns: 46px minmax(0, 1fr) auto;
+        gap: 13px;
+        min-height: 82px;
+        padding: 15px;
+        border-radius: 16px;
+    }
+
+    .q2-surah-number {
+        width: 42px;
+        height: 42px;
+        border-radius: 11px;
+        font-size: .8rem;
+    }
+
+    .q2-surah-info {
+        gap: 5px;
+    }
+
+    .q2-surah-info strong {
+        font-size: 1rem;
+        line-height: 1.25;
+    }
+
+    .q2-surah-info small {
+        font-size: .78rem;
+        line-height: 1.45;
+    }
+
+    .q2-surah-arabic {
+        font-size: 1.5rem;
+        line-height: 1.25;
+    }
+
+    .q2-juz-grid {
+        grid-template-columns: repeat(3, 1fr);
     }
 
     .q2-ayah {
@@ -1652,62 +1778,127 @@ mark.adhan-search-highlight {
 @media (max-width: 700px) {
 
     .q2-audio-player {
-        padding-left: 12px;
-        padding-right: 12px;
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        width: auto;
+        padding: 14px 14px 11px;
+        transform: none;
+        border-radius: 18px;
     }
-
 
     .q2-audio-player .q2-player-main {
-        grid-template-columns:
-            minmax(0, 1fr)
-            auto;
-
-        column-gap: 10px;
-
-        padding-right: 72px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 11px;
+        padding-right: 0;
     }
 
+    .q2-audio-player .q2-player-info {
+        padding-right: 62px;
+        gap: 4px;
+    }
+
+    .q2-audio-player .q2-player-eyebrow {
+        font-size: .58rem;
+    }
+
+    .q2-audio-player .q2-player-info strong {
+        font-size: .92rem;
+        line-height: 1.25;
+    }
+
+    .q2-audio-player .q2-player-info small {
+        font-size: .7rem;
+    }
 
     .q2-audio-player .q2-player-controls {
-        gap: 6px;
+        justify-content: center;
+        gap: 9px;
     }
-
 
     .q2-audio-player .q2-player-button {
-        width: 34px;
-        height: 34px;
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        font-size: .9rem;
     }
-
 
     .q2-audio-player .q2-player-play {
-        width: 40px;
-        height: 40px;
+        width: 46px;
+        height: 46px;
+        font-size: .82rem;
     }
-
 
     .q2-audio-player .q2-player-repeat {
         display: none;
     }
 
-
     .q2-audio-player .q2-player-window-actions {
-        right: 7px;
+        top: 9px;
+        right: 9px;
         gap: 4px;
     }
 
-
     .q2-audio-player .q2-player-window-button {
-        width: 27px;
-        height: 27px;
+        width: 28px;
+        height: 28px;
     }
 
+    .q2-audio-player .q2-player-progress {
+        grid-template-columns: 34px minmax(0, 1fr) 34px;
+        gap: 8px;
+        margin-top: 1px;
+    }
+
+    .q2-audio-player .q2-player-progress span {
+        font-size: .58rem;
+    }
+
+    .q2-audio-player.is-minimized {
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        width: auto;
+        padding: 9px 10px;
+    }
 
     .q2-audio-player.is-minimized .q2-player-main {
-        grid-template-columns:
-            minmax(0, 1fr)
-            auto;
+        grid-template-columns: minmax(0, 1fr) auto;
+        min-height: 38px;
+        gap: 9px;
+        padding-right: 0;
+    }
 
-        padding-right: 70px;
+    .q2-audio-player.is-minimized .q2-player-info {
+        padding-right: 0;
+    }
+
+    .q2-audio-player.is-minimized .q2-player-info strong {
+        font-size: .78rem;
+    }
+
+    .q2-audio-player.is-minimized .q2-player-controls {
+        grid-column: 2;
+        grid-row: 1;
+        justify-content: flex-end;
+        gap: 6px;
+    }
+
+    .q2-audio-player.is-minimized .q2-player-button {
+        width: 34px;
+        height: 34px;
+    }
+
+    .q2-audio-player.is-minimized .q2-player-play {
+        width: 38px;
+        height: 38px;
+    }
+
+    .q2-audio-player.is-minimized .q2-player-window-actions {
+        top: 50%;
+        right: 7px;
+        transform: translateY(-50%);
     }
 
 }
@@ -1898,4 +2089,171 @@ mark.adhan-search-highlight {
         align-items: flex-start;
         flex-direction: column;
     }
+}
+
+/* =========================================================
+   QURAN MOBILE SCALE REFINEMENT
+   Final mobile overrides
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    .q2-page {
+        padding-top: 28px;
+        padding-bottom: 120px;
+    }
+
+    .q2-heading {
+        margin-bottom: 26px;
+    }
+
+    .q2-heading h1 {
+        font-size: clamp(2.55rem, 12vw, 3.25rem);
+        line-height: 1;
+        letter-spacing: -.05em;
+    }
+
+    .q2-heading p {
+        margin-top: 14px;
+        font-size: 1rem;
+        line-height: 1.7;
+    }
+
+    .q2-last-read {
+        gap: 16px;
+        padding: 24px;
+        margin-bottom: 18px;
+        border-radius: 21px;
+    }
+
+    .q2-last-read strong {
+        font-size: 1.18rem;
+    }
+
+    .q2-last-read small {
+        font-size: .82rem;
+        line-height: 1.5;
+    }
+
+    .q2-controls {
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 21px;
+    }
+
+    .q2-search-box {
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+
+    .q2-search-box input,
+    .q2-search-box .q2-primary-button {
+        min-height: 50px;
+    }
+
+    .q2-search-box .q2-primary-button {
+        font-size: .82rem;
+    }
+
+    .q2-select-row {
+        gap: 13px;
+    }
+
+    .q2-select-row label {
+        gap: 7px;
+        font-size: .7rem;
+    }
+
+    .q2-select-row select {
+        min-height: 49px;
+        padding: 0 14px;
+        font-size: .9rem;
+    }
+
+    .q2-reader-settings {
+        gap: 16px;
+        margin-top: 18px;
+        padding-top: 18px;
+    }
+
+    .q2-reader-settings label {
+        font-size: .72rem;
+    }
+
+    .q2-tabs {
+        margin-bottom: 18px;
+        padding: 5px;
+        gap: 5px;
+        border-radius: 14px;
+    }
+
+    .q2-tab {
+        min-height: 44px;
+        padding: 0 10px;
+        font-size: .8rem;
+    }
+
+    .q2-browser,
+    .q2-reader {
+        padding: 22px;
+        border-radius: 23px;
+    }
+
+    .q2-browser-heading {
+        gap: 15px;
+        margin-bottom: 22px;
+    }
+
+    .q2-browser-heading h2 {
+        font-size: 1.65rem;
+        line-height: 1.2;
+    }
+
+    .q2-browser-heading input {
+        min-height: 49px;
+        font-size: .9rem;
+    }
+
+    .q2-surah-grid {
+        gap: 12px;
+    }
+
+    .q2-surah-card {
+        grid-template-columns: 48px minmax(0, 1fr) auto;
+        gap: 14px;
+        min-height: 94px;
+        padding: 17px;
+        border-radius: 17px;
+    }
+
+    .q2-surah-number {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        font-size: .84rem;
+    }
+
+    .q2-surah-info {
+        gap: 6px;
+    }
+
+    .q2-surah-info strong {
+        font-size: 1.04rem;
+        line-height: 1.3;
+    }
+
+    .q2-surah-info small {
+        font-size: .8rem;
+        line-height: 1.5;
+    }
+
+    .q2-surah-arabic {
+        font-size: 1.65rem;
+        line-height: 1.3;
+    }
+
+    .q2-juz-grid {
+        gap: 10px;
+    }
+
 }

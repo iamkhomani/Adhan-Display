@@ -1,0 +1,125 @@
+/*
+ * Islamic + Qibla Contrast V14
+ *
+ * Targeted final contrast refinement:
+ * 1. Islamic light-mode DU'A / HADITH eyebrow labels use the
+ *    same gold/orange accent as the rest of the page.
+ * 2. Worship Tools Qibla Google Compass button gets explicit
+ *    light-mode text contrast.
+ *
+ * JavaScript is intentionally untouched.
+ */
+
+/* ============================================================
+   1. ISLAMIC PAGE - LIGHT MODE EYEBROW ACCENT
+   ============================================================ */
+
+:root[data-theme="light"] .islamic-page .islamic-inspiration-card .ad2-eyebrow,
+html[data-theme="light"] .islamic-page .islamic-inspiration-card .ad2-eyebrow,
+body[data-theme="light"] .islamic-page .islamic-inspiration-card .ad2-eyebrow {
+    color: #b8860b !important;
+    -webkit-text-fill-color: #b8860b !important;
+}
+
+/*
+ * Some browsers/theme rules may target the eyebrow itself
+ * or nested text. Keep the accent explicit.
+ */
+:root[data-theme="light"] .islamic-page .islamic-inspiration-card .islamic-eyebrow,
+html[data-theme="light"] .islamic-page .islamic-inspiration-card .islamic-eyebrow,
+body[data-theme="light"] .islamic-page .islamic-inspiration-card .islamic-eyebrow {
+    color: #b8860b !important;
+    -webkit-text-fill-color: #b8860b !important;
+}
+
+
+/* ============================================================
+   2. WORSHIP TOOLS - QIBLA GOOGLE COMPASS BUTTON
+   ============================================================ */
+
+/*
+ * The Qibla card is also rendered on the Prayer page.
+ * The user specifically reported the Worship Tools version,
+ * so target the actual Qibla card/button rather than changing
+ * all generic .ad2-button elements.
+ */
+
+:root[data-theme="light"] .prayer-qibla-card .prayer-qibla-button,
+html[data-theme="light"] .prayer-qibla-card .prayer-qibla-button,
+body[data-theme="light"] .prayer-qibla-card .prayer-qibla-button {
+    color: #2f2f2f !important;
+    -webkit-text-fill-color: #2f2f2f !important;
+    text-shadow: none !important;
+}
+
+/*
+ * Google Qibla Compass is the secondary/external action.
+ * Give the secondary button a solid readable light-mode
+ * treatment while retaining the existing border and layout.
+ */
+:root[data-theme="light"] .prayer-qibla-card .prayer-qibla-button.secondary,
+html[data-theme="light"] .prayer-qibla-card .prayer-qibla-button.secondary,
+body[data-theme="light"] .prayer-qibla-card .prayer-qibla-button.secondary {
+    background: #ffffff !important;
+    color: #2f2f2f !important;
+    -webkit-text-fill-color: #2f2f2f !important;
+    border-color: #b8860b !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) !important;
+}
+
+/*
+ * Explicitly cover text inside the button in case the existing
+ * stylesheet assigns a different color to spans/icons.
+ */
+:root[data-theme="light"] .prayer-qibla-card .prayer-qibla-button.secondary *,
+html[data-theme="light"] .prayer-qibla-card .prayer-qibla-button.secondary *,
+body[data-theme="light"] .prayer-qibla-card .prayer-qibla-button.secondary * {
+    color: #2f2f2f !important;
+    -webkit-text-fill-color: #2f2f2f !important;
+}
+
+/*
+ * Hover/focus states remain readable.
+ */
+:root[data-theme="light"] .prayer-qibla-card .prayer-qibla-button.secondary:hover,
+html[data-theme="light"] .prayer-qibla-card .prayer-qibla-button.secondary:hover,
+body[data-theme="light"] .prayer-qibla-card .prayer-qibla-button.secondary:hover,
+:root[data-theme="light"] .prayer-qibla-card .prayer-qibla-button.secondary:focus-visible,
+html[data-theme="light"] .prayer-qibla-card .prayer-qibla-button.secondary:focus-visible,
+body[data-theme="light"] .prayer-qibla-card .prayer-qibla-button.secondary:focus-visible {
+    color: #2f2f2f !important;
+    -webkit-text-fill-color: #2f2f2f !important;
+}
+
+
+/* ============================================================
+   3. ACCESSIBILITY / MOTION
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    :root[data-theme="light"] .prayer-qibla-card .prayer-qibla-button.secondary,
+    html[data-theme="light"] .prayer-qibla-card .prayer-qibla-button.secondary,
+    body[data-theme="light"] .prayer-qibla-card .prayer-qibla-button.secondary {
+        transition: none !important;
+    }
+}
+
+
+/* ============================================================
+   4. PRINT
+   ============================================================ */
+
+@media print {
+    .islamic-page .islamic-inspiration-card .ad2-eyebrow {
+        color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important;
+    }
+
+    .prayer-qibla-card .prayer-qibla-button.secondary {
+        color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important;
+        background: #ffffff !important;
+        border-color: #000000 !important;
+        box-shadow: none !important;
+    }
+}

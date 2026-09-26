@@ -12,7 +12,7 @@ export const Storage = {
   setRaw(key, value) { localStorage.setItem(STORAGE_PREFIX + key, value); },
   getSettings() {
     return {
-      theme: this.getRaw('theme', 'light'), lang: this.getRaw('lang', 'en'), size: this.getRaw('size', 'normal'), daily: this.getRaw('daily', 'quran'),
+      theme: this.getRaw('theme', 'dark'), lang: this.getRaw('lang', 'en'), size: this.getRaw('size', 'normal'), daily: this.getRaw('daily', 'quran'),
       audio: this.getRaw('audio', 'default'), volume: Number(this.getRaw('volume', '1')),
       method: Number(this.getRaw('method', '3')), offset: Number(this.getRaw('offset', '0')), hijriOffset: Number(this.getRaw('hijri_offset', '0')),
       autodim: this.get('autodim', false), screensaver: this.get('screensaver', false), autoQada: this.get('auto_qada', true),

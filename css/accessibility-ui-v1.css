@@ -1,0 +1,202 @@
+/*
+ * Adhan Display
+ * Phase 1 - Accessibility UI V1
+ *
+ * Accessibility refinement layer.
+ * JavaScript untouched.
+ */
+
+/* ============================================================
+   GLOBAL FOCUS VISIBILITY
+   ============================================================ */
+
+:where(
+    a,
+    button,
+    input,
+    select,
+    textarea,
+    summary,
+    [tabindex]:not([tabindex="-1"])
+):focus-visible {
+    outline: 3px solid #d4af37 !important;
+    outline-offset: 3px !important;
+}
+
+
+/* ============================================================
+   KEYBOARD ACCESS TO CARDS / INTERACTIVE COMPONENTS
+   ============================================================ */
+
+:where(
+    .islamic-tool-card,
+    .discover-link-card,
+    .discover-feature-card,
+    .discover-hadith-card,
+    .discover-dua-card,
+    .name-card,
+    .hadith-result,
+    .hadith-bookmark-item,
+    .prayer-compact-row
+):focus-visible {
+    outline: 3px solid #d4af37 !important;
+    outline-offset: 3px !important;
+}
+
+
+/* ============================================================
+   SKIP LINK
+   ============================================================ */
+
+.ad2-skip-link {
+    position: fixed !important;
+    top: 0.75rem !important;
+    left: 0.75rem !important;
+    z-index: 10000 !important;
+    padding: 0.75rem 1rem !important;
+    border-radius: 0.5rem !important;
+    background: #111111 !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    text-decoration: none !important;
+    transform: translateY(-200%) !important;
+    transition: transform 160ms ease !important;
+}
+
+.ad2-skip-link:focus,
+.ad2-skip-link:focus-visible {
+    transform: translateY(0) !important;
+    outline: 3px solid #d4af37 !important;
+    outline-offset: 3px !important;
+}
+
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .ad2-skip-link {
+        transition: none !important;
+    }
+}
+
+
+/* ============================================================
+   HIGH CONTRAST FRIENDLY BORDERS
+   ============================================================ */
+
+@media (prefers-contrast: more) {
+
+    :where(
+        .ad2-card,
+        .prayer-qibla-card,
+        .hadith-reader-card,
+        .quran-ayah,
+        .islamic-inspiration-card,
+        .islamic-tool-view,
+        .discover-feature-card,
+        .discover-hadith-card,
+        .discover-dua-card
+    ) {
+        border-width: 2px !important;
+    }
+
+    :where(
+        button,
+        input,
+        select,
+        textarea
+    ) {
+        border-width: 2px !important;
+    }
+}
+
+
+/* ============================================================
+   TEXT SELECTION
+   ============================================================ */
+
+::selection {
+    background: #d4af37 !important;
+    color: #111111 !important;
+}
+
+
+/* ============================================================
+   TOUCH TARGETS
+   ============================================================ */
+
+@media (pointer: coarse) {
+
+    :where(
+        button,
+        a,
+        input,
+        select,
+        textarea,
+        summary
+    ) {
+        min-height: 44px;
+    }
+
+    :where(
+        .hadith-icon-button
+    ) {
+        min-width: 44px;
+    }
+}
+
+
+/* ============================================================
+   FORM LABEL READABILITY
+   ============================================================ */
+
+label {
+    cursor: pointer;
+}
+
+input::placeholder,
+textarea::placeholder {
+    opacity: 0.75;
+}
+
+
+/* ============================================================
+   DISABLED CONTROLS
+   ============================================================ */
+
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+    cursor: not-allowed;
+}
+
+
+/* ============================================================
+   PRINT
+   ============================================================ */
+
+@media print {
+
+    :where(
+        a,
+        button,
+        input,
+        select,
+        textarea
+    ):focus-visible {
+        outline: none !important;
+    }
+}

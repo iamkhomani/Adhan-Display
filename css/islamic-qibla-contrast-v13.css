@@ -1,0 +1,198 @@
+/*
+ * Adhan Display
+ * Islamic + Qibla Contrast V13
+ *
+ * TEST SERVER ONLY
+ *
+ * Fixes:
+ * 1. Islamic Dua + Hadith in dark mode
+ * 2. Worship Tools Qibla in light mode
+ *
+ * JavaScript untouched.
+ */
+
+
+/* ============================================================
+   ISLAMIC
+   DARK MODE
+   DUA + HADITH
+   ============================================================ */
+
+:root[data-theme="dark"] .islamic-page .islamic-inspiration-card,
+[data-theme="dark"] .islamic-page .islamic-inspiration-card {
+    color: #f5f5f5 !important;
+}
+
+:root[data-theme="dark"] .islamic-page .islamic-inspiration-card h2,
+[data-theme="dark"] .islamic-page .islamic-inspiration-card h2 {
+    color: #ffffff !important;
+}
+
+:root[data-theme="dark"] .islamic-page .islamic-inspiration-card p,
+[data-theme="dark"] .islamic-page .islamic-inspiration-card p {
+    color: #f2f2f2 !important;
+    opacity: 1 !important;
+}
+
+:root[data-theme="dark"] .islamic-page .islamic-arabic-content,
+[data-theme="dark"] .islamic-page .islamic-arabic-content {
+    color: #ffffff !important;
+    opacity: 1 !important;
+}
+
+:root[data-theme="dark"] .islamic-page .islamic-arabic-content *,
+[data-theme="dark"] .islamic-page .islamic-arabic-content * {
+    color: #ffffff !important;
+    opacity: 1 !important;
+}
+
+:root[data-theme="dark"] .islamic-page .islamic-inspiration-card small,
+[data-theme="dark"] .islamic-page .islamic-inspiration-card small {
+    color: #d8d8d8 !important;
+    opacity: 1 !important;
+}
+
+:root[data-theme="dark"] .islamic-page .islamic-inspiration-card .ad2-eyebrow,
+[data-theme="dark"] .islamic-page .islamic-inspiration-card .ad2-eyebrow {
+    color: #e1c45a !important;
+    opacity: 1 !important;
+}
+
+
+/* ============================================================
+   ISLAMIC
+   LIGHT MODE
+   Keep Dua + Hadith readable
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .islamic-page .islamic-inspiration-card,
+.islamic-page .islamic-inspiration-card {
+    color: #202428;
+}
+
+:root:not([data-theme="dark"]) .islamic-page .islamic-inspiration-card h2,
+.islamic-page .islamic-inspiration-card h2 {
+    color: #17191c;
+}
+
+:root:not([data-theme="dark"]) .islamic-page .islamic-arabic-content,
+.islamic-page .islamic-arabic-content {
+    color: #202428;
+    opacity: 1;
+}
+
+
+/* ============================================================
+   WORSHIP TOOLS
+   QIBLA
+   LIGHT MODE
+   ============================================================ */
+
+/*
+ * The Qibla tool can use different internal class names
+ * depending on the current implementation.
+ *
+ * These rules intentionally target the Qibla card and its
+ * descendants rather than changing the global theme.
+ */
+
+:root:not([data-theme="dark"]) .islamic-page .prayer-qibla-card {
+    color: #17191c !important;
+}
+
+:root:not([data-theme="dark"]) .islamic-page .prayer-qibla-card h1,
+:root:not([data-theme="dark"]) .islamic-page .prayer-qibla-card h2,
+:root:not([data-theme="dark"]) .islamic-page .prayer-qibla-card h3,
+:root:not([data-theme="dark"]) .islamic-page .prayer-qibla-card h4,
+:root:not([data-theme="dark"]) .islamic-page .prayer-qibla-card strong {
+    color: #111315 !important;
+}
+
+:root:not([data-theme="dark"]) .islamic-page .prayer-qibla-card p,
+:root:not([data-theme="dark"]) .islamic-page .prayer-qibla-card span,
+:root:not([data-theme="dark"]) .islamic-page .prayer-qibla-card small,
+:root:not([data-theme="dark"]) .islamic-page .prayer-qibla-card label {
+    color: #292d31 !important;
+    opacity: 1 !important;
+}
+
+
+/* Qibla compass and directional information */
+
+:root:not([data-theme="dark"]) .islamic-page .prayer-qibla-card [class*="qibla"],
+:root:not([data-theme="dark"]) .islamic-page .prayer-qibla-card [class*="compass"],
+:root:not([data-theme="dark"]) .islamic-page .prayer-qibla-card [class*="direction"],
+:root:not([data-theme="dark"]) .islamic-page .prayer-qibla-card [class*="bearing"],
+:root:not([data-theme="dark"]) .islamic-page .prayer-qibla-card [class*="degree"],
+:root:not([data-theme="dark"]) .islamic-page .prayer-qibla-card [class*="angle"] {
+    color: #111315 !important;
+    opacity: 1 !important;
+}
+
+
+/* Qibla button */
+
+:root:not([data-theme="dark"]) .islamic-page .prayer-qibla-card button {
+    color: #17191c !important;
+}
+
+
+/* ============================================================
+   QIBLA
+   LIGHT MODE FALLBACK
+   ============================================================ */
+
+/*
+ * If the Qibla implementation does not use
+ * .prayer-qibla-card on the Islamic page, target the common
+ * Qibla tool containers instead.
+ */
+
+:root:not([data-theme="dark"]) .islamic-page [class*="qibla"] {
+    opacity: 1;
+}
+
+:root:not([data-theme="dark"]) .islamic-page [class*="qibla"] p,
+:root:not([data-theme="dark"]) .islamic-page [class*="qibla"] span,
+:root:not([data-theme="dark"]) .islamic-page [class*="qibla"] strong,
+:root:not([data-theme="dark"]) .islamic-page [class*="qibla"] small,
+:root:not([data-theme="dark"]) .islamic-page [class*="qibla"] label {
+    color: #25292d !important;
+    opacity: 1 !important;
+}
+
+
+/* ============================================================
+   FOCUS
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .islamic-page [class*="qibla"] button:focus-visible {
+    outline: 3px solid rgba(212, 175, 55, .55);
+    outline-offset: 3px;
+}
+
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    .islamic-page .islamic-inspiration-card *,
+    .islamic-page [class*="qibla"] * {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}
+
+
+/* ============================================================
+   PRINT
+   ============================================================ */
+
+@media print {
+    .islamic-page .islamic-inspiration-card *,
+    .islamic-page [class*="qibla"] * {
+        color: #000 !important;
+    }
+}

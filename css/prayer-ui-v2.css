@@ -1,0 +1,429 @@
+/*
+ * Adhan Display
+ * Prayer UI Migration V2
+ *
+ * Responsive refinement and visual consistency layer.
+ *
+ * Loaded after Prayer UI V1.
+ */
+
+/* ============================================================
+   GLOBAL PRAYER CONTENT RHYTHM
+   ============================================================ */
+
+.prayer-compact {
+    --prayer-gap-xs: .4rem;
+    --prayer-gap-sm: .65rem;
+    --prayer-gap-md: 1rem;
+    --prayer-gap-lg: 1.25rem;
+    --prayer-gap-xl: 1.5rem;
+}
+
+.prayer-compact h1,
+.prayer-compact h2,
+.prayer-compact h3,
+.prayer-compact p {
+    overflow-wrap: anywhere;
+}
+
+/* ============================================================
+   MAIN LAYOUT
+   ============================================================ */
+
+.prayer-compact-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.65fr) minmax(280px, .85fr);
+    align-items: start;
+}
+
+.prayer-compact-main {
+    display: grid;
+    gap: var(--prayer-gap-lg);
+}
+
+.prayer-compact-side {
+    align-self: stretch;
+}
+
+/* ============================================================
+   HEADER REFINEMENT
+   ============================================================ */
+
+.prayer-compact-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.prayer-location {
+    max-width: 100%;
+}
+
+.prayer-location-dot {
+    position: relative;
+}
+
+.prayer-location-dot::after {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border: 1px solid rgba(212,175,55,.16);
+    border-radius: inherit;
+}
+
+/* ============================================================
+   NEXT PRAYER CARD
+   ============================================================ */
+
+.prayer-next-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.prayer-next-name {
+    max-width: 100%;
+}
+
+.prayer-next-countdown {
+    width: fit-content;
+    max-width: 100%;
+}
+
+/* ============================================================
+   SCHEDULE HEADER
+   ============================================================ */
+
+.prayer-schedule-heading {
+    min-height: 30px;
+}
+
+.prayer-schedule-heading::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    max-width: 120px;
+    background: var(--ad2-color-border, #343434);
+}
+
+/* ============================================================
+   PRAYER ROW STATES
+   ============================================================ */
+
+.prayer-compact-row {
+    position: relative;
+}
+
+.prayer-compact-row.is-next::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 10px;
+    bottom: 10px;
+    width: 3px;
+    border-radius: 999px;
+    background: var(--ad2-color-brand, #d4af37);
+}
+
+.prayer-compact-row.is-next .prayer-compact-name {
+    color: var(--ad2-color-brand, #d4af37);
+}
+
+.prayer-compact-row.is-next .prayer-compact-time {
+    color: var(--ad2-color-brand, #d4af37);
+}
+
+/* ============================================================
+   SIDE COLUMN
+   ============================================================ */
+
+.prayer-compact-side {
+    display: grid;
+    gap: var(--prayer-gap-lg);
+}
+
+.prayer-info-strip {
+    align-self: start;
+}
+
+/* ============================================================
+   QIBLA
+   ============================================================ */
+
+.prayer-qibla-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.prayer-qibla-compass {
+    width: min(100%, 250px);
+    margin-inline: auto;
+}
+
+.prayer-qibla-help {
+    max-width: 48ch;
+    margin-inline: auto;
+    text-align: center;
+}
+
+/* ============================================================
+   TOOLS
+   ============================================================ */
+
+.prayer-tools-compact {
+    display: grid;
+    gap: .75rem;
+}
+
+.prayer-tools-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.prayer-tool-button {
+    overflow: hidden;
+}
+
+.prayer-tool-button > * {
+    min-width: 0;
+}
+
+.prayer-tool-button-icon {
+    flex-shrink: 0;
+}
+
+.prayer-tool-button-label,
+.prayer-tool-button span {
+    overflow-wrap: anywhere;
+}
+
+/* ============================================================
+   SETTINGS
+   ============================================================ */
+
+.prayer-settings-strip {
+    flex-wrap: wrap;
+}
+
+.prayer-settings-strip > a,
+.prayer-settings-strip > button {
+    flex-shrink: 0;
+}
+
+/* ============================================================
+   TABLET
+   ============================================================ */
+
+@media (max-width: 1050px) {
+    .prayer-compact-layout {
+        grid-template-columns: minmax(0, 1.4fr) minmax(250px, .8fr);
+    }
+
+    .prayer-next-time {
+        font-size: clamp(2.35rem, 5vw, 3.8rem);
+    }
+
+    .prayer-tools-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* ============================================================
+   SMALL TABLET
+   ============================================================ */
+
+@media (max-width: 820px) {
+    .prayer-compact-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .prayer-compact-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .prayer-compact-side {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .prayer-compact-side .prayer-qibla-card {
+        grid-column: 1 / -1;
+    }
+
+    .prayer-info-strip {
+        grid-column: 1 / -1;
+    }
+}
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 680px) {
+    .prayer-compact {
+        width: 100%;
+    }
+
+    .prayer-compact-header {
+        gap: .65rem;
+    }
+
+    .prayer-location {
+        font-size: .72rem;
+    }
+
+    .prayer-next-card {
+        min-height: 210px;
+    }
+
+    .prayer-next-label {
+        font-size: .62rem;
+    }
+
+    .prayer-next-name {
+        font-size: clamp(1.45rem, 7vw, 2rem);
+    }
+
+    .prayer-next-time {
+        font-size: clamp(2.65rem, 14vw, 4rem);
+    }
+
+    .prayer-schedule-heading {
+        gap: .65rem;
+    }
+
+    .prayer-schedule-heading::after {
+        max-width: 60px;
+    }
+
+    .prayer-compact-row {
+        min-height: 52px;
+    }
+
+    .prayer-compact-row.is-next::before {
+        top: 8px;
+        bottom: 8px;
+    }
+
+    .prayer-compact-side {
+        grid-template-columns: 1fr;
+    }
+
+    .prayer-info-strip {
+        grid-column: auto;
+    }
+
+    .prayer-qibla-card {
+        padding: 1rem;
+    }
+
+    .prayer-tools-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .prayer-tool-button {
+        min-height: 58px;
+    }
+}
+
+/* ============================================================
+   SMALL MOBILE
+   ============================================================ */
+
+@media (max-width: 480px) {
+    .prayer-next-card {
+        min-height: 190px;
+    }
+
+    .prayer-next-time {
+        font-size: clamp(2.45rem, 15vw, 3.5rem);
+    }
+
+    .prayer-compact-row {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .prayer-tools-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .prayer-tool-button {
+        width: 100%;
+    }
+
+    .prayer-qibla-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .prayer-settings-strip {
+        padding: .85rem;
+    }
+}
+
+/* ============================================================
+   VERY SMALL DEVICES
+   ============================================================ */
+
+@media (max-width: 360px) {
+    .prayer-compact-header,
+    .prayer-compact-layout {
+        padding-inline: .65rem;
+    }
+
+    .prayer-next-card {
+        padding: 1rem;
+    }
+
+    .prayer-next-time {
+        font-size: 2.35rem;
+    }
+
+    .prayer-compact-row {
+        padding-inline: .65rem;
+    }
+
+    .prayer-compact-time {
+        min-width: 48px;
+        font-size: .86rem;
+    }
+
+    .prayer-info-item,
+    .prayer-info-card {
+        padding: .8rem;
+    }
+}
+
+/* ============================================================
+   TOUCH DEVICES
+   ============================================================ */
+
+@media (hover: none) and (pointer: coarse) {
+    .prayer-compact-row {
+        min-height: 58px;
+    }
+
+    .prayer-tool-button,
+    .prayer-qibla-button {
+        min-height: 46px;
+    }
+}
+
+/* ============================================================
+   PRINT
+   ============================================================ */
+
+@media print {
+    .prayer-tools-compact,
+    .prayer-settings-strip,
+    .prayer-qibla-actions {
+        display: none !important;
+    }
+
+    .prayer-next-card,
+    .prayer-schedule-section,
+    .prayer-qibla-card,
+    .prayer-info-item {
+        box-shadow: none !important;
+        break-inside: avoid;
+    }
+}

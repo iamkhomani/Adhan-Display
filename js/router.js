@@ -2,6 +2,7 @@ import { state } from './state.js';
 
 const routes = new Set([
     'home',
+    'dashboard',
     'quran',
     'hadith',
     'prayer',
@@ -10,14 +11,24 @@ const routes = new Set([
     'settings'
 ]);
 
+function normalizeRoute(route) {
+    if (route === 'dashboard') {
+        return 'home';
+    }
+
+    return route;
+}
+
 export function getCurrentRoute() {
-    const hash = window.location.hash.replace('#', '').trim();
+    const hash = window.location.hash
+        .replace('#', '')
+        .trim();
 
     if (!hash || !routes.has(hash)) {
         return 'home';
     }
 
-    return hash;
+    return normalizeRoute(hash);
 }
 
 export function navigate(route) {
@@ -25,15 +36,22 @@ export function navigate(route) {
         route = 'home';
     }
 
-    state.page = route;
+    const normalizedRoute = normalizeRoute(route);
 
-    if (window.location.hash !== `#${route}`) {
-        window.location.hash = route;
+    state.page = normalizedRoute;
+
+    const publicRoute =
+        normalizedRoute === 'home'
+            ? 'dashboard'
+            : normalizedRoute;
+
+    if (window.location.hash !== `#${publicRoute}`) {
+        window.location.hash = publicRoute;
     }
 
     window.dispatchEvent(
         new CustomEvent('adhan:navigate', {
-            detail: { route }
+            detail: { route: normalizedRoute }
         })
     );
 }

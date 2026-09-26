@@ -399,6 +399,17 @@ function renderHolySites() {
                         the Ka'bah, the direction
                         Muslims face in prayer.
                     </p>
+
+                    <a
+                        class="discover-site-live"
+                        href="https://www.youtube.com/results?search_query=kaaba+live"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Watch Kaaba live on YouTube"
+                    >
+                        <span aria-hidden="true">▶</span>
+                        Watch Kaaba Live
+                    </a>
                 </article>
 
                 <article class="discover-site-card">
@@ -419,6 +430,17 @@ function renderHolySites() {
                         of the most important places
                         of worship in Islam.
                     </p>
+
+                    <a
+                        class="discover-site-live"
+                        href="https://www.youtube.com/results?search_query=madinah+live"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Watch Madinah live on YouTube"
+                    >
+                        <span aria-hidden="true">▶</span>
+                        Watch Madinah Live
+                    </a>
                 </article>
 
                 <article class="discover-site-card">
@@ -439,6 +461,17 @@ function renderHolySites() {
                         and an important site in
                         Islamic history.
                     </p>
+
+                    <a
+                        class="discover-site-live"
+                        href="https://www.youtube.com/results?search_query=al+aqsa+live"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Watch Al-Aqsa live on YouTube"
+                    >
+                        <span aria-hidden="true">▶</span>
+                        Watch Al-Aqsa Live
+                    </a>
                 </article>
 
             </div>
@@ -450,7 +483,7 @@ function renderHolySites() {
 
 /* AD2_RAMADAN_DISCOVER_START */
 const AD2_RAMADAN_DISCOVER_HTML = `
-  <section class="ramadan-countdown-section" aria-labelledby="ramadan-countdown-title">
+  <section class="ramadan-countdown-section" data-ramadan-countdown aria-labelledby="ramadan-countdown-title">
 
     <div class="ramadan-countdown-header">
 

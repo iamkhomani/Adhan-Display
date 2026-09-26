@@ -1,0 +1,33 @@
+/*
+ * Adhan Display
+ * Islamic UI V5
+ *
+ * Match Dua typography to Hadith typography.
+ */
+
+.islamic-page .islamic-inspiration-card .islamic-arabic-content {
+    font-size: 1rem !important;
+    line-height: 1.75 !important;
+    font-weight: 400 !important;
+    letter-spacing: normal !important;
+}
+
+.islamic-page .islamic-inspiration-card .islamic-arabic-content * {
+    font-size: inherit !important;
+    line-height: inherit !important;
+    font-weight: inherit !important;
+}
+
+@media (max-width: 767px) {
+    .islamic-page .islamic-inspiration-card .islamic-arabic-content {
+        font-size: 1rem !important;
+        line-height: 1.75 !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .islamic-page .islamic-inspiration-card .islamic-arabic-content {
+        font-size: 1rem !important;
+        line-height: 1.75 !important;
+    }
+}

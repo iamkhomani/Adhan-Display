@@ -545,3 +545,35 @@
 
 }
 
+
+/* =========================================================
+   Monthly Timetable - Mobile scroll affordance
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    .prayer-month-full {
+        position: relative;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: thin;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .prayer-month-full::after {
+        content: '';
+        position: sticky;
+        top: 0;
+        right: 0;
+        display: block;
+        width: 24px;
+        height: 100%;
+        margin-left: auto;
+        pointer-events: none;
+        background: linear-gradient(
+            90deg,
+            transparent,
+            var(--surface)
+        );
+    }
+}

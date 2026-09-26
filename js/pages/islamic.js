@@ -29,7 +29,7 @@ function getHijri() {
     return state.prayer.data?.date?.hijri || null;
 }
 
-function getTodayContent() {
+export function getTodayContent() {
     const start = new Date(
         new Date().getFullYear(),
         0,
@@ -475,7 +475,7 @@ function renderAdhkarTool() {
 
 function renderTasbihTool() {
     return `
-        <section class="islamic-tool-view tasbih-view">
+        <section class="islamic-tool-view tasbih-view tasbih-v9">
 
             ${toolHeader(
                 'DHIKR',
@@ -483,32 +483,31 @@ function renderTasbihTool() {
                 'A simple, focused counter for your remembrance.'
             )}
 
-            <div class="tasbih-container">
+            <div class="tasbih-v9-stage">
 
-                <div class="tasbih-counter">
+                <div class="tasbih-v9-counter">
 
                     <span class="ad2-eyebrow">
                         CURRENT COUNT
                     </span>
 
                     <strong
+                        class="tasbih-v9-count"
                         data-tasbih-count
                     >
                         ${tasbihCount}
                     </strong>
 
-                    <div class="tasbih-tap-shell">
-                        <button
-                            type="button"
-                            class="tasbih-main-button"
-                            data-tasbih-increment
-                            aria-label="Increment Tasbih count"
-                        >
-                            <span>Tap</span>
-                        </button>
-                    </div>
+                    <button
+                        type="button"
+                        class="tasbih-v9-tap"
+                        data-tasbih-increment
+                        aria-label="Increment Tasbih count"
+                    >
+                        <span>Tap</span>
+                    </button>
 
-                    <div class="tasbih-actions">
+                    <div class="tasbih-v9-actions">
 
                         <button
                             type="button"
@@ -815,7 +814,7 @@ function renderRamadanTool() {
                         ${
                             isRamadan
                                 ? `Day ${escapeHtml(day)} of Ramadan`
-                                : 'Ramadan is not currently active'
+                                : 'Ramadan is yet to come, in sha Allah.'
                         }
                     </h2>
 
@@ -830,6 +829,64 @@ function renderRamadanTool() {
                     </p>
 
                 </div>
+
+                ${
+                    !isRamadan
+                        ? `
+                            <section
+                                class="ramadan-countdown-section"
+                                data-ramadan-countdown
+                                aria-labelledby="islamic-ramadan-countdown-title"
+                            >
+
+                                <div class="ramadan-countdown-header">
+
+                                    <span class="ramadan-countdown-eyebrow">
+                                        RAMADAN 1448 AH
+                                    </span>
+
+                                    <h2 id="islamic-ramadan-countdown-title">
+                                        Preparing for Ramadan
+                                    </h2>
+
+                                    <p>
+                                        Prepare your heart and your worship.
+                                    </p>
+
+                                </div>
+
+                                <div class="ramadan-countdown-grid">
+
+                                    <div class="ramadan-countdown-unit">
+                                        <span class="ramadan-countdown-value">00</span>
+                                        <span class="ramadan-countdown-label">Days</span>
+                                    </div>
+
+                                    <div class="ramadan-countdown-unit">
+                                        <span class="ramadan-countdown-value">00</span>
+                                        <span class="ramadan-countdown-label">Hours</span>
+                                    </div>
+
+                                    <div class="ramadan-countdown-unit">
+                                        <span class="ramadan-countdown-value">00</span>
+                                        <span class="ramadan-countdown-label">Minutes</span>
+                                    </div>
+
+                                    <div class="ramadan-countdown-unit">
+                                        <span class="ramadan-countdown-value">00</span>
+                                        <span class="ramadan-countdown-label">Seconds</span>
+                                    </div>
+
+                                </div>
+
+                                <div class="ramadan-countdown-note">
+                                    Expected start: 8 February 2027
+                                </div>
+
+                            </section>
+                        `
+                        : ''
+                }
 
                 ${
                     isRamadan

@@ -1,0 +1,723 @@
+/*
+ * Adhan Display
+ * Prayer UI Migration V1
+ *
+ * Purpose:
+ * Establish the Prayer page as the first reference implementation
+ * of Design System V1.
+ *
+ * This file intentionally overrides the existing page styles instead
+ * of rewriting pages.css. It can therefore be removed independently.
+ */
+
+/* ============================================================
+   PRAYER PAGE FOUNDATION
+   ============================================================ */
+
+.prayer-compact {
+    color: var(--text);
+}
+
+.prayer-compact-layout {
+    width: min(100%, var(--ad2-layout-max-width, 1180px));
+    margin-inline: auto;
+    padding-inline: var(--ad2-layout-padding, 1.25rem);
+    gap: var(--ad2-space-6, 1.5rem);
+}
+
+.prayer-compact-main,
+.prayer-compact-side {
+    min-width: 0;
+}
+
+/* ============================================================
+   PRAYER HEADER
+   ============================================================ */
+
+.prayer-compact-header {
+    width: min(100%, var(--ad2-layout-max-width, 1180px));
+    margin-inline: auto;
+    padding:
+        var(--ad2-space-5, 1.25rem)
+        var(--ad2-layout-padding, 1.25rem)
+        var(--ad2-space-3, .75rem);
+}
+
+.prayer-location {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    color: var(--text-muted);
+    font-size: .78rem;
+    font-weight: 600;
+    letter-spacing: .04em;
+}
+
+.prayer-location-dot {
+    width: .5rem;
+    height: .5rem;
+    flex: 0 0 .5rem;
+    border-radius: 50%;
+    background: var(--ad2-color-brand, #d4af37);
+    box-shadow: 0 0 0 4px rgba(212, 175, 55, .10);
+}
+
+/* ============================================================
+   NEXT PRAYER HERO CARD
+   ============================================================ */
+
+.prayer-next-card {
+    position: relative;
+    overflow: hidden;
+
+    min-height: 0;
+    padding: clamp(1.5rem, 3vw, 2.25rem);
+
+    border:
+        1px solid
+        color-mix(
+            in srgb,
+            var(--ad2-color-brand, #d4af37) 22%,
+            var(--ad2-color-border, #343434)
+        );
+
+    border-radius: var(--ad2-radius-xl, 1.25rem);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(212, 175, 55, .11),
+            rgba(212, 175, 55, .035) 42%,
+            rgba(255, 255, 255, .018)
+        );
+
+    box-shadow: var(--ad2-shadow-md, 0 10px 30px rgba(0,0,0,.18));
+
+    isolation: isolate;
+}
+
+.prayer-next-card::before {
+    content: "";
+    position: absolute;
+    inset: auto -100px -140px auto;
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    border: 1px solid rgba(212, 175, 55, .08);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.prayer-next-card::after {
+    content: "";
+    position: absolute;
+    top: -90px;
+    right: -50px;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    border: 1px solid rgba(212, 175, 55, .055);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.prayer-next-label {
+    display: block;
+    margin-bottom: .55rem;
+
+    color: var(--ad2-color-brand, #d4af37);
+
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .16em;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+
+.prayer-next-name {
+    color: var(--text);
+
+    font-size: clamp(1.65rem, 3vw, 2.45rem);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -.025em;
+}
+
+.prayer-next-time {
+    margin-top: .35rem;
+
+    color: var(--text);
+
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 700;
+    line-height: .98;
+    letter-spacing: -.045em;
+}
+
+.prayer-next-countdown {
+    display: inline-flex;
+    align-items: center;
+
+    margin-top: 1rem;
+    padding: .55rem .8rem;
+
+    border:
+        1px solid
+        color-mix(
+            in srgb,
+            var(--ad2-color-brand, #d4af37) 20%,
+            transparent
+        );
+
+    border-radius: 999px;
+
+    background: rgba(212, 175, 55, .055);
+
+    color: var(--ad2-color-text-muted, #b9b9b9);
+
+    font-size: .78rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+/* ============================================================
+   PRAYER SCHEDULE
+   ============================================================ */
+
+.prayer-schedule-section {
+    margin-top: var(--ad2-space-5, 1.25rem);
+    padding:
+        var(--ad2-space-5, 1.25rem)
+        var(--ad2-space-5, 1.25rem);
+
+    border:
+        1px solid
+        var(--ad2-color-border, #343434);
+
+    border-radius: var(--ad2-radius-lg, 1rem);
+
+    background: var(--ad2-color-surface, rgba(255,255,255,.025));
+
+    box-shadow: var(--ad2-shadow-sm, 0 4px 16px rgba(0,0,0,.10));
+}
+
+.prayer-schedule-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+
+    margin-bottom: 1rem;
+}
+
+.prayer-schedule-heading h2,
+.prayer-schedule-heading h3 {
+    margin: 0;
+
+    color: var(--text);
+
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -.01em;
+}
+
+.prayer-compact-times {
+    display: grid;
+    gap: .5rem;
+}
+
+.prayer-compact-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 1rem;
+
+    min-height: 58px;
+    padding: .75rem 1rem;
+
+    border:
+        1px solid
+        transparent;
+
+    border-radius: var(--ad2-radius-md, .75rem);
+
+    background: rgba(255,255,255,.018);
+
+    transition:
+        background var(--ad2-transition-fast, 150ms ease),
+        border-color var(--ad2-transition-fast, 150ms ease),
+        transform var(--ad2-transition-fast, 150ms ease);
+}
+
+.prayer-compact-row:hover {
+    background: rgba(255,255,255,.035);
+    border-color: var(--ad2-color-border, #343434);
+}
+
+.prayer-compact-row.is-next {
+    background:
+        linear-gradient(
+            90deg,
+            rgba(212,175,55,.10),
+            rgba(212,175,55,.035)
+        );
+
+    border-color: rgba(212,175,55,.24);
+}
+
+.prayer-compact-row.is-passed {
+    opacity: .58;
+}
+
+.prayer-compact-name {
+    min-width: 0;
+
+    color: var(--text);
+
+    font-size: .88rem;
+    font-weight: 650;
+}
+
+.prayer-compact-status {
+    color: var(--text-muted);
+
+    font-size: .68rem;
+    font-weight: 600;
+    letter-spacing: .03em;
+}
+
+.prayer-compact-time {
+    min-width: 62px;
+
+    color: var(--text);
+
+    font-size: .95rem;
+    font-weight: 700;
+    text-align: right;
+}
+
+/* ============================================================
+   PRAYER SIDE INFORMATION
+   ============================================================ */
+
+.prayer-compact-side {
+    display: grid;
+    gap: var(--ad2-space-5, 1.25rem);
+}
+
+.prayer-info-strip {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .65rem;
+
+    padding: 0;
+
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.prayer-info-item,
+.prayer-info-card {
+    min-width: 0;
+    padding: 1rem;
+
+    border:
+        1px solid
+        var(--ad2-color-border, #343434);
+
+    border-radius: var(--ad2-radius-md, .75rem);
+
+    background: var(--ad2-color-surface, rgba(255,255,255,.025));
+}
+
+.prayer-info-label {
+    display: block;
+    margin-bottom: .3rem;
+
+    color: var(--text-muted);
+
+    font-size: .65rem;
+    font-weight: 700;
+    letter-spacing: .10em;
+    text-transform: uppercase;
+}
+
+.prayer-info-value {
+    color: var(--text);
+
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+/* ============================================================
+   QIBLA CARD
+   ============================================================ */
+
+.prayer-qibla-card {
+    position: relative;
+    overflow: hidden;
+
+    padding: 1.25rem;
+
+    border:
+        1px solid
+        var(--ad2-color-border, #343434);
+
+    border-radius: var(--ad2-radius-lg, 1rem);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.035),
+            rgba(255,255,255,.012)
+        );
+
+    box-shadow: var(--ad2-shadow-sm, 0 4px 16px rgba(0,0,0,.10));
+}
+
+.prayer-qibla-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+
+    margin-bottom: .75rem;
+}
+
+.prayer-qibla-heading h2,
+.prayer-qibla-heading h3 {
+    margin: 0;
+
+    color: var(--text);
+
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.prayer-qibla-degree {
+    color: var(--ad2-color-brand, #d4af37);
+
+    font-size: .75rem;
+    font-weight: 700;
+}
+
+.prayer-qibla-subtitle,
+.prayer-qibla-help {
+    margin: .35rem 0 0;
+
+    color: var(--text-muted);
+
+    font-size: .74rem;
+    line-height: 1.5;
+}
+
+.prayer-qibla-compass {
+    margin: 1.25rem auto;
+}
+
+.prayer-qibla-status {
+    display: flex;
+    justify-content: center;
+
+    margin-top: .75rem;
+
+    color: var(--text-muted);
+
+    font-size: .72rem;
+    text-align: center;
+}
+
+.prayer-qibla-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .5rem;
+
+    margin-top: 1rem;
+}
+
+.prayer-qibla-button {
+    min-height: var(--ad2-control-height, 42px);
+    padding: .65rem .75rem;
+
+    border:
+        1px solid
+        var(--ad2-color-border, #343434);
+
+    border-radius: var(--ad2-radius-md, .75rem);
+
+    background: rgba(255,255,255,.025);
+
+    color: var(--text);
+
+    font: inherit;
+    font-size: .75rem;
+    font-weight: 650;
+
+    cursor: pointer;
+
+    transition:
+        background var(--ad2-transition-fast, 150ms ease),
+        border-color var(--ad2-transition-fast, 150ms ease),
+        transform var(--ad2-transition-fast, 150ms ease);
+}
+
+.prayer-qibla-button:hover {
+    background: rgba(255,255,255,.055);
+    border-color: rgba(212,175,55,.32);
+}
+
+.prayer-qibla-button:active {
+    transform: translateY(1px);
+}
+
+.prayer-qibla-button.primary {
+    border-color: rgba(212,175,55,.35);
+    background: rgba(212,175,55,.10);
+    color: var(--ad2-color-brand, #d4af37);
+}
+
+/* ============================================================
+   PRAYER TOOLS
+   ============================================================ */
+
+.prayer-tools-compact {
+    margin-top: var(--ad2-space-5, 1.25rem);
+}
+
+.prayer-tools-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .65rem;
+}
+
+.prayer-tool-button {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+
+    min-width: 0;
+    min-height: 58px;
+
+    padding: .75rem .85rem;
+
+    border:
+        1px solid
+        var(--ad2-color-border, #343434);
+
+    border-radius: var(--ad2-radius-md, .75rem);
+
+    background: rgba(255,255,255,.018);
+
+    color: var(--text);
+
+    text-align: left;
+    cursor: pointer;
+
+    transition:
+        background var(--ad2-transition-fast, 150ms ease),
+        border-color var(--ad2-transition-fast, 150ms ease),
+        transform var(--ad2-transition-fast, 150ms ease);
+}
+
+.prayer-tool-button:hover {
+    background: rgba(255,255,255,.045);
+    border-color: rgba(212,175,55,.25);
+}
+
+.prayer-tool-button:active {
+    transform: translateY(1px);
+}
+
+.prayer-tool-button-icon {
+    display: inline-grid;
+    place-items: center;
+
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+
+    border-radius: 10px;
+
+    background: rgba(212,175,55,.08);
+
+    color: var(--ad2-color-brand, #d4af37);
+}
+
+.prayer-tool-arrow {
+    margin-left: auto;
+
+    color: var(--ad2-color-text-subtle, #777);
+
+    font-size: .85rem;
+}
+
+/* ============================================================
+   SETTINGS STRIP
+   ============================================================ */
+
+.prayer-settings-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+
+    margin-top: var(--ad2-space-5, 1.25rem);
+    padding: 1rem 1.15rem;
+
+    border:
+        1px solid
+        var(--ad2-color-border, #343434);
+
+    border-radius: var(--ad2-radius-lg, 1rem);
+
+    background: rgba(255,255,255,.018);
+}
+
+.prayer-settings-strip > * {
+    min-width: 0;
+}
+
+.prayer-settings-strip a,
+.prayer-settings-strip button {
+    min-height: var(--ad2-control-height, 42px);
+}
+
+/* ============================================================
+   FOCUS STATES
+   ============================================================ */
+
+.prayer-compact button:focus-visible,
+.prayer-compact a:focus-visible,
+.prayer-compact [role="button"]:focus-visible {
+    outline: none;
+    box-shadow: var(--ad2-focus-ring, 0 0 0 3px rgba(212,175,55,.25));
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 900px) {
+    .prayer-compact-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .prayer-compact-side {
+        grid-template-columns: 1fr 1fr;
+        align-items: start;
+    }
+
+    .prayer-tools-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 680px) {
+    .prayer-compact-header {
+        padding-top: 1rem;
+        padding-inline: 1rem;
+    }
+
+    .prayer-compact-layout {
+        padding-inline: 1rem;
+        gap: 1rem;
+    }
+
+    .prayer-next-card {
+        padding: 1.35rem;
+        border-radius: 1rem;
+    }
+
+    .prayer-next-time {
+        font-size: clamp(2.5rem, 15vw, 4rem);
+    }
+
+    .prayer-schedule-section {
+        padding: .9rem;
+        border-radius: .9rem;
+    }
+
+    .prayer-compact-row {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: .5rem .75rem;
+        min-height: 54px;
+        padding: .7rem .75rem;
+    }
+
+    .prayer-compact-status {
+        display: none;
+    }
+
+    .prayer-compact-time {
+        min-width: 54px;
+    }
+
+    .prayer-compact-side {
+        grid-template-columns: 1fr;
+    }
+
+    .prayer-info-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .prayer-tools-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .prayer-tool-button {
+        min-height: 54px;
+        padding: .65rem;
+    }
+
+    .prayer-tool-button-icon {
+        width: 30px;
+        height: 30px;
+        flex-basis: 30px;
+    }
+
+    .prayer-settings-strip {
+        align-items: stretch;
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 420px) {
+    .prayer-compact-header {
+        padding-inline: .75rem;
+    }
+
+    .prayer-compact-layout {
+        padding-inline: .75rem;
+    }
+
+    .prayer-next-card {
+        padding: 1.15rem;
+    }
+
+    .prayer-info-strip {
+        grid-template-columns: 1fr;
+    }
+
+    .prayer-tools-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .prayer-qibla-actions {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    .prayer-compact-row,
+    .prayer-tool-button,
+    .prayer-qibla-button {
+        transition: none;
+    }
+}

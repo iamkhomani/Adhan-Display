@@ -1,0 +1,274 @@
+/*
+ * Adhan Display
+ * Islamic UI V3 Hotfix
+ *
+ * Fixes:
+ * 1. Light-mode readability for Islamic inspiration cards
+ * 2. Digital Tasbih layout distortion
+ *
+ * No JavaScript changes.
+ */
+
+/* =========================================================
+   FIX 1: LIGHT MODE DUA + HADITH READABILITY
+   ========================================================= */
+
+/*
+ * The existing Islamic inspiration cards inherit text colors
+ * from older component/theme rules. Explicitly define the
+ * foreground colors for light mode.
+ */
+
+:root[data-theme="light"] .islamic-page .islamic-inspiration-card,
+[data-theme="light"] .islamic-page .islamic-inspiration-card,
+.light .islamic-page .islamic-inspiration-card {
+    color: var(--ad2-color-text, #35393c);
+}
+
+:root[data-theme="light"] .islamic-page .islamic-inspiration-card h2,
+[data-theme="light"] .islamic-page .islamic-inspiration-card h2,
+.light .islamic-page .islamic-inspiration-card h2 {
+    color: var(--ad2-color-text, #35393c);
+}
+
+:root[data-theme="light"] .islamic-page .islamic-inspiration-card p,
+[data-theme="light"] .islamic-page .islamic-inspiration-card p,
+.light .islamic-page .islamic-inspiration-card p {
+    color: var(--ad2-color-text, #35393c);
+}
+
+:root[data-theme="light"] .islamic-page .islamic-inspiration-card
+.islamic-arabic-content,
+[data-theme="light"] .islamic-page .islamic-inspiration-card
+.islamic-arabic-content,
+.light .islamic-page .islamic-inspiration-card
+.islamic-arabic-content {
+    color: var(--ad2-color-text, #35393c);
+}
+
+:root[data-theme="light"] .islamic-page .islamic-inspiration-card small,
+[data-theme="light"] .islamic-page .islamic-inspiration-card small,
+.light .islamic-page .islamic-inspiration-card small {
+    color: var(--ad2-color-text-muted, #5f6368);
+    opacity: 1;
+}
+
+/*
+ * Also cover installations where the theme uses the default
+ * root state instead of an explicit light class.
+ */
+:root:not([data-theme="dark"]) .islamic-page
+.islamic-inspiration-card {
+    color: var(--ad2-color-text, #35393c);
+}
+
+:root:not([data-theme="dark"]) .islamic-page
+.islamic-inspiration-card h2 {
+    color: var(--ad2-color-text, #35393c);
+}
+
+:root:not([data-theme="dark"]) .islamic-page
+.islamic-inspiration-card p {
+    color: var(--ad2-color-text, #35393c);
+}
+
+:root:not([data-theme="dark"]) .islamic-page
+.islamic-inspiration-card .islamic-arabic-content {
+    color: var(--ad2-color-text, #35393c);
+}
+
+:root:not([data-theme="dark"]) .islamic-page
+.islamic-inspiration-card small {
+    color: var(--ad2-color-text-muted, #5f6368);
+    opacity: 1;
+}
+
+
+/* =========================================================
+   FIX 2: DIGITAL TASBIH LAYOUT
+   ========================================================= */
+
+/*
+ * Keep the Tasbih component in its own predictable layout.
+ * This intentionally overrides older generic component rules.
+ */
+
+.islamic-page .tasbih-view {
+    width: 100%;
+}
+
+.islamic-page .tasbih-view .islamic-tool-header {
+    width: 100%;
+    margin-bottom: 1.25rem;
+}
+
+.islamic-page .tasbih-container {
+    width: min(100%, 560px);
+    max-width: 560px;
+    margin-inline: auto;
+    box-sizing: border-box;
+}
+
+.islamic-page .tasbih-counter {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+
+    padding: clamp(1.25rem, 3vw, 2.25rem);
+
+    border-radius: var(--ad2-radius-xl, 1.25rem);
+    overflow: hidden;
+}
+
+/*
+ * The current count must remain centered and must not inherit
+ * generic strong sizing/positioning from other components.
+ */
+.islamic-page .tasbih-counter
+[data-tasbih-count] {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+
+    margin: .65rem 0 1.5rem;
+
+    text-align: center;
+    line-height: .95;
+
+    font-size: clamp(3.5rem, 11vw, 6.5rem);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    transform: none;
+}
+
+/*
+ * The tap area should behave like a stable rectangular
+ * interaction surface instead of being stretched or distorted
+ * by inherited styles.
+ */
+.islamic-page .tasbih-tap-shell {
+    position: relative;
+
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 180px;
+
+    box-sizing: border-box;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 2rem;
+
+    border-radius: var(--ad2-radius-lg, 1rem);
+
+    overflow: hidden;
+
+    transform: none;
+}
+
+/*
+ * Prevent nested/generated elements from changing the
+ * dimensions of the tap target.
+ */
+.islamic-page .tasbih-tap-shell > * {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/*
+ * Make the mobile interaction area comfortable without
+ * allowing the card itself to become oversized.
+ */
+@media (pointer: coarse) {
+    .islamic-page .tasbih-tap-shell {
+        min-height: 200px;
+    }
+}
+
+/* =========================================================
+   MOBILE TASBIH
+   ========================================================= */
+
+@media (max-width: 767px) {
+    .islamic-page .tasbih-container {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .islamic-page .tasbih-counter {
+        padding: 1.25rem;
+    }
+
+    .islamic-page .tasbih-counter
+    [data-tasbih-count] {
+        font-size: clamp(3.25rem, 18vw, 5.5rem);
+        margin-bottom: 1.25rem;
+    }
+
+    .islamic-page .tasbih-tap-shell {
+        min-height: 180px;
+        padding: 1.5rem;
+    }
+}
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 480px) {
+    .islamic-page .tasbih-counter {
+        padding: 1rem;
+    }
+
+    .islamic-page .tasbih-counter
+    [data-tasbih-count] {
+        font-size: clamp(3rem, 20vw, 4.75rem);
+    }
+
+    .islamic-page .tasbih-tap-shell {
+        min-height: 160px;
+        padding: 1rem;
+    }
+}
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    .islamic-page .tasbih-tap-shell,
+    .islamic-page .tasbih-counter
+    [data-tasbih-count] {
+        transform: none;
+        transition: none;
+    }
+}
+
+/* =========================================================
+   PRINT
+   ========================================================= */
+
+@media print {
+    .islamic-page .tasbih-container {
+        width: 100%;
+        max-width: none;
+    }
+
+    .islamic-page .tasbih-counter {
+        box-shadow: none;
+    }
+}

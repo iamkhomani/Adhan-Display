@@ -8,8 +8,20 @@ import { initializeRouter, navigate } from './router.js';
 import { PrayerService } from './services/prayer.js';
 import { LocationService } from './services/location.js';
 import { AudioService } from './services/audio.js';
-import { renderPrayerPage, bindPrayerPage } from './pages/prayer.js';
-import { renderQuranPage, bindQuranPage } from './pages/quran.js';
+import {
+    renderPrayerPage,
+    bindPrayerPage,
+    getPrayerEntries,
+    renderPrayerRows,
+    renderQiblaCard,
+    bindQiblaCompass
+} from './pages/prayer.js';
+import {
+    getDailyAyah,
+    openQuranAtAyah,
+    renderQuranPage,
+    bindQuranPage
+} from './pages/quran.js';
 import { renderHadithPage, bindHadithPage } from './pages/hadith.js';
 import {
     renderDiscoverPage,
@@ -29,7 +41,8 @@ import {
     renderIslamicPage,
     renderIslamicTool,
     bindIslamicPage,
-    prepareIslamicTool
+    prepareIslamicTool,
+    getTodayContent
 } from './pages/islamic.js';
 
 const prayer = new PrayerService(
@@ -70,6 +83,7 @@ async function initialize() {
     initializeState();
     initializeRouter();
 
+    bindSkipLink();
     bindNavigation();
 
     try {
@@ -168,6 +182,20 @@ function bindThemeToggle() {
     );
 }
 
+
+function bindSkipLink() {
+    const skipLink = document.querySelector('[data-skip-link]');
+    const app = document.getElementById('app');
+
+    if (!skipLink || !app) {
+        return;
+    }
+
+    skipLink.addEventListener('click', (event) => {
+        event.preventDefault();
+        app.focus({ preventScroll: false });
+    });
+}
 
 function bindNavigation() {
     document.addEventListener('click', (event) => {
@@ -406,7 +434,7 @@ function render() {
     app.innerHTML = `
         <div class="ad2-shell">
             <header class="ad2-header">
-                <a href="#home" class="ad2-brand" data-route="home">
+                <a href="#dashboard" class="ad2-brand" data-route="home">
                     <span class="ad2-brand-mark"><img src="/images/adhan%20display%20muslim%20prayer%20times%20dashboard%20logo.png" alt="Adhan Display"></span>
                     <span>
                         <strong>Adhan Display</strong>
@@ -488,6 +516,11 @@ function render() {
 
     bindThemeToggle();
     bindMobileMenu();
+
+    if (state.page === 'home') {
+        bindQiblaCompass();
+        loadDashboardAyah();
+    }
 
     if (state.page === 'quran') {
         bindQuranPage();
@@ -651,6 +684,8 @@ function getCurrentPrayer(data) {
 function renderDashboard() {
     const data = state.prayer.data;
     const next = state.prayer.next;
+    const entries = getPrayerEntries(data);
+    const content = getTodayContent();
 
     if (!data) {
         return `
@@ -669,7 +704,43 @@ function renderDashboard() {
         ? formatTime(current.time)
         : '--:--';
 
-    const city = state.location.city || 'Current location';
+    const city =
+        state.location?.city ||
+        'Current location';
+
+    const today =
+        data.date?.readable ||
+        new Date().toLocaleDateString();
+
+    const prayerRows = entries.length
+        ? renderPrayerRows(entries, next)
+        : `
+            <div class="prayer-empty">
+                Prayer times are loading...
+            </div>
+        `;
+
+    const hadith = content?.hadith;
+
+    const hadithText =
+        Array.isArray(hadith)
+            ? hadith[0] || ''
+            : typeof hadith === 'string'
+                ? hadith
+                : hadith?.text ||
+                  hadith?.english ||
+                  hadith?.translation ||
+                  '';
+
+    const hadithSource =
+        Array.isArray(hadith)
+            ? hadith[1] || ''
+            : typeof hadith === 'object'
+                ? hadith?.source ||
+                  hadith?.reference ||
+                  hadith?.narrator ||
+                  ''
+                : '';
 
     return `
         <section class="ad2-page ad2-home">
@@ -692,7 +763,7 @@ function renderDashboard() {
                     </h1>
 
                     <div class="ad2-hero-time">
-                        ${currentTime}
+                        ${escapeHtml(currentTime)}
                     </div>
 
                     <div
@@ -707,10 +778,7 @@ function renderDashboard() {
                     </div>
 
                     <p class="ad2-hero-date">
-                        ${escapeHtml(
-                            data.date?.readable ||
-                            new Date().toLocaleDateString()
-                        )}
+                        ${escapeHtml(today)}
                     </p>
 
                 </div>
@@ -719,6 +787,120 @@ function renderDashboard() {
                     <div class="ad2-orbit-ring">
                         <span>ADHAN</span>
                     </div>
+                </div>
+
+            </section>
+
+            <section class="ad2-section">
+
+                <div class="ad2-section-heading">
+
+                    <div>
+                        <span class="ad2-eyebrow">
+                            SALAH
+                        </span>
+
+                        <h2>
+                            Today's Prayer Times
+                        </h2>
+                    </div>
+
+                </div>
+
+                <div class="prayer-compact-layout">
+
+                    <div class="prayer-compact-main">
+
+                        <div class="prayer-compact-times">
+                            ${prayerRows}
+                        </div>
+
+                    </div>
+
+                    <div class="prayer-compact-side">
+                        ${renderQiblaCard()}
+                    </div>
+
+                </div>
+
+            </section>
+
+            <section class="ad2-section">
+
+                <div class="ad2-section-heading">
+
+                    <div>
+                        <span class="ad2-eyebrow">
+                            REFLECTION
+                        </span>
+
+                        <h2>
+                            Today's Reminder
+                        </h2>
+                    </div>
+
+                </div>
+
+                <div class="ad2-content-grid">
+
+                    <article class="ad2-content-card">
+
+                        <span class="ad2-card-eyebrow">
+                            HADITH OF THE DAY
+                        </span>
+
+                        <div class="ad2-card-text">
+                            ${
+                                escapeHtml(
+                                    hadithText ||
+                                    'No Hadith available today.'
+                                )
+                            }
+                        </div>
+
+                        ${
+                            hadithSource
+                                ? `
+                                    <div class="ad2-card-source">
+                                        ${escapeHtml(hadithSource)}
+                                    </div>
+                                `
+                                : ''
+                        }
+
+                    </article>
+
+                    <article class="ad2-content-card">
+
+                        <span class="ad2-card-eyebrow">
+                            AYAH OF THE DAY
+                        </span>
+
+                        <div
+                            class="ad2-card-text"
+                            data-dashboard-ayah
+                        >
+                            Loading...
+                        </div>
+
+                        <div
+                            class="ad2-card-source"
+                            data-dashboard-ayah-source
+                        >
+                            Quran
+                        </div>
+
+                        <button
+                            type="button"
+                            class="ad2-card-action"
+                            data-dashboard-read-quran
+                            disabled
+                        >
+                            Read in Quran
+                        </button>
+
+                    </article>
+
                 </div>
 
             </section>
@@ -744,12 +926,14 @@ function renderDashboard() {
                     </h2>
 
                     <p class="ad2-shahada-transliteration">
-                        Ashhadu an la ilaha illallah, wa ashhadu anna muhammadan rasulullah
+                        Ashhadu an la ilaha illallah,
+                        wa ashhadu anna Muhammadan rasulullah.
                     </p>
 
                     <p class="ad2-shahada-translation">
-                        I bear witness that there is no deity worthy of worship except Allah,
-                        and I bear witness that Muhammad is the Messenger of Allah.
+                        I bear witness that there is no deity worthy of worship
+                        except Allah, and I bear witness that Muhammad is the
+                        Messenger of Allah.
                     </p>
 
                 </div>
@@ -758,49 +942,6 @@ function renderDashboard() {
 
         </section>
     `;
-}
-
-function renderPrayerTime(name, raw) {
-    const formatted = formatRawTime(raw);
-
-    return `
-        <div class="ad2-prayer-time-card">
-            <span>${escapeHtml(name)}</span>
-            <strong>${formatted}</strong>
-        </div>
-    `;
-}
-
-function renderPlaceholder(title, description) {
-    return `
-        <section class="ad2-page">
-            <div class="ad2-page-heading">
-                <span class="ad2-eyebrow">ADHAN DISPLAY</span>
-                <h1>${escapeHtml(title)}</h1>
-                <p>${escapeHtml(description)}</p>
-            </div>
-
-            <div class="ad2-empty-state">
-                <div class="ad2-empty-icon">&#9790;</div>
-                <h2>Coming together in 2.0</h2>
-                <p>
-                    This section is part of the new Adhan Display
-                    architecture and will be built here without
-                    touching the existing application.
-                </p>
-            </div>
-        </section>
-    `;
-}
-
-function formatRawTime(raw) {
-    if (!raw) {
-        return '--:--';
-    }
-
-    return String(raw)
-        .split(' ')[0]
-        .slice(0, 5);
 }
 
 function formatTime(date) {
@@ -921,11 +1062,11 @@ function getNextRamadanStart() {
 }
 
 function updateRamadanCountdown() {
-    const values = document.querySelectorAll(
-        '.ramadan-countdown-value'
+    const containers = document.querySelectorAll(
+        '[data-ramadan-countdown]'
     );
 
-    if (!values || values.length < 4) {
+    if (!containers.length) {
         return;
     }
 
@@ -939,10 +1080,6 @@ function updateRamadanCountdown() {
 
     let difference =
         ramadan.date.getTime() - now.getTime();
-
-    /*
-     * De timer moet nooit negatieve waarden tonen.
-     */
 
     if (difference < 0) {
         difference = 0;
@@ -967,92 +1104,157 @@ function updateRamadanCountdown() {
     const seconds =
         totalSeconds % 60;
 
-    values[0].textContent =
-        String(days).padStart(2, '0');
-
-    values[1].textContent =
-        String(hours).padStart(2, '0');
-
-    values[2].textContent =
-        String(minutes).padStart(2, '0');
-
-    values[3].textContent =
-        String(seconds).padStart(2, '0');
-
-
-    /*
-     * Ramadan jaar dynamisch bijwerken.
-     */
-
-    const eyebrow =
-        document.querySelector(
-            '.ramadan-countdown-eyebrow'
+    const formatter =
+        new Intl.DateTimeFormat(
+            'en-u-ca-islamic-umalqura',
+            {
+                month: 'numeric'
+            }
         );
 
-    if (eyebrow) {
-        eyebrow.textContent =
-            `RAMADAN ${ramadan.hijriYear} AH`;
-    }
+    const currentHijriMonth =
+        Number(formatter.format(now));
 
+    const isBeforeRamadan =
+        currentHijriMonth < 9;
 
-    /*
-     * Verwachte Gregoriaanse startdatum dynamisch tonen.
-     */
-
-    const note =
-        document.querySelector(
-            '.ramadan-countdown-note'
+    const formattedDate =
+        ramadan.date.toLocaleDateString(
+            'en-GB',
+            {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            }
         );
 
-    if (note) {
-        const formattedDate =
-            ramadan.date.toLocaleDateString(
-                'en-GB',
-                {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric'
-                }
+    containers.forEach((container) => {
+        const values =
+            container.querySelectorAll(
+                '.ramadan-countdown-value'
             );
 
-        note.textContent =
-            `Expected start: ${formattedDate}`;
-    }
-
-
-    /*
-     * Beschrijving dynamisch bijwerken als de header
-     * een tekstblok bevat.
-     */
-
-    const header =
-        document.querySelector(
-            '.ramadan-countdown-header'
-        );
-
-    if (header) {
-        const paragraphs =
-            header.querySelectorAll('p');
-
-        if (paragraphs.length > 0) {
-            const formattedDate =
-                ramadan.date.toLocaleDateString(
-                    'en-GB',
-                    {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric'
-                    }
-                );
-
-            paragraphs[paragraphs.length - 1].textContent =
-                `Ramadan is expected to begin on ${formattedDate}, subject to moon sighting.`;
+        if (values.length < 4) {
+            return;
         }
-    }
+
+        values[0].textContent =
+            String(days).padStart(2, '0');
+
+        values[1].textContent =
+            String(hours).padStart(2, '0');
+
+        values[2].textContent =
+            String(minutes).padStart(2, '0');
+
+        values[3].textContent =
+            String(seconds).padStart(2, '0');
+
+        const eyebrow =
+            container.querySelector(
+                '.ramadan-countdown-eyebrow'
+            );
+
+        if (eyebrow) {
+            eyebrow.textContent =
+                `RAMADAN ${ramadan.hijriYear} AH`;
+        }
+
+        const header =
+            container.querySelector(
+                '.ramadan-countdown-header'
+            );
+
+        if (header) {
+            const paragraphs =
+                header.querySelectorAll('p');
+
+            if (paragraphs.length > 0) {
+                paragraphs[paragraphs.length - 1].textContent =
+                    isBeforeRamadan
+                        ? `Prepare your heart and your worship. Ramadan is expected to begin on ${formattedDate}, subject to moon sighting.`
+                        : `The next Ramadan is expected to begin on ${formattedDate}, subject to moon sighting.`;
+            }
+        }
+
+        const note =
+            container.querySelector(
+                '.ramadan-countdown-note'
+            );
+
+        if (note) {
+            note.textContent =
+                `Expected start: ${formattedDate}`;
+        }
+    });
 }
+
 
 /* AD2_RAMADAN_FUNCTIONS_END */
 
+async function loadDashboardAyah() {
+    const textElement =
+        document.querySelector(
+            '[data-dashboard-ayah]'
+        );
+
+    const sourceElement =
+        document.querySelector(
+            '[data-dashboard-ayah-source]'
+        );
+
+    if (!textElement || !sourceElement) {
+        return;
+    }
+
+    try {
+        const ayah = await getDailyAyah();
+
+        textElement.innerHTML = `
+            <div class="ad2-ayah-arabic">
+                ${escapeHtml(ayah.arabic)}
+            </div>
+            <div class="ad2-ayah-translation">
+                ${escapeHtml(ayah.translation)}
+            </div>
+        `;
+
+        sourceElement.textContent =
+            ayah.surah && ayah.ayahNumber
+                ? `${ayah.surah} · ${ayah.surahNumber}:${ayah.ayahNumber}`
+                : 'Quran';
+
+        const readButton =
+            document.querySelector(
+                '[data-dashboard-read-quran]'
+            );
+
+        if (readButton) {
+            readButton.disabled =
+                !ayah.surahNumber ||
+                !ayah.ayahNumber;
+
+            readButton.onclick = () => {
+                openQuranAtAyah(
+                    ayah.surahNumber,
+                    ayah.ayahNumber
+                );
+
+                navigate('quran');
+            };
+        }
+    } catch (error) {
+        console.error(
+            '[Dashboard] Failed to load daily Ayah:',
+            error
+        );
+
+        textElement.textContent =
+            'Quran content is currently unavailable.';
+
+        sourceElement.textContent = 'Quran';
+    }
+}
 
 function updateCountdown() {
     const element =
@@ -1084,13 +1286,15 @@ function updateCountdown() {
             const seconds =
                 totalSeconds % 60;
 
-            element.textContent =
-                `Next prayer: ${state.prayer.next.name} ` +
-                String.fromCharCode(183) +
-                ` in ` +
-                `${String(hours).padStart(2, '0')}:` +
-                `${String(minutes).padStart(2, '0')}:` +
-                `${String(seconds).padStart(2, '0')}`;
+        element.innerHTML =
+            `<span class="ad2-countdown-label">` +
+            `Next prayer: ${escapeHtml(state.prayer.next.name)}` +
+            `</span>` +
+            `<span class="ad2-countdown-value">` +
+            `in ${String(hours).padStart(2, '0')}:` +
+            `${String(minutes).padStart(2, '0')}:` +
+            `${String(seconds).padStart(2, '0')}` +
+            `</span>`;
         }
     }
 
@@ -1178,13 +1382,20 @@ initialize().then(() => {
   };
 
   function getAnalyticsRoute() {
-    const rawHash = window.location.hash || '#home';
+    const rawHash = window.location.hash || '#dashboard';
     const route = rawHash
       .replace(/^#/, '')
       .split('?')[0]
-      .replace(/\/+$/, '') || 'home';
+      .replace(/\/+$/, '') || 'dashboard';
 
-    return routeMeta[route] ? route : 'home';
+    const normalizedRoute =
+      route === 'dashboard'
+        ? 'home'
+        : route;
+
+    return routeMeta[normalizedRoute]
+      ? normalizedRoute
+      : 'home';
   }
 
   function trackPageView() {

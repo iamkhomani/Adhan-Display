@@ -1,0 +1,1037 @@
+/* ============================================================
+   Adhan Display - Discover UI V1
+   Phase 1 Polish
+   Visual layer only. Existing JS/functionality preserved.
+   ============================================================ */
+
+.discover-page {
+    --discover-gap: clamp(1rem, 2vw, 1.5rem);
+    --discover-section-gap: clamp(2rem, 4vw, 3.5rem);
+    --discover-card-radius: var(--ad2-radius-lg, 1.25rem);
+    --discover-card-border: var(--ad2-color-border, rgba(255,255,255,.1));
+    --discover-card-bg: var(--ad2-color-surface, rgba(255,255,255,.045));
+    --discover-card-bg-strong: var(--ad2-color-surface-raised, rgba(255,255,255,.065));
+    --discover-text: var(--ad2-color-text, #f5f5f5);
+    --discover-muted: var(--ad2-color-text-muted, #a7a7a7);
+    --discover-brand: var(--ad2-color-brand, #d4af37);
+    --discover-brand-soft: rgba(212,175,55,.12);
+}
+
+/* ------------------------------------------------------------
+   Page shell
+   ------------------------------------------------------------ */
+
+.discover-page {
+    width: 100%;
+    max-width: var(--ad2-layout-max-width, 1400px);
+    margin-inline: auto;
+    padding-block: clamp(1rem, 3vw, 2.5rem) clamp(2.5rem, 5vw, 4rem);
+}
+
+.discover-page > * {
+    min-width: 0;
+}
+
+.discover-section {
+    margin-top: var(--discover-section-gap);
+}
+
+.discover-section-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.discover-section-heading > div:first-child {
+    min-width: 0;
+}
+
+.discover-section-heading h2,
+.discover-section-heading h3 {
+    margin: .25rem 0 0;
+    color: var(--discover-text);
+    font-size: clamp(1.25rem, 2vw, 1.65rem);
+    line-height: 1.2;
+    letter-spacing: -.025em;
+}
+
+.discover-section-heading p {
+    margin: .4rem 0 0;
+    max-width: 58ch;
+    color: var(--discover-muted);
+    font-size: .9rem;
+    line-height: 1.6;
+}
+
+/* ------------------------------------------------------------
+   Hero
+   ------------------------------------------------------------ */
+
+.discover-hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr);
+    gap: clamp(1.25rem, 3vw, 2rem);
+    align-items: stretch;
+    padding: clamp(1.5rem, 4vw, 3rem);
+    overflow: hidden;
+    border: 1px solid var(--discover-card-border);
+    border-radius: calc(var(--discover-card-radius) + .25rem);
+    background:
+        radial-gradient(circle at 85% 15%, rgba(212,175,55,.13), transparent 30%),
+        linear-gradient(135deg, rgba(255,255,255,.055), rgba(255,255,255,.018));
+    box-shadow: var(--ad2-shadow-md, 0 18px 50px rgba(0,0,0,.16));
+}
+
+.discover-hero::after {
+    content: "";
+    position: absolute;
+    inset: auto -10% -65% 35%;
+    height: 300px;
+    pointer-events: none;
+    border-radius: 50%;
+    background: rgba(212,175,55,.055);
+    filter: blur(30px);
+}
+
+.discover-hero-copy {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+}
+
+.discover-hero-copy h1 {
+    max-width: 14ch;
+    margin: .35rem 0 .9rem;
+    color: var(--discover-text);
+    font-size: clamp(2rem, 5vw, 4rem);
+    line-height: .98;
+    letter-spacing: -.045em;
+}
+
+.discover-hero-copy p {
+    max-width: 62ch;
+    margin: 0;
+    color: var(--discover-muted);
+    font-size: clamp(.95rem, 1.5vw, 1.08rem);
+    line-height: 1.7;
+}
+
+.discover-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+    margin-top: 1.5rem;
+}
+
+.discover-hero-actions .ad2-button {
+    min-height: 44px;
+}
+
+.discover-context {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    padding: clamp(1.15rem, 2.5vw, 1.75rem);
+    border: 1px solid rgba(212,175,55,.18);
+    border-radius: var(--discover-card-radius);
+    background: rgba(0,0,0,.14);
+    backdrop-filter: blur(10px);
+}
+
+.discover-context strong,
+.discover-context h2,
+.discover-context h3 {
+    color: var(--discover-text);
+}
+
+.discover-context p {
+    margin: .35rem 0 0;
+    color: var(--discover-muted);
+    line-height: 1.55;
+}
+
+.discover-context > * + * {
+    margin-top: .65rem;
+}
+
+/* ------------------------------------------------------------
+   Content / knowledge cards
+   ------------------------------------------------------------ */
+
+.discover-content-section {
+    margin-top: var(--discover-section-gap);
+}
+
+.discover-feature-grid,
+.discover-knowledge-grid,
+.discover-sites-grid,
+.discover-events {
+    display: grid;
+    gap: var(--discover-gap);
+}
+
+.discover-feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.discover-knowledge-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.discover-feature-card,
+.discover-link-card,
+.discover-site-card,
+.discover-event {
+    min-width: 0;
+    border: 1px solid var(--discover-card-border);
+    border-radius: var(--discover-card-radius);
+    background: var(--discover-card-bg);
+    box-shadow: var(--ad2-shadow-sm, 0 8px 28px rgba(0,0,0,.1));
+}
+
+.discover-feature-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 230px;
+    padding: clamp(1.25rem, 2.5vw, 1.75rem);
+    overflow: hidden;
+    transition:
+        transform var(--ad2-transition-fast, 160ms ease),
+        border-color var(--ad2-transition-fast, 160ms ease),
+        background var(--ad2-transition-fast, 160ms ease);
+}
+
+.discover-feature-card::after {
+    content: "";
+    position: absolute;
+    width: 160px;
+    height: 160px;
+    right: -70px;
+    bottom: -80px;
+    border-radius: 50%;
+    background: var(--discover-brand-soft);
+    pointer-events: none;
+}
+
+.discover-feature-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(212,175,55,.25);
+    background: var(--discover-card-bg-strong);
+}
+
+.discover-card-topline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    margin-bottom: 1.1rem;
+}
+
+.discover-card-index {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding-inline: .5rem;
+    border: 1px solid rgba(212,175,55,.2);
+    border-radius: 999px;
+    color: var(--discover-brand);
+    background: var(--discover-brand-soft);
+    font-size: .72rem;
+    font-weight: 700;
+}
+
+.discover-feature-card h3,
+.discover-feature-card h2 {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    color: var(--discover-text);
+    font-size: clamp(1.15rem, 2vw, 1.45rem);
+    line-height: 1.25;
+}
+
+.discover-feature-card p {
+    position: relative;
+    z-index: 1;
+    margin: .75rem 0 0;
+    color: var(--discover-muted);
+    line-height: 1.65;
+}
+
+.discover-quote-mark {
+    position: absolute;
+    right: 1rem;
+    top: 3.5rem;
+    color: rgba(212,175,55,.1);
+    font-size: 5rem;
+    line-height: 1;
+    font-family: Georgia, serif;
+    pointer-events: none;
+}
+
+.discover-dua-text {
+    color: var(--discover-text) !important;
+    font-size: 1.05rem;
+    line-height: 1.9 !important;
+}
+
+.discover-dua-meaning {
+    padding-top: .85rem;
+    border-top: 1px solid var(--discover-card-border);
+}
+
+/* ------------------------------------------------------------
+   Link cards
+   ------------------------------------------------------------ */
+
+.discover-link-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 92px;
+    padding: 1rem 1.15rem;
+    color: inherit;
+    text-decoration: none;
+    transition:
+        transform var(--ad2-transition-fast, 160ms ease),
+        border-color var(--ad2-transition-fast, 160ms ease),
+        background var(--ad2-transition-fast, 160ms ease);
+}
+
+.discover-link-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(212,175,55,.25);
+    background: var(--discover-card-bg-strong);
+}
+
+.discover-link-card:focus-visible,
+.discover-site-card:focus-visible,
+.salah-learning-item:focus-visible {
+    outline: 3px solid rgba(212,175,55,.45);
+    outline-offset: 3px;
+}
+
+.discover-link-card strong {
+    display: block;
+    color: var(--discover-text);
+    font-size: .98rem;
+}
+
+.discover-link-card p {
+    margin: .25rem 0 0;
+    color: var(--discover-muted);
+    font-size: .82rem;
+    line-height: 1.45;
+}
+
+.discover-link-arrow,
+.salah-learning-arrow,
+.discover-site-card::after {
+    flex: 0 0 auto;
+    color: var(--discover-brand);
+    font-size: 1rem;
+    transition: transform var(--ad2-transition-fast, 160ms ease);
+}
+
+.discover-link-card:hover .discover-link-arrow,
+.salah-learning-item:hover .salah-learning-arrow {
+    transform: translate(2px, -2px);
+}
+
+/* ------------------------------------------------------------
+   Events
+   ------------------------------------------------------------ */
+
+.discover-events-section {
+    padding: clamp(1.25rem, 3vw, 2rem);
+    border: 1px solid var(--discover-card-border);
+    border-radius: calc(var(--discover-card-radius) + .15rem);
+    background: rgba(255,255,255,.025);
+}
+
+.discover-events {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.discover-event {
+    position: relative;
+    padding: 1.15rem;
+    background: rgba(255,255,255,.035);
+}
+
+.discover-event-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: .2rem .6rem;
+    border: 1px solid rgba(212,175,55,.18);
+    border-radius: 999px;
+    color: var(--discover-brand);
+    background: var(--discover-brand-soft);
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+}
+
+.discover-event h3,
+.discover-event h4 {
+    margin: .75rem 0 .35rem;
+    color: var(--discover-text);
+}
+
+.discover-event p {
+    margin: 0;
+    color: var(--discover-muted);
+    font-size: .84rem;
+    line-height: 1.55;
+}
+
+.discover-events-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1rem;
+}
+
+/* ------------------------------------------------------------
+   Quran strip
+   ------------------------------------------------------------ */
+
+.discover-quran-strip {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    overflow: hidden;
+    border: 1px solid rgba(212,175,55,.2);
+    border-radius: var(--discover-card-radius);
+    background:
+        linear-gradient(135deg, rgba(212,175,55,.09), rgba(255,255,255,.025));
+}
+
+.discover-quran-strip > * {
+    position: relative;
+    z-index: 1;
+}
+
+.discover-quran-strip h2,
+.discover-quran-strip h3 {
+    margin: .3rem 0;
+    color: var(--discover-text);
+}
+
+.discover-quran-strip p {
+    margin: 0;
+    color: var(--discover-muted);
+}
+
+/* ------------------------------------------------------------
+   Sites
+   ------------------------------------------------------------ */
+
+.discover-sites-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.discover-site-card {
+    position: relative;
+    display: block;
+    min-height: 150px;
+    padding: 1.35rem;
+    color: inherit;
+    text-decoration: none;
+    overflow: hidden;
+    transition:
+        transform var(--ad2-transition-fast, 160ms ease),
+        border-color var(--ad2-transition-fast, 160ms ease),
+        background var(--ad2-transition-fast, 160ms ease);
+}
+
+.discover-site-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(212,175,55,.25);
+    background: var(--discover-card-bg-strong);
+}
+
+.discover-site-card::after {
+    content: "↗";
+    position: absolute;
+    right: 1.2rem;
+    bottom: 1.1rem;
+}
+
+.discover-site-number {
+    display: block;
+    margin-bottom: .65rem;
+    color: rgba(212,175,55,.65);
+    font-size: .72rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+}
+
+.discover-site-card h3,
+.discover-site-card h4 {
+    margin: 0;
+    padding-right: 2rem;
+    color: var(--discover-text);
+}
+
+.discover-site-card p {
+    margin: .45rem 0 0;
+    padding-right: 1.5rem;
+    color: var(--discover-muted);
+    font-size: .83rem;
+    line-height: 1.55;
+}
+
+/* ------------------------------------------------------------
+   Ramadan countdown
+   ------------------------------------------------------------ */
+
+.ramadan-countdown-section {
+    margin-top: var(--discover-section-gap);
+    padding: clamp(1.25rem, 3vw, 2rem);
+    border: 1px solid var(--discover-card-border);
+    border-radius: var(--discover-card-radius);
+    background: var(--discover-card-bg);
+}
+
+.ramadan-countdown-header {
+    margin-bottom: 1.25rem;
+}
+
+.ramadan-countdown-eyebrow {
+    color: var(--discover-brand);
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: .1em;
+}
+
+.ramadan-countdown-header h2,
+.ramadan-countdown-header h3 {
+    margin: .35rem 0 0;
+    color: var(--discover-text);
+    font-size: clamp(1.35rem, 2.5vw, 1.8rem);
+}
+
+.ramadan-countdown-header p {
+    margin: .45rem 0 0;
+    color: var(--discover-muted);
+}
+
+.ramadan-countdown-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: .75rem;
+}
+
+.ramadan-countdown-unit {
+    min-width: 0;
+    padding: 1rem;
+    text-align: center;
+    border: 1px solid var(--discover-card-border);
+    border-radius: .9rem;
+    background: rgba(255,255,255,.025);
+}
+
+.ramadan-countdown-value {
+    display: block;
+    color: var(--discover-text);
+    font-size: clamp(1.5rem, 4vw, 2.4rem);
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.ramadan-countdown-label {
+    display: block;
+    margin-top: .5rem;
+    color: var(--discover-muted);
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.ramadan-countdown-note {
+    margin-top: 1rem;
+    color: var(--discover-muted);
+    font-size: .78rem;
+    line-height: 1.5;
+}
+
+/* ------------------------------------------------------------
+   Nearby
+   ------------------------------------------------------------ */
+
+.ad2-nearby-section {
+    margin-top: var(--discover-section-gap);
+}
+
+.ad2-nearby-heading {
+    margin-bottom: 1rem;
+}
+
+.ad2-nearby-eyebrow {
+    color: var(--discover-brand);
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: .1em;
+}
+
+.ad2-nearby-heading h2 {
+    margin: .3rem 0 0;
+    color: var(--discover-text);
+}
+
+.ad2-nearby-heading p {
+    margin: .4rem 0 0;
+    color: var(--discover-muted);
+}
+
+.ad2-nearby-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--discover-gap);
+}
+
+.ad2-nearby-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-width: 0;
+    padding: 1.15rem;
+    border: 1px solid var(--discover-card-border);
+    border-radius: var(--discover-card-radius);
+    background: var(--discover-card-bg);
+    color: inherit;
+    text-decoration: none;
+    transition:
+        transform var(--ad2-transition-fast, 160ms ease),
+        border-color var(--ad2-transition-fast, 160ms ease),
+        background var(--ad2-transition-fast, 160ms ease);
+}
+
+.ad2-nearby-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(212,175,55,.25);
+    background: var(--discover-card-bg-strong);
+}
+
+.ad2-nearby-card:focus-visible {
+    outline: 3px solid rgba(212,175,55,.45);
+    outline-offset: 3px;
+}
+
+.ad2-nearby-icon {
+    display: grid;
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    place-items: center;
+    border-radius: .8rem;
+    background: var(--discover-brand-soft);
+    font-size: 1.2rem;
+}
+
+.ad2-nearby-card-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.ad2-nearby-card-eyebrow {
+    display: block;
+    color: var(--discover-brand);
+    font-size: .65rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+}
+
+.ad2-nearby-card h3,
+.ad2-nearby-card h4 {
+    margin: .2rem 0 0;
+    color: var(--discover-text);
+}
+
+.ad2-nearby-card p {
+    margin: .25rem 0 0;
+    color: var(--discover-muted);
+    font-size: .8rem;
+}
+
+.ad2-nearby-arrow {
+    flex: 0 0 auto;
+    color: var(--discover-brand);
+    font-size: 1.1rem;
+}
+
+/* ------------------------------------------------------------
+   Salah learning
+   ------------------------------------------------------------ */
+
+.salah-learning-section {
+    margin-top: var(--discover-section-gap);
+}
+
+.salah-learning-header {
+    margin-bottom: 1.1rem;
+}
+
+.salah-learning-eyebrow {
+    color: var(--discover-brand);
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: .1em;
+}
+
+.salah-learning-header h2,
+.salah-learning-header h3 {
+    margin: .3rem 0;
+    color: var(--discover-text);
+}
+
+.salah-learning-header p {
+    margin: 0;
+    color: var(--discover-muted);
+}
+
+.salah-learning-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--discover-gap);
+}
+
+.salah-learning-item {
+    display: flex;
+    align-items: center;
+    gap: .9rem;
+    min-width: 0;
+    min-height: 84px;
+    padding: 1rem;
+    border: 1px solid var(--discover-card-border);
+    border-radius: var(--discover-card-radius);
+    background: var(--discover-card-bg);
+    color: inherit;
+    text-decoration: none;
+    transition:
+        transform var(--ad2-transition-fast, 160ms ease),
+        border-color var(--ad2-transition-fast, 160ms ease),
+        background var(--ad2-transition-fast, 160ms ease);
+}
+
+.salah-learning-item:hover {
+    transform: translateY(-2px);
+    border-color: rgba(212,175,55,.25);
+    background: var(--discover-card-bg-strong);
+}
+
+.salah-learning-icon {
+    display: grid;
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border-radius: .75rem;
+    background: var(--discover-brand-soft);
+}
+
+.salah-learning-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.salah-learning-type {
+    display: block;
+    color: var(--discover-brand);
+    font-size: .62rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+}
+
+.salah-learning-item strong {
+    display: block;
+    margin-top: .2rem;
+    color: var(--discover-text);
+    font-size: .88rem;
+    line-height: 1.35;
+}
+
+/* ------------------------------------------------------------
+   Tablet
+   ------------------------------------------------------------ */
+
+@media (max-width: 1024px) {
+    .discover-hero {
+        grid-template-columns: 1fr;
+    }
+
+    .discover-hero-copy h1 {
+        max-width: 18ch;
+    }
+
+    .discover-context {
+        min-height: 150px;
+    }
+
+    .discover-knowledge-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .discover-events {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .discover-sites-grid,
+    .salah-learning-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* ------------------------------------------------------------
+   Mobile
+   ------------------------------------------------------------ */
+
+@media (max-width: 767px) {
+    .discover-page {
+        padding-block: .75rem 2.5rem;
+    }
+
+    .discover-hero {
+        padding: 1.25rem;
+        gap: 1rem;
+        border-radius: 1rem;
+    }
+
+    .discover-hero-copy h1 {
+        max-width: none;
+        font-size: clamp(2rem, 11vw, 3rem);
+    }
+
+    .discover-hero-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .discover-hero-actions .ad2-button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .discover-section-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: .5rem;
+    }
+
+    .discover-feature-grid,
+    .discover-knowledge-grid,
+    .discover-events,
+    .discover-sites-grid,
+    .salah-learning-grid,
+    .ad2-nearby-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .discover-feature-card {
+        min-height: 0;
+    }
+
+    .discover-quran-strip {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .discover-quran-strip .ad2-button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .ramadan-countdown-section,
+    .discover-events-section {
+        padding: 1rem;
+    }
+
+    .ramadan-countdown-grid {
+        gap: .5rem;
+    }
+
+    .ramadan-countdown-unit {
+        padding: .8rem .45rem;
+    }
+
+    .ramadan-countdown-value {
+        font-size: clamp(1.3rem, 8vw, 2rem);
+    }
+
+    .ramadan-countdown-label {
+        font-size: .58rem;
+    }
+
+    .discover-link-card,
+    .discover-site-card,
+    .salah-learning-item,
+    .ad2-nearby-card {
+        min-height: 76px;
+    }
+}
+
+/* ------------------------------------------------------------
+   Small phones
+   ------------------------------------------------------------ */
+
+@media (max-width: 480px) {
+    .discover-page {
+        padding-inline: .75rem;
+    }
+
+    .discover-hero {
+        padding: 1rem;
+    }
+
+    .discover-hero-copy h1 {
+        font-size: 2rem;
+    }
+
+    .discover-context {
+        padding: 1rem;
+    }
+
+    .discover-feature-card {
+        padding: 1rem;
+    }
+
+    .discover-link-card,
+    .discover-site-card,
+    .salah-learning-item,
+    .ad2-nearby-card {
+        padding: .9rem;
+    }
+
+    .discover-events {
+        gap: .65rem;
+    }
+
+    .ramadan-countdown-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .discover-events-footer {
+        justify-content: stretch;
+    }
+
+    .discover-events-footer .ad2-button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ------------------------------------------------------------
+   Very small phones
+   ------------------------------------------------------------ */
+
+@media (max-width: 360px) {
+    .discover-page {
+        padding-inline: .6rem;
+    }
+
+    .discover-hero-copy h1 {
+        font-size: 1.8rem;
+    }
+
+    .discover-section-heading h2,
+    .discover-section-heading h3 {
+        font-size: 1.2rem;
+    }
+
+    .discover-card-topline {
+        margin-bottom: .8rem;
+    }
+
+    .discover-card-index {
+        min-width: 28px;
+        height: 28px;
+        font-size: .65rem;
+    }
+
+    .ad2-nearby-icon,
+    .salah-learning-icon {
+        flex-basis: 38px;
+        width: 38px;
+        height: 38px;
+    }
+}
+
+/* ------------------------------------------------------------
+   Reduced motion
+   ------------------------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+    .discover-feature-card,
+    .discover-link-card,
+    .discover-site-card,
+    .ad2-nearby-card,
+    .salah-learning-item,
+    .discover-link-arrow,
+    .salah-learning-arrow {
+        transition: none;
+    }
+
+    .discover-feature-card:hover,
+    .discover-link-card:hover,
+    .discover-site-card:hover,
+    .ad2-nearby-card:hover,
+    .salah-learning-item:hover {
+        transform: none;
+    }
+}
+
+/* ------------------------------------------------------------
+   Print
+   ------------------------------------------------------------ */
+
+@media print {
+    .discover-page {
+        max-width: none;
+        padding: 0;
+    }
+
+    .discover-hero,
+    .discover-feature-card,
+    .discover-link-card,
+    .discover-site-card,
+    .discover-event,
+    .ramadan-countdown-section,
+    .ad2-nearby-card,
+    .salah-learning-item {
+        box-shadow: none;
+        break-inside: avoid;
+    }
+
+    .discover-hero-actions,
+    .discover-events-footer {
+        display: none;
+    }
+
+    .discover-feature-grid,
+    .discover-knowledge-grid,
+    .discover-events,
+    .discover-sites-grid,
+    .salah-learning-grid,
+    .ad2-nearby-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}

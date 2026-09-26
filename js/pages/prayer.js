@@ -1,4 +1,4 @@
-﻿import { state } from '../state.js';
+import { state } from '../state.js';
 
 const GOOGLE_QIBLA_FINDER =
     'https://qiblafinder.withgoogle.com/intl/nl/onboarding/position';
@@ -77,7 +77,7 @@ function getPrayerSource(prayer) {
 }
 
 
-function getPrayerEntries(prayer) {
+export function getPrayerEntries(prayer) {
     const source = getPrayerSource(prayer);
 
     if (!source) {
@@ -332,7 +332,7 @@ function getLocation() {
 }
 
 
-function renderPrayerRows(entries, next) {
+export function renderPrayerRows(entries, next) {
     const nextIndex = getNextIndex(entries, next);
 
     return entries.map((entry, index) => {
@@ -1118,3 +1118,503 @@ function updateCountdown() {
             1000
         );
 }
+
+
+/* AD2 PRAYER ENGINE V2 CONFIG INTEGRATION */
+
+function getPrayerEngineConfig() {
+    if (
+        window.AdhanPrayerEngine &&
+        typeof window.AdhanPrayerEngine.getEngineOptions === 'function'
+    ) {
+        return window.AdhanPrayerEngine.getEngineOptions();
+    }
+
+    if (
+        window.AdhanPrayerConfig &&
+        typeof window.AdhanPrayerConfig.get === 'function'
+    ) {
+        const config = window.AdhanPrayerConfig.get();
+
+        return {
+            calculationMethod: config.calculationMethod,
+            madhab: config.madhab,
+            highLatitudeRule: config.highLatitudeRule,
+            offsets: config.offsets,
+            location: config.location,
+            display: {
+                timeFormat: config.timeFormat
+            }
+        };
+    }
+
+    return {
+        calculationMethod: 'auto',
+        madhab: 'shafi',
+        highLatitudeRule: 'auto',
+        offsets: {
+            fajr: 0,
+            sunrise: 0,
+            dhuhr: 0,
+            asr: 0,
+            maghrib: 0,
+            isha: 0
+        },
+        location: {
+            latitude: null,
+            longitude: null,
+            timezone: null,
+            city: '',
+            country: ''
+        },
+        display: {
+            timeFormat: '24h'
+        }
+    };
+}
+
+function getPrayerCalculationConfiguration() {
+    const config = getPrayerEngineConfig();
+
+    return {
+        method: config.calculationMethod,
+        madhab: config.madhab,
+        highLatitudeRule: config.highLatitudeRule,
+        offsets: config.offsets,
+        location: config.location
+    };
+}
+
+function getPrayerDisplayConfiguration() {
+    const config = getPrayerEngineConfig();
+
+    return {
+        timeFormat: config.display?.timeFormat === '12h'
+            ? '12h'
+            : '24h'
+    };
+}
+
+window.AdhanPrayerPageConfig = Object.freeze({
+    getEngineConfig: getPrayerEngineConfig,
+    getCalculationConfig: getPrayerCalculationConfiguration,
+    getDisplayConfig: getPrayerDisplayConfiguration
+});
+
+/* END AD2 PRAYER ENGINE V2 CONFIG INTEGRATION */
+
+
+
+/* AD2 PRAYER ENGINE V3 INPUT RESOLVER */
+
+function resolvePrayerCalculationInputs(overrides = {}) {
+    let base = {
+        calculationMethod: 'auto',
+        madhab: 'shafi',
+        highLatitudeRule: 'auto',
+
+        offsets: {
+            fajr: 0,
+            sunrise: 0,
+            dhuhr: 0,
+            asr: 0,
+            maghrib: 0,
+            isha: 0
+        },
+
+        location: {
+            latitude: null,
+            longitude: null,
+            timezone: null,
+            city: '',
+            country: ''
+        },
+
+        timeFormat: '24h'
+    };
+
+    if (
+        window.AdhanPrayerEngine &&
+        typeof window.AdhanPrayerEngine.getEngineOptions === 'function'
+    ) {
+        const engine = window.AdhanPrayerEngine.getEngineOptions();
+
+        base = {
+            ...base,
+
+            calculation: {
+                ...base.calculation,
+                ...(engine.calculation || {})
+            },
+
+            location: {
+                ...base.location,
+                ...(engine.location || {})
+            },
+
+            display: {
+                timeFormat: base.timeFormat,
+                ...(engine.display || {})
+            }
+        };
+
+        return {
+            calculationMethod:
+                base.calculation.calculationMethod,
+
+            madhab:
+                base.calculation.madhab,
+
+            highLatitudeRule:
+                base.calculation.highLatitudeRule,
+
+            offsets: {
+                ...base.offsets,
+                ...(base.calculation.offsets || {})
+            },
+
+            location: base.location,
+
+            timeFormat:
+                base.display.timeFormat
+        };
+    }
+
+    if (
+        window.AdhanPrayerConfig &&
+        typeof window.AdhanPrayerConfig.get === 'function'
+    ) {
+        const config = window.AdhanPrayerConfig.get();
+
+        base = {
+            ...base,
+            ...config,
+
+            offsets: {
+                ...base.offsets,
+                ...(config.offsets || {})
+            },
+
+            location: {
+                ...base.location,
+                ...(config.location || {})
+            }
+        };
+    }
+
+    return {
+        ...base,
+        ...overrides,
+
+        offsets: {
+            ...base.offsets,
+            ...(overrides.offsets || {})
+        },
+
+        location: {
+            ...base.location,
+            ...(overrides.location || {})
+        }
+    };
+}
+
+function getCentralPrayerCalculationOptions() {
+    const inputs = resolvePrayerCalculationInputs();
+
+    return {
+        method: inputs.calculationMethod,
+        madhab: inputs.madhab,
+        highLatitudeRule: inputs.highLatitudeRule,
+        offsets: inputs.offsets
+    };
+}
+
+function getCentralPrayerLocation() {
+    return resolvePrayerCalculationInputs().location;
+}
+
+function getCentralPrayerTimeFormat() {
+    return resolvePrayerCalculationInputs().timeFormat;
+}
+
+window.AdhanPrayerCalculationInputs = Object.freeze({
+    resolve: resolvePrayerCalculationInputs,
+    getCalculationOptions: getCentralPrayerCalculationOptions,
+    getLocation: getCentralPrayerLocation,
+    getTimeFormat: getCentralPrayerTimeFormat
+});
+
+/* END AD2 PRAYER ENGINE V3 INPUT RESOLVER */
+
+
+
+/* AD2 PRAYER ENGINE V5 CALCULATION BRIDGE */
+
+function getCentralPrayerEngineContext() {
+    if (
+        window.AdhanPrayerEngine &&
+        typeof window.AdhanPrayerEngine.getCalculationContext === 'function'
+    ) {
+        return window.AdhanPrayerEngine.getCalculationContext();
+    }
+
+    return {
+        method: 'auto',
+        madhab: 'shafi',
+        highLatitudeRule: 'auto',
+
+        offsets: {
+            fajr: 0,
+            sunrise: 0,
+            dhuhr: 0,
+            asr: 0,
+            maghrib: 0,
+            isha: 0
+        },
+
+        location: {
+            latitude: null,
+            longitude: null,
+            timezone: null,
+            city: '',
+            country: ''
+        },
+
+        timeFormat: '24h'
+    };
+}
+
+function applyCentralPrayerOffsets(times) {
+    if (
+        window.AdhanPrayerEngine &&
+        typeof window.AdhanPrayerEngine.applyOffsets === 'function'
+    ) {
+        return window.AdhanPrayerEngine.applyOffsets(times);
+    }
+
+    return times;
+}
+
+function getCentralPrayerCalculationMethod() {
+    return getCentralPrayerEngineContext().method;
+}
+
+function getCentralPrayerMadhab() {
+    return getCentralPrayerEngineContext().madhab;
+}
+
+function getCentralPrayerHighLatitudeRule() {
+    return getCentralPrayerEngineContext().highLatitudeRule;
+}
+
+function getCentralPrayerOffsets() {
+    return getCentralPrayerEngineContext().offsets;
+}
+
+function getCentralPrayerLocationContext() {
+    return getCentralPrayerEngineContext().location;
+}
+
+/* Phase 2 Prayer Engine V6 location bridge */
+(function () {
+    'use strict';
+
+    function getLocationContext() {
+        const adapter = window.AdhanPrayerEngineAdapter;
+
+        if (adapter && typeof adapter.getLocation === 'function') {
+            return adapter.getLocation();
+        }
+
+        return null;
+    }
+
+    function syncLocation(options) {
+        const adapter = window.AdhanPrayerEngineAdapter;
+
+        if (adapter && typeof adapter.syncLocation === 'function') {
+            return adapter.syncLocation(options);
+        }
+
+        return {
+            success: false,
+            reason: 'prayer-engine-adapter-unavailable'
+        };
+    }
+
+    window.AdhanPrayerLocationBridge = Object.freeze({
+        getLocationContext,
+        syncLocation
+    });
+})();
+
+/* Phase 2 Prayer Engine V7 calculation method bridge */
+(function () {
+    'use strict';
+
+    function getCalculationMethodContext() {
+        const adapter = window.AdhanPrayerEngineAdapter;
+
+        if (
+            adapter &&
+            typeof adapter.getCalculationMethodMapping === 'function'
+        ) {
+            return adapter.getCalculationMethodMapping();
+        }
+
+        const mapping = window.AdhanPrayerMethodMapping;
+
+        if (
+            mapping &&
+            typeof mapping.getContext === 'function'
+        ) {
+            return mapping.getContext();
+        }
+
+        return {
+            requestedMethod: 'auto',
+            calculationMethod: 'auto',
+            engineMethod: null,
+            label: 'Automatic',
+            version: null
+        };
+    }
+
+    function getCalculationContext() {
+        const adapter = window.AdhanPrayerEngineAdapter;
+
+        if (
+            adapter &&
+            typeof adapter.getCalculationContext === 'function'
+        ) {
+            return adapter.getCalculationContext();
+        }
+
+        return {
+            calculationMethod:
+                getCalculationMethodContext().calculationMethod,
+            engineMethod:
+                getCalculationMethodContext().engineMethod
+        };
+    }
+
+    window.AdhanPrayerCalculationMethodBridge =
+        Object.freeze({
+            getCalculationMethodContext,
+            getCalculationContext
+        });
+})();
+
+/* Phase 2 Prayer Engine V8 settings bridge */
+(function () {
+    'use strict';
+
+    function getSettingsContext() {
+        const adapter =
+            window.AdhanPrayerEngineAdapter ||
+            window.AdhanPrayerEngine;
+
+        if (
+            adapter &&
+            typeof adapter.getPrayerSettingsMapping ===
+                'function'
+        ) {
+            return adapter.getPrayerSettingsMapping();
+        }
+
+        const mapping =
+            window.AdhanPrayerSettingsMapping;
+
+        if (
+            mapping &&
+            typeof mapping.getCurrentContext ===
+                'function'
+        ) {
+            return mapping.getCurrentContext();
+        }
+
+        return {
+            requestedMadhab: 'shafi',
+            madhab: 'shafi',
+            madhabLabel: "Shafi'i",
+            madhabEngine: 'shafi',
+
+            requestedHighLatitudeRule: 'auto',
+            highLatitudeRule: 'auto',
+            highLatitudeRuleLabel: 'Automatic',
+            highLatitudeRuleEngine: null,
+
+            version: null
+        };
+    }
+
+    function getCalculationContext() {
+        const adapter =
+            window.AdhanPrayerEngineAdapter ||
+            window.AdhanPrayerEngine;
+
+        if (
+            adapter &&
+            typeof adapter.getCalculationContext ===
+                'function'
+        ) {
+            return adapter.getCalculationContext();
+        }
+
+        return getSettingsContext();
+    }
+
+    window.AdhanPrayerSettingsBridge =
+        Object.freeze({
+            getSettingsContext,
+            getCalculationContext
+        });
+})();
+
+/* Phase 2 Prayer Engine V10 - Offset Integration Bridge */
+(function () {
+    'use strict';
+
+    function applyPrayerResultOffsets(
+        prayerResult
+    ) {
+        const integration =
+            window.AdhanPrayerOffsetIntegration;
+
+        if (
+            integration &&
+            typeof integration.apply === 'function'
+        ) {
+            return integration.apply(
+                prayerResult
+            );
+        }
+
+        return prayerResult;
+    }
+
+    function isPrayerResult(
+        value
+    ) {
+        const integration =
+            window.AdhanPrayerOffsetIntegration;
+
+        if (
+            integration &&
+            typeof integration.isPrayerResult ===
+                'function'
+        ) {
+            return integration.isPrayerResult(
+                value
+            );
+        }
+
+        return false;
+    }
+
+    window.AdhanPrayerOffsetIntegrationBridge =
+        Object.freeze({
+            applyPrayerResultOffsets,
+            isPrayerResult
+        });
+})();

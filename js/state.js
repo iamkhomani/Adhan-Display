@@ -49,7 +49,8 @@ export const state = {
     ui: {
         sidebarOpen: false,
         settingsOpen: false,
-        darkMode: false
+        darkMode: false,
+        displaySize: 'normal'
     }
 };
 
@@ -70,6 +71,11 @@ export function initializeState() {
     state.ui.darkMode =
         localStorage.getItem('ad2_theme') === 'dark' ||
         settings.theme === 'dark';
+
+    state.ui.displaySize =
+        ['compact', 'normal', 'large'].includes(settings.size)
+            ? settings.size
+            : 'normal';
 
 
     try {
@@ -109,6 +115,7 @@ export function initializeState() {
 
 
     applyTheme();
+    applyDisplaySize(state.ui.displaySize);
 
     return state;
 }
@@ -157,6 +164,27 @@ export function applyTheme() {
             ? 'dark'
             : 'light'
     );
+}
+
+
+export function applyDisplaySize(size = state.ui.displaySize) {
+
+    const allowedSizes = [
+        'compact',
+        'normal',
+        'large'
+    ];
+
+    const normalizedSize = allowedSizes.includes(size)
+        ? size
+        : 'normal';
+
+    state.ui.displaySize = normalizedSize;
+
+    document.documentElement.dataset.size =
+        normalizedSize;
+
+    return normalizedSize;
 }
 
 

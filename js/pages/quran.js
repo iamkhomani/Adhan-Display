@@ -2,6 +2,20 @@
     state,
     saveQuranState
 } from '../state.js';
+import { Api } from '../services/api.js';
+
+let pendingQuranTarget = null;
+
+export function openQuranAtAyah(surahNumber, ayahNumber) {
+    if (!surahNumber || !ayahNumber) {
+        return;
+    }
+
+    pendingQuranTarget = {
+        surahNumber: Number(surahNumber),
+        ayahNumber: Number(ayahNumber)
+    };
+}
 
 
 const API_BASE =
@@ -191,6 +205,70 @@ async function loadSurahList() {
     return state.quran.surahs;
 }
 
+
+
+export async function getDailyAyah() {
+    const start = new Date(
+        new Date().getFullYear(),
+        0,
+        0
+    );
+
+    const diff = new Date() - start;
+    const day = Math.floor(diff / 86400000);
+
+    const ayahNumber =
+        ((day - 1) % 6236) + 1;
+
+    await loadEditions();
+
+    const translation =
+        state.quran.selectedTranslation;
+
+    if (!translation) {
+        throw new Error(
+            'No Quran translation has been selected.'
+        );
+    }
+
+    const [arabicResult, translationResult] =
+        await Promise.all([
+            Api.quranAyah(
+                ayahNumber,
+                'quran-uthmani'
+            ),
+            Api.quranAyah(
+                ayahNumber,
+                translation
+            )
+        ]);
+
+    const arabic =
+        arabicResult?.data;
+
+    const translated =
+        translationResult?.data;
+
+    if (!arabic) {
+        throw new Error(
+            'Arabic Quran ayah was not returned by the API.'
+        );
+    }
+
+    return {
+        number: ayahNumber,
+        arabic: arabic.text || '',
+        translation: translated?.text || '',
+        surah:
+            arabic.surah?.englishName ||
+            arabic.surah?.name ||
+            '',
+        surahNumber:
+            arabic.surah?.number || null,
+        ayahNumber:
+            arabic.numberInSurah || null
+    };
+}
 
 async function loadEditions() {
 
@@ -2404,6 +2482,63 @@ function createAudio() {
 }
 
 
+function prepareAyahAudio(index) {
+
+    const ayah =
+        state.quran.ayahs[index];
+
+    if (!ayah) {
+        return false;
+    }
+
+    const player =
+        createAudio();
+
+    if (!player) {
+        return false;
+    }
+
+    if (!player.paused) {
+        player.pause();
+    }
+
+    currentAudioMode =
+        'ayah';
+
+    currentAudioIndex =
+        index;
+
+    state.quran.selectedAyah =
+        ayah.numberInSurah;
+
+    const url =
+        `${CDN_BASE}/audio/128/${encodeURIComponent(
+            state.quran.selectedReciter
+        )}/${ayah.number}.mp3`;
+
+    player.src =
+        url;
+
+    player.currentTime =
+        0;
+
+    playerPlaying =
+        false;
+
+    playerCurrentTime =
+        0;
+
+    playerDuration =
+        0;
+
+    updatePlayerTrack();
+
+    highlightCurrentAyah();
+
+    return true;
+}
+
+
 function playAyah(index) {
 
     const ayah =
@@ -2618,6 +2753,16 @@ function setView(
     reader
         ?.classList
         .add(
+            'is-hidden'
+        );
+
+
+    document
+        .querySelector(
+            '[data-q2-browser]'
+        )
+        ?.classList
+        .remove(
             'is-hidden'
         );
 
@@ -3071,11 +3216,68 @@ async function initializeQuran() {
 
         renderReciterOptions();
 
-        renderSurahList();
+        if (state.quran.currentView === 'surahs') {
+            renderSurahList();
+        } else if (state.quran.currentView === 'juz') {
+            renderJuzList();
+        } else if (state.quran.currentView === 'bookmarks') {
+            renderBookmarks();
+        }
 
         renderLastRead();
 
         renderReaderSettings();
+
+        if (
+            pendingQuranTarget?.surahNumber &&
+            pendingQuranTarget?.ayahNumber
+        ) {
+            const target = pendingQuranTarget;
+
+            pendingQuranTarget = null;
+
+            await loadSurah(
+                target.surahNumber,
+                target.ayahNumber
+            );
+
+            const targetIndex =
+                state.quran.ayahs.findIndex(
+                    ayah =>
+                        Number(ayah.numberInSurah) ===
+                        Number(target.ayahNumber)
+                );
+
+            if (targetIndex >= 0) {
+                prepareAyahAudio(targetIndex);
+            }
+
+        } else if (
+            state.quran.lastRead?.surah &&
+            state.quran.lastRead?.ayah
+        ) {
+            const lastSurah =
+                Number(state.quran.lastRead.surah);
+
+            const lastAyah =
+                Number(state.quran.lastRead.ayah);
+
+            await loadSurah(
+                lastSurah,
+                lastAyah
+            );
+
+            const lastReadIndex =
+                state.quran.ayahs.findIndex(
+                    ayah =>
+                        Number(ayah.numberInSurah) ===
+                        lastAyah
+                );
+
+            if (lastReadIndex >= 0) {
+                prepareAyahAudio(lastReadIndex);
+            }
+        }
 
 
     } catch (error) {

@@ -1,7 +1,8 @@
 ﻿import {
     state,
     toggleTheme,
-    saveQuranState
+    saveQuranState,
+    applyDisplaySize
 } from '../state.js';
 
 import { Storage } from '../storage.js';
@@ -878,6 +879,10 @@ export function bindSettingsPage() {
 
             if (mapping[key]) {
                 saveSetting(mapping[key], value);
+
+                if (key === 'size') {
+                    applyDisplaySize(value);
+                }
             }
 
             if (key === 'quranLanguage') {

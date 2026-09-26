@@ -1,0 +1,330 @@
+/*
+ * Adhan Display
+ * Phase 1 - Loading / Empty / Error UI V1
+ *
+ * Presentation-only state layer.
+ * Existing JavaScript behaviour remains untouched.
+ */
+
+
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+
+:root {
+    --ad2-state-bg: rgba(212, 175, 55, 0.07);
+    --ad2-state-border: rgba(212, 175, 55, 0.24);
+    --ad2-state-text: #35393c;
+    --ad2-state-muted: #6b7075;
+    --ad2-state-error: #a33a3a;
+    --ad2-state-error-bg: rgba(163, 58, 58, 0.07);
+    --ad2-state-error-border: rgba(163, 58, 58, 0.25);
+}
+
+:root[data-theme="dark"] {
+    --ad2-state-bg: rgba(212, 175, 55, 0.08);
+    --ad2-state-border: rgba(212, 175, 55, 0.22);
+    --ad2-state-text: #f1f1ed;
+    --ad2-state-muted: #b8b8b2;
+    --ad2-state-error: #ef9a9a;
+    --ad2-state-error-bg: rgba(190, 70, 70, 0.12);
+    --ad2-state-error-border: rgba(239, 154, 154, 0.28);
+}
+
+
+/* ============================================================
+   GENERIC STATE CONTAINERS
+   ============================================================ */
+
+.ad2-loading-state,
+.ad2-empty-state,
+.ad2-error-state {
+    width: 100%;
+    min-width: 0;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    border: 1px solid var(--ad2-state-border);
+    border-radius: 1rem;
+    background: var(--ad2-state-bg);
+    color: var(--ad2-state-text);
+    text-align: center;
+}
+
+.ad2-loading-state p,
+.ad2-empty-state p,
+.ad2-error-state p {
+    margin: 0;
+    color: var(--ad2-state-muted);
+    line-height: 1.65;
+}
+
+
+/* ============================================================
+   LOADING
+   ============================================================ */
+
+.ad2-loading-state::before {
+    content: "";
+    display: block;
+    width: 2rem;
+    height: 2rem;
+    margin: 0 auto 0.9rem;
+    border: 3px solid rgba(212, 175, 55, 0.22);
+    border-top-color: #d4af37;
+    border-radius: 50%;
+    animation: ad2-state-spin 0.8s linear infinite;
+}
+
+.quran-loading,
+.hadith-loading,
+.islamic-loading {
+    min-width: 0;
+    color: var(--ad2-state-muted);
+}
+
+
+/* ============================================================
+   QURAN STATES
+   ============================================================ */
+
+.quran-loading,
+.quran-empty,
+.quran-error {
+    min-width: 0;
+    max-width: 100%;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    border-radius: 1rem;
+}
+
+.quran-loading {
+    background: var(--ad2-state-bg);
+    border: 1px solid var(--ad2-state-border);
+    color: var(--ad2-state-muted);
+    text-align: center;
+}
+
+.quran-empty {
+    background: var(--ad2-state-bg);
+    border: 1px solid var(--ad2-state-border);
+    color: var(--ad2-state-text);
+    text-align: center;
+}
+
+.quran-empty p {
+    color: var(--ad2-state-muted);
+}
+
+.quran-error {
+    background: var(--ad2-state-error-bg);
+    border: 1px solid var(--ad2-state-error-border);
+    color: var(--ad2-state-error);
+    text-align: center;
+}
+
+
+/* ============================================================
+   HADITH STATES
+   ============================================================ */
+
+.hadith-reader-card.is-loading {
+    min-width: 0;
+}
+
+.hadith-loading,
+.hadith-empty {
+    min-width: 0;
+    max-width: 100%;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    border-radius: 1rem;
+    text-align: center;
+}
+
+.hadith-loading {
+    background: var(--ad2-state-bg);
+    border: 1px solid var(--ad2-state-border);
+    color: var(--ad2-state-muted);
+}
+
+.hadith-empty {
+    background: var(--ad2-state-bg);
+    border: 1px solid var(--ad2-state-border);
+    color: var(--ad2-state-text);
+}
+
+.hadith-empty p {
+    color: var(--ad2-state-muted);
+}
+
+
+/* ============================================================
+   ISLAMIC TOOL LOADING
+   ============================================================ */
+
+.islamic-loading {
+    min-width: 0;
+    width: 100%;
+    padding: 1.5rem;
+    border: 1px solid var(--ad2-state-border);
+    border-radius: 1rem;
+    background: var(--ad2-state-bg);
+    color: var(--ad2-state-muted);
+    text-align: center;
+}
+
+
+/* ============================================================
+   SPINNER SUPPORT
+   ============================================================ */
+
+.quran-loading::before,
+.hadith-loading::before,
+.islamic-loading::before,
+.hadith-spinner {
+    display: inline-block;
+    width: 1.75rem;
+    height: 1.75rem;
+    margin-bottom: 0.75rem;
+    border: 3px solid rgba(212, 175, 55, 0.2);
+    border-top-color: #d4af37;
+    border-radius: 50%;
+    vertical-align: middle;
+}
+
+.quran-loading::before,
+.hadith-loading::before,
+.islamic-loading::before {
+    content: "";
+    animation: ad2-state-spin 0.8s linear infinite;
+}
+
+.hadith-spinner {
+    animation: ad2-state-spin 0.8s linear infinite;
+}
+
+
+/* ============================================================
+   SEARCH EMPTY STATES
+   ============================================================ */
+
+.hadith-search-empty {
+    width: 100%;
+    padding: 1.5rem;
+    border: 1px solid var(--ad2-state-border);
+    border-radius: 1rem;
+    background: var(--ad2-state-bg);
+    color: var(--ad2-state-muted);
+    text-align: center;
+}
+
+.quran-search-results:empty {
+    display: none;
+}
+
+
+/* ============================================================
+   ERROR EMPHASIS
+   ============================================================ */
+
+.quran-error strong,
+.ad2-error-state strong {
+    display: block;
+    margin-bottom: 0.4rem;
+    color: var(--ad2-state-error);
+}
+
+.quran-error a,
+.ad2-error-state a {
+    color: var(--ad2-state-error);
+    font-weight: 700;
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 767px) {
+
+    .ad2-loading-state,
+    .ad2-empty-state,
+    .ad2-error-state,
+    .quran-loading,
+    .quran-empty,
+    .quran-error,
+    .hadith-loading,
+    .hadith-empty,
+    .hadith-search-empty,
+    .islamic-loading {
+        padding: 1.25rem;
+        border-radius: 0.875rem;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .ad2-loading-state,
+    .ad2-empty-state,
+    .ad2-error-state,
+    .quran-loading,
+    .quran-empty,
+    .quran-error,
+    .hadith-loading,
+    .hadith-empty,
+    .hadith-search-empty,
+    .islamic-loading {
+        padding: 1rem;
+    }
+}
+
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .ad2-loading-state::before,
+    .quran-loading::before,
+    .hadith-loading::before,
+    .islamic-loading::before,
+    .hadith-spinner {
+        animation: none !important;
+    }
+}
+
+
+/* ============================================================
+   PRINT
+   ============================================================ */
+
+@media print {
+
+    .ad2-loading-state,
+    .ad2-empty-state,
+    .ad2-error-state,
+    .quran-loading,
+    .quran-empty,
+    .quran-error,
+    .hadith-loading,
+    .hadith-empty,
+    .hadith-search-empty,
+    .islamic-loading {
+        background: #ffffff !important;
+        color: #000000 !important;
+        border-color: #000000 !important;
+    }
+}
+
+
+/* ============================================================
+   ANIMATION
+   ============================================================ */
+
+@keyframes ad2-state-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}

@@ -23,3 +23,10 @@ Thumbs.db
 
 # Local test artifacts
 github-v2.previous-*/
+
+.development
+dev/
+backup-*
+
+css/development.css
+js/development.js

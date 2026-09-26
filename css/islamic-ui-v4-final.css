@@ -1,0 +1,278 @@
+/*
+ * Adhan Display
+ * Islamic UI V4 Final Fix
+ *
+ * Target:
+ * - Islamic inspiration Dua
+ * - Islamic inspiration Hadith
+ * - Digital Tasbih
+ *
+ * Loaded after all existing Islamic UI layers.
+ */
+
+
+/* ============================================================
+   ISLAMIC INSPIRATION CARDS
+   ============================================================ */
+
+.islamic-page .islamic-inspiration-card {
+    color: #35393C !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.islamic-page .islamic-inspiration-card h2,
+.islamic-page .islamic-inspiration-card p,
+.islamic-page .islamic-inspiration-card small,
+.islamic-page .islamic-inspiration-card strong,
+.islamic-page .islamic-inspiration-card span {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+
+/* ============================================================
+   DUA
+   ============================================================ */
+
+.islamic-page .islamic-inspiration-card .islamic-arabic-content,
+.islamic-page .islamic-inspiration-card .islamic-arabic-content * {
+    color: #35393C !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+
+/* ============================================================
+   HADITH
+   ============================================================ */
+
+.islamic-page .islamic-inspiration-card p {
+    color: #35393C !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.islamic-page .islamic-inspiration-card small {
+    color: #666B70 !important;
+}
+
+
+/* ============================================================
+   LIGHT THEME EXPLICIT OVERRIDE
+   ============================================================ */
+
+:root[data-theme="light"] .islamic-page .islamic-inspiration-card,
+[data-theme="light"] .islamic-page .islamic-inspiration-card {
+    color: #35393C !important;
+    background: #FFFFFF !important;
+}
+
+:root[data-theme="light"] .islamic-page .islamic-inspiration-card h2,
+:root[data-theme="light"] .islamic-page .islamic-inspiration-card p,
+:root[data-theme="light"] .islamic-page .islamic-inspiration-card span,
+:root[data-theme="light"] .islamic-page .islamic-inspiration-card strong,
+:root[data-theme="light"] .islamic-page .islamic-inspiration-card .islamic-arabic-content,
+[data-theme="light"] .islamic-page .islamic-inspiration-card h2,
+[data-theme="light"] .islamic-page .islamic-inspiration-card p,
+[data-theme="light"] .islamic-page .islamic-inspiration-card span,
+[data-theme="light"] .islamic-page .islamic-inspiration-card strong,
+[data-theme="light"] .islamic-page .islamic-inspiration-card .islamic-arabic-content {
+    color: #35393C !important;
+}
+
+:root[data-theme="light"] .islamic-page .islamic-inspiration-card small,
+[data-theme="light"] .islamic-page .islamic-inspiration-card small {
+    color: #666B70 !important;
+}
+
+
+/* ============================================================
+   DIGITAL TASBIH
+   ============================================================ */
+
+.islamic-page .tasbih-view {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow: visible !important;
+    box-sizing: border-box !important;
+}
+
+.islamic-page .tasbih-container {
+    width: 100% !important;
+    max-width: 720px !important;
+    margin: 0 auto !important;
+    padding: 24px !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 20px !important;
+
+    box-sizing: border-box !important;
+    overflow: visible !important;
+}
+
+.islamic-page .tasbih-counter {
+    width: 100% !important;
+    max-width: 520px !important;
+    min-height: 180px !important;
+
+    margin: 0 auto !important;
+    padding: 32px !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    position: relative !important;
+    box-sizing: border-box !important;
+
+    overflow: visible !important;
+    transform: none !important;
+}
+
+.islamic-page .tasbih-counter [data-tasbih-count] {
+    display: block !important;
+
+    width: auto !important;
+    height: auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    position: static !important;
+
+    font-size: clamp(64px, 10vw, 112px) !important;
+    line-height: 1 !important;
+    font-weight: 700 !important;
+    text-align: center !important;
+
+    transform: none !important;
+    overflow: visible !important;
+}
+
+.islamic-page .tasbih-tap-shell {
+    width: 100% !important;
+    max-width: 520px !important;
+    min-height: 150px !important;
+
+    margin: 0 auto !important;
+    padding: 24px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    box-sizing: border-box !important;
+    position: relative !important;
+
+    overflow: hidden !important;
+    transform: none !important;
+}
+
+.islamic-page .tasbih-tap-shell::before,
+.islamic-page .tasbih-tap-shell::after {
+    transform: none !important;
+}
+
+.islamic-page .tasbih-tap-shell * {
+    box-sizing: border-box !important;
+}
+
+.islamic-page .tasbih-view button {
+    transform: none;
+}
+
+.islamic-page .tasbih-view button:hover {
+    transform: none;
+}
+
+.islamic-page .tasbih-view button:active {
+    transform: scale(.98);
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 767px) {
+
+    .islamic-page .tasbih-container {
+        padding: 16px !important;
+        gap: 16px !important;
+    }
+
+    .islamic-page .tasbih-counter {
+        min-height: 150px !important;
+        padding: 24px !important;
+    }
+
+    .islamic-page .tasbih-counter [data-tasbih-count] {
+        font-size: clamp(56px, 18vw, 88px) !important;
+    }
+
+    .islamic-page .tasbih-tap-shell {
+        min-height: 130px !important;
+        padding: 20px !important;
+    }
+}
+
+
+@media (max-width: 480px) {
+
+    .islamic-page .tasbih-container {
+        padding: 12px !important;
+    }
+
+    .islamic-page .tasbih-counter {
+        min-height: 130px !important;
+        padding: 20px !important;
+    }
+
+    .islamic-page .tasbih-counter [data-tasbih-count] {
+        font-size: clamp(48px, 20vw, 72px) !important;
+    }
+
+    .islamic-page .tasbih-tap-shell {
+        min-height: 115px !important;
+        padding: 16px !important;
+    }
+}
+
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .islamic-page .tasbih-view *,
+    .islamic-page .tasbih-view *::before,
+    .islamic-page .tasbih-view *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+
+/* ============================================================
+   PRINT
+   ============================================================ */
+
+@media print {
+
+    .islamic-page .tasbih-view {
+        break-inside: avoid;
+    }
+
+    .islamic-page .tasbih-tap-shell {
+        box-shadow: none !important;
+    }
+}

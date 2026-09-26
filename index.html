@@ -1,6 +1,7 @@
 ﻿<!doctype html>
 <html lang="en">
 <head>
+    <script src="js/default-dark-mode.js" defer></script>
 
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-BEKQEF4RR5"></script>
@@ -114,11 +115,44 @@
     <link rel="stylesheet" href="/css/quran.css">
     <link rel="stylesheet" href="/css/theme.css">
     <link rel="icon" type="image/png" href="/images/adhan%20display%20muslim%20prayer%20times%20dashboard%20logo.png">
+    <link rel="stylesheet" href="css/design-system.css">
+    <link rel="stylesheet" href="css/discover-ui-v1.css">
+    <link rel="stylesheet" href="css/discover-ui-v2.css">
+    <link rel="stylesheet" href="css/hadith-ui-v1.css">
+    <link rel="stylesheet" href="css/hadith-ui-v2.css">
+    <link rel="stylesheet" href="css/quran-ui-v1.css">
+    <link rel="stylesheet" href="css/quran-ui-v2.css">
+    <link rel="stylesheet" href="css/prayer-ui-v1.css">
+    <link rel="stylesheet" href="css/prayer-ui-v2.css">
+<link rel="stylesheet" href="css/prayer-ui-v3-light-contrast.css">
+    <link rel="stylesheet" href="css/islamic-ui-v1.css">
+<link rel="stylesheet" href="css/islamic-ui-v2.css">
+<link rel="stylesheet" href="css/islamic-ui-v3-hotfix.css">
+<link rel="stylesheet" href="css/islamic-ui-v4-final.css">
+<link rel="stylesheet" href="css/islamic-ui-v5-dua-size.css">
+<link rel="stylesheet" href="css/islamic-ui-v6-tasbih.css">
+<link rel="stylesheet" href="css/islamic-ui-v7-tasbih-centered.css">
+<link rel="stylesheet" href="css/islamic-ui-v8-tasbih-final.css">
+<link rel="stylesheet" href="css/islamic-ui-v9-tasbih-clean.css">
+<link rel="stylesheet" href="css/islamic-ui-v10-tasbih-selector-fix.css">
+<link rel="stylesheet" href="css/islamic-ui-v11-polish.css">
+<link rel="stylesheet" href="css/islamic-ui-v12-real-fix.css">
+    <link rel="stylesheet" href="css/islamic-qibla-contrast-v13.css">
+    <link rel="stylesheet" href="css/islamic-qibla-contrast-v14.css">
+    <link rel="stylesheet" href="css/responsive-ui-v1.css">
+    <link rel="stylesheet" href="css/accessibility-ui-v1.css">
+    <link rel="stylesheet" href="css/loading-error-ui-v1.css">
 </head>
 
 <body>
+    <a class="ad2-skip-link" href="#app" data-skip-link>Skip to main content</a>
 
-    <div id="app"></div>
+
+    <div
+        id="app"
+        tabindex="-1"
+        aria-label="Adhan Display application"
+    ></div>
 
     <audio
         id="audio-default"
@@ -144,6 +178,16 @@
         preload="none"
     ></audio>
 
+    <script src="js/services/prayer-config.js"></script>
+    <script src="js/services/prayer-location-sync.js"></script>
+    <script src="js/services/prayer-method-mapping.js"></script>
+    <script src="js/services/prayer-settings-mapping.js"></script>
+    <script src="js/services/prayer-engine-v8-context.js"></script>
+    <script src="js/services/prayer-engine-adapter.js"></script>
+    <script src="js/services/prayer-offset-engine.js"></script>
+    <script src="js/services/prayer-offset-integration.js"></script>
+    <script src="js/services/prayer-config-migration.js"></script>
+    <script src="js/services/prayer-config-bootstrap.js"></script>
     <script
         type="module"
         src="/js/app.js"

@@ -1,0 +1,413 @@
+/*
+ * Adhan Display
+ * Islamic UI V11
+ *
+ * Scope:
+ * 1. 99 Names number circles
+ * 2. Light-mode contrast
+ * 3. Islamic tool controls
+ * 4. Tasbih readability
+ * 5. General Islamic tool typography
+ */
+
+
+/* ============================================================
+   99 NAMES
+   ============================================================ */
+
+/*
+ * The number is a circular badge.
+ *
+ * The previous implementation allowed inherited line-height,
+ * alignment and positioning rules to move the circle relative
+ * to the actual number.
+ */
+
+.islamic-page .name-card .name-number {
+    box-sizing: border-box !important;
+
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    display: inline-flex !important;
+
+    align-items: center !important;
+    justify-content: center !important;
+
+    flex: 0 0 36px !important;
+
+    text-align: center !important;
+
+    line-height: 1 !important;
+
+    vertical-align: middle !important;
+
+    position: relative !important;
+
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+
+    transform: none !important;
+
+    border-radius: 50% !important;
+
+    overflow: hidden !important;
+}
+
+
+/*
+ * If the name card uses a flex/grid layout, make the badge
+ * participate normally rather than using an offset.
+ */
+
+.islamic-page .name-card {
+    position: relative !important;
+}
+
+.islamic-page .name-card .name-number::before,
+.islamic-page .name-card .name-number::after {
+    transform: none !important;
+}
+
+
+/* Arabic name should not influence the badge position. */
+
+.islamic-page .name-card .name-arabic {
+    position: static !important;
+    transform: none !important;
+}
+
+
+/* ============================================================
+   LIGHT MODE
+   ============================================================ */
+
+/*
+ * Everything below applies only when dark mode is NOT active.
+ *
+ * We deliberately use a dark readable text color instead of
+ * relying on inherited light-theme variables that may have been
+ * overridden by older component CSS.
+ */
+
+:root:not([data-theme="dark"]) .islamic-page {
+    color: #202020 !important;
+}
+
+
+/* Main headings */
+
+:root:not([data-theme="dark"]) .islamic-page h1,
+:root:not([data-theme="dark"]) .islamic-page h2,
+:root:not([data-theme="dark"]) .islamic-page h3,
+:root:not([data-theme="dark"]) .islamic-page h4,
+:root:not([data-theme="dark"]) .islamic-page strong {
+    color: #202020 !important;
+}
+
+
+/* Normal paragraphs */
+
+:root:not([data-theme="dark"]) .islamic-page p {
+    color: #333333 !important;
+}
+
+
+/* Small/supporting text */
+
+:root:not([data-theme="dark"]) .islamic-page small,
+:root:not([data-theme="dark"]) .islamic-page .islamic-tool-description,
+:root:not([data-theme="dark"]) .islamic-page .islamic-inspiration-card small,
+:root:not([data-theme="dark"]) .islamic-page .hadith-reference {
+    color: #555555 !important;
+}
+
+
+/* ============================================================
+   ISLAMIC TOOL HEADER
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .islamic-tool-header h1,
+:root:not([data-theme="dark"]) .islamic-tool-header h2,
+:root:not([data-theme="dark"]) .islamic-tool-header h3,
+:root:not([data-theme="dark"]) .islamic-tool-header strong {
+    color: #202020 !important;
+}
+
+:root:not([data-theme="dark"]) .islamic-tool-header p {
+    color: #3f3f3f !important;
+}
+
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+/*
+ * Fixes cases such as "Back to Islamic" where a light/gold text
+ * inherited from dark mode becomes too faint on a light surface.
+ */
+
+:root:not([data-theme="dark"]) .islamic-page .ad2-button,
+:root:not([data-theme="dark"]) .islamic-page button.ad2-button,
+:root:not([data-theme="dark"]) .islamic-page .ad2-button-secondary {
+    color: #303030 !important;
+
+    background-color: #f7f4ec !important;
+
+    border-color: #d8c68b !important;
+}
+
+
+/* Hover */
+
+:root:not([data-theme="dark"]) .islamic-page .ad2-button:hover,
+:root:not([data-theme="dark"]) .islamic-page button.ad2-button:hover,
+:root:not([data-theme="dark"]) .islamic-page .ad2-button-secondary:hover {
+    color: #171717 !important;
+
+    background-color: #eee8d8 !important;
+
+    border-color: #c9ae57 !important;
+}
+
+
+/* Primary buttons */
+
+:root:not([data-theme="dark"]) .islamic-page .ad2-button-primary {
+    color: #171717 !important;
+}
+
+
+/* Back to Islamic / close buttons */
+
+:root:not([data-theme="dark"]) .islamic-page [data-islamic-tool-close],
+:root:not([data-theme="dark"]) .islamic-page .islamic-tool-header .ad2-button {
+    color: #303030 !important;
+}
+
+
+/* ============================================================
+   99 NAMES
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .islamic-page .name-card {
+    color: #202020 !important;
+}
+
+:root:not([data-theme="dark"]) .islamic-page .name-card strong {
+    color: #202020 !important;
+}
+
+:root:not([data-theme="dark"]) .islamic-page .name-card p {
+    color: #4b4b4b !important;
+}
+
+:root:not([data-theme="dark"]) .islamic-page .name-number {
+    color: #333333 !important;
+
+    background: #f4ead0 !important;
+
+    border: 1px solid #d8c68b !important;
+}
+
+
+/* ============================================================
+   ADHKAR
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .islamic-page .adhkar-card {
+    color: #202020 !important;
+}
+
+:root:not([data-theme="dark"]) .islamic-page .adhkar-card p {
+    color: #333333 !important;
+}
+
+:root:not([data-theme="dark"]) .islamic-page .adhkar-arabic {
+    color: #202020 !important;
+}
+
+:root:not([data-theme="dark"]) .islamic-page .adhkar-count-button {
+    color: #303030 !important;
+
+    background: #f7f4ec !important;
+
+    border-color: #d8c68b !important;
+}
+
+
+/* ============================================================
+   TASBIH
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .tasbih-v9 {
+    color: #202020 !important;
+}
+
+:root:not([data-theme="dark"]) .tasbih-v9 .ad2-eyebrow {
+    color: #8b6810 !important;
+}
+
+:root:not([data-theme="dark"]) .tasbih-v9 .tasbih-v9-count {
+    color: #171717 !important;
+}
+
+:root:not([data-theme="dark"]) .tasbih-v9 .tasbih-v9-tap {
+    color: #202020 !important;
+
+    background: #f7f4ec !important;
+
+    border-color: #d8c68b !important;
+}
+
+:root:not([data-theme="dark"]) .tasbih-v9 .tasbih-v9-tap > span {
+    color: #202020 !important;
+}
+
+
+/* ============================================================
+   ISLAMIC INSPIRATION
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .islamic-page .islamic-inspiration-card {
+    color: #202020 !important;
+}
+
+:root:not([data-theme="dark"]) .islamic-page .islamic-inspiration-card h2 {
+    color: #202020 !important;
+}
+
+:root:not([data-theme="dark"]) .islamic-page .islamic-inspiration-card p {
+    color: #333333 !important;
+}
+
+:root:not([data-theme="dark"]) .islamic-page .islamic-inspiration-card small {
+    color: #555555 !important;
+}
+
+
+/* ============================================================
+   QIYAM
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .islamic-page .qiyam-tool,
+:root:not([data-theme="dark"]) .islamic-page .qiyam-tool * {
+    --qiyam-readable-text: #202020;
+}
+
+:root:not([data-theme="dark"]) .islamic-page .qiyam-tool h1,
+:root:not([data-theme="dark"]) .islamic-page .qiyam-tool h2,
+:root:not([data-theme="dark"]) .islamic-page .qiyam-tool h3,
+:root:not([data-theme="dark"]) .islamic-page .qiyam-tool strong {
+    color: #202020 !important;
+}
+
+:root:not([data-theme="dark"]) .islamic-page .qiyam-tool p,
+:root:not([data-theme="dark"]) .islamic-page .qiyam-tool span {
+    color: #444444 !important;
+}
+
+
+/* ============================================================
+   RAMADAN
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .islamic-page .ramadan-tool h1,
+:root:not([data-theme="dark"]) .islamic-page .ramadan-tool h2,
+:root:not([data-theme="dark"]) .islamic-page .ramadan-tool h3,
+:root:not([data-theme="dark"]) .islamic-page .ramadan-tool strong {
+    color: #202020 !important;
+}
+
+:root:not([data-theme="dark"]) .islamic-page .ramadan-tool p,
+:root:not([data-theme="dark"]) .islamic-page .ramadan-tool span {
+    color: #444444 !important;
+}
+
+
+/* ============================================================
+   CALENDAR
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .islamic-page .calendar-tool {
+    color: #202020 !important;
+}
+
+:root:not([data-theme="dark"]) .islamic-page .calendar-tool h1,
+:root:not([data-theme="dark"]) .islamic-page .calendar-tool h2,
+:root:not([data-theme="dark"]) .islamic-page .calendar-tool h3,
+:root:not([data-theme="dark"]) .islamic-page .calendar-tool strong {
+    color: #202020 !important;
+}
+
+:root:not([data-theme="dark"]) .islamic-page .calendar-tool p,
+:root:not([data-theme="dark"]) .islamic-page .calendar-tool span {
+    color: #444444 !important;
+}
+
+
+/* ============================================================
+   FORM CONTROLS
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .islamic-page input,
+:root:not([data-theme="dark"]) .islamic-page textarea,
+:root:not([data-theme="dark"]) .islamic-page select {
+    color: #202020 !important;
+
+    background-color: #ffffff !important;
+
+    border-color: #cfcfcf !important;
+}
+
+:root:not([data-theme="dark"]) .islamic-page input::placeholder,
+:root:not([data-theme="dark"]) .islamic-page textarea::placeholder {
+    color: #777777 !important;
+}
+
+
+/* ============================================================
+   LINKS
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .islamic-page a {
+    color: #70540b !important;
+}
+
+:root:not([data-theme="dark"]) .islamic-page a:hover {
+    color: #4e3a07 !important;
+}
+
+
+/* ============================================================
+   ACCESSIBILITY
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .islamic-page :focus-visible {
+    outline-color: #8b6810 !important;
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 767px) {
+
+    .islamic-page .name-card .name-number {
+        width: 34px !important;
+        height: 34px !important;
+        min-width: 34px !important;
+        min-height: 34px !important;
+
+        flex-basis: 34px !important;
+    }
+}

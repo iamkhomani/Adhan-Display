@@ -1,0 +1,918 @@
+/*
+ * ============================================================
+ * Adhan Display
+ * Hadith UI V1
+ * ============================================================
+ *
+ * CSS-only presentation layer.
+ *
+ * Existing functionality remains controlled by:
+ *   js/pages/hadith.js
+ *
+ * This layer focuses on:
+ *   - visual hierarchy
+ *   - readability
+ *   - reader experience
+ *   - collection navigation
+ *   - search
+ *   - bookmarks
+ *   - responsive layout
+ *   - touch targets
+ *   - loading/error states
+ *   - horizontal overflow prevention
+ *
+ * ============================================================
+ */
+
+
+/* ============================================================
+   1. PAGE FOUNDATION
+   ============================================================ */
+
+.hadith-page,
+.hadith-page *,
+.hadith-page *::before,
+.hadith-page *::after {
+    box-sizing: border-box;
+}
+
+.hadith-page {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: clip;
+}
+
+.hadith-page section,
+.hadith-page article,
+.hadith-page div {
+    min-width: 0;
+}
+
+.hadith-page button,
+.hadith-page input,
+.hadith-page select,
+.hadith-page textarea {
+    font: inherit;
+}
+
+
+/* ============================================================
+   2. HERO
+   ============================================================ */
+
+.hadith-hero {
+    width: min(100%, 1180px);
+    margin-inline: auto;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+
+    gap: 24px;
+
+    padding-block: clamp(1.25rem, 3vw, 2.5rem);
+}
+
+.hadith-hero-copy {
+    min-width: 0;
+    max-width: 760px;
+}
+
+.hadith-hero-copy h1,
+.hadith-hero-copy h2,
+.hadith-hero-copy p {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
+.hadith-eyebrow {
+    display: inline-flex;
+    align-items: center;
+
+    margin-bottom: .5rem;
+
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.hadith-hero-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 8px;
+    flex-wrap: wrap;
+
+    flex: 0 0 auto;
+}
+
+
+/* ============================================================
+   3. BUTTON SYSTEM
+   ============================================================ */
+
+.hadith-button {
+    min-height: 44px;
+    min-width: 44px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    padding: .65rem .9rem;
+
+    border-radius: 12px;
+
+    white-space: nowrap;
+
+    cursor: pointer;
+
+    transition:
+        transform .18s ease,
+        opacity .18s ease,
+        background-color .18s ease,
+        border-color .18s ease;
+}
+
+.hadith-button:hover {
+    transform: translateY(-1px);
+}
+
+.hadith-button:active {
+    transform: translateY(0);
+}
+
+.hadith-button.primary {
+    font-weight: 700;
+}
+
+.hadith-button-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 20px;
+    min-height: 20px;
+
+    padding-inline: 4px;
+
+    border-radius: 999px;
+
+    font-size: .7rem;
+    line-height: 1;
+}
+
+
+/* ============================================================
+   4. CONTROLS
+   ============================================================ */
+
+.hadith-controls {
+    width: min(100%, 1180px);
+    margin-inline: auto;
+
+    display: grid;
+    gap: 18px;
+
+    margin-bottom: 20px;
+}
+
+.hadith-search {
+    width: 100%;
+}
+
+.hadith-search-input {
+    width: 100%;
+    min-height: 46px;
+
+    padding-inline: 14px;
+
+    border-radius: 12px;
+
+    outline: none;
+
+    transition:
+        border-color .18s ease,
+        box-shadow .18s ease;
+}
+
+.hadith-search-input:focus {
+    outline: none;
+}
+
+.hadith-collections {
+    width: 100%;
+}
+
+.hadith-section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    margin-bottom: 10px;
+}
+
+.hadith-section-heading > * {
+    min-width: 0;
+}
+
+.hadith-collection-list {
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    flex-wrap: wrap;
+}
+
+.hadith-collection-chip {
+    min-height: 40px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: .55rem .8rem;
+
+    border-radius: 999px;
+
+    cursor: pointer;
+
+    white-space: nowrap;
+
+    transition:
+        background-color .18s ease,
+        border-color .18s ease,
+        transform .18s ease;
+}
+
+.hadith-collection-chip:hover {
+    transform: translateY(-1px);
+}
+
+
+/* ============================================================
+   5. READER CARD
+   ============================================================ */
+
+.hadith-reader-card {
+    width: min(100%, 920px);
+    margin-inline: auto;
+
+    border-radius: 18px;
+
+    overflow: clip;
+}
+
+.hadith-reader-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 16px;
+
+    padding: 16px 18px;
+}
+
+.hadith-reader-top > * {
+    min-width: 0;
+}
+
+.hadith-reader-top .hadith-eyebrow {
+    margin-bottom: 0;
+}
+
+.hadith-icon-button {
+    width: 44px;
+    height: 44px;
+
+    flex: 0 0 44px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    cursor: pointer;
+
+    transition:
+        transform .18s ease,
+        background-color .18s ease,
+        color .18s ease;
+}
+
+.hadith-icon-button:hover {
+    transform: translateY(-1px);
+}
+
+
+/* ============================================================
+   6. HADITH CONTENT
+   ============================================================ */
+
+.hadith-reader-card .hadith-arabic {
+    width: 100%;
+    max-width: 820px;
+
+    margin-inline: auto;
+
+    padding:
+        clamp(1.25rem, 3vw, 2.5rem)
+        clamp(1rem, 4vw, 2.5rem);
+
+    text-align: right;
+
+    line-height: 2.25;
+
+    overflow-wrap: anywhere;
+}
+
+.hadith-reader-card .hadith-translation {
+    width: min(100%, 820px);
+
+    margin-inline: auto;
+
+    padding:
+        0
+        clamp(1rem, 4vw, 2.5rem)
+        1.25rem;
+
+    line-height: 1.8;
+
+    overflow-wrap: anywhere;
+}
+
+.hadith-narrator {
+    width: min(100%, 820px);
+
+    margin-inline: auto;
+
+    padding-inline: clamp(1rem, 4vw, 2.5rem);
+
+    padding-bottom: 1rem;
+
+    font-size: .9rem;
+    line-height: 1.6;
+}
+
+.hadith-reference {
+    width: min(100%, 820px);
+
+    margin-inline: auto;
+
+    margin-bottom: 1.25rem;
+
+    padding:
+        .8rem
+        clamp(1rem, 4vw, 2.5rem);
+
+    font-size: .82rem;
+    line-height: 1.55;
+
+    overflow-wrap: anywhere;
+}
+
+
+/* ============================================================
+   7. READER ACTIONS
+   ============================================================ */
+
+.hadith-reader-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    flex-wrap: wrap;
+
+    padding:
+        0
+        clamp(1rem, 3vw, 2rem)
+        1.5rem;
+}
+
+.hadith-reader-actions .hadith-button {
+    flex: 0 1 auto;
+}
+
+
+/* ============================================================
+   8. GO TO HADITH
+   ============================================================ */
+
+.hadith-go-to {
+    width: min(100%, 520px);
+
+    margin: 0 auto 20px;
+    padding-inline: 1rem;
+}
+
+.hadith-go-to-controls {
+    display: flex;
+    align-items: stretch;
+
+    gap: 8px;
+}
+
+.hadith-go-to-controls input {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 44px;
+
+    padding-inline: 12px;
+
+    border-radius: 10px;
+}
+
+
+/* ============================================================
+   9. LOADING
+   ============================================================ */
+
+.hadith-reader-card.is-loading {
+    min-height: 260px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hadith-loading {
+    min-height: 180px;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 14px;
+
+    padding: 2rem;
+}
+
+.hadith-spinner {
+    width: 34px;
+    height: 34px;
+
+    display: block;
+
+    border-radius: 50%;
+
+    border: 3px solid rgba(212, 175, 55, .25);
+    border-top-color: currentColor;
+
+    animation: hadith-spin .8s linear infinite;
+}
+
+@keyframes hadith-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* ============================================================
+   10. EMPTY / ERROR
+   ============================================================ */
+
+.hadith-empty {
+    min-height: 180px;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 14px;
+
+    padding: 2rem;
+
+    text-align: center;
+}
+
+.hadith-empty strong {
+    max-width: 620px;
+
+    overflow-wrap: anywhere;
+}
+
+
+/* ============================================================
+   11. SEARCH RESULTS
+   ============================================================ */
+
+.hadith-search-results {
+    width: min(100%, 1000px);
+
+    margin: 0 auto 20px;
+}
+
+.hadith-search-empty {
+    width: 100%;
+
+    padding: 1.5rem;
+
+    text-align: center;
+
+    border-radius: 14px;
+}
+
+.hadith-result-list {
+    display: grid;
+    gap: 10px;
+}
+
+.hadith-result {
+    width: 100%;
+
+    padding: 16px;
+
+    border-radius: 14px;
+
+    cursor: pointer;
+
+    overflow-wrap: anywhere;
+
+    transition:
+        transform .18s ease,
+        border-color .18s ease,
+        background-color .18s ease;
+}
+
+.hadith-result:hover {
+    transform: translateY(-1px);
+}
+
+.hadith-result-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    margin-bottom: 8px;
+}
+
+.hadith-result-top > * {
+    min-width: 0;
+}
+
+
+/* ============================================================
+   12. BOOKMARKS
+   ============================================================ */
+
+.hadith-bookmarks {
+    width: min(100%, 1000px);
+
+    margin: 0 auto 20px;
+
+    padding: 18px;
+
+    border-radius: 16px;
+}
+
+.hadith-bookmark-list {
+    display: grid;
+    gap: 8px;
+}
+
+.hadith-bookmark-item {
+    width: 100%;
+
+    padding: 14px;
+
+    border-radius: 12px;
+
+    cursor: pointer;
+
+    overflow-wrap: anywhere;
+
+    transition:
+        transform .18s ease,
+        background-color .18s ease;
+}
+
+.hadith-bookmark-item:hover {
+    transform: translateY(-1px);
+}
+
+
+/* ============================================================
+   13. NOTE
+   ============================================================ */
+
+.hadith-note {
+    width: min(100%, 920px);
+
+    margin: 0 auto;
+
+    padding: 12px 16px;
+
+    border-radius: 12px;
+
+    font-size: .78rem;
+    line-height: 1.6;
+
+    overflow-wrap: anywhere;
+}
+
+
+/* ============================================================
+   14. TABLET
+   ============================================================ */
+
+@media (max-width: 1024px) {
+
+    .hadith-hero {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .hadith-hero-actions {
+        justify-content: flex-start;
+    }
+
+    .hadith-controls {
+        gap: 14px;
+    }
+
+    .hadith-collection-list {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+
+        padding-bottom: 4px;
+
+        scrollbar-width: thin;
+    }
+
+    .hadith-collection-chip {
+        flex: 0 0 auto;
+    }
+
+    .hadith-reader-card {
+        width: min(100%, 860px);
+    }
+
+    .hadith-reader-card .hadith-arabic {
+        line-height: 2.1;
+    }
+
+    .hadith-reader-card .hadith-translation {
+        line-height: 1.72;
+    }
+}
+
+
+/* ============================================================
+   15. MOBILE
+   ============================================================ */
+
+@media (max-width: 767px) {
+
+    .hadith-hero {
+        width: 100%;
+
+        padding-block: 1rem 1.25rem;
+    }
+
+    .hadith-hero-actions {
+        width: 100%;
+
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+
+        gap: 8px;
+    }
+
+    .hadith-hero-actions .hadith-button {
+        width: 100%;
+    }
+
+    .hadith-controls {
+        width: 100%;
+    }
+
+    .hadith-collection-list {
+        width: 100%;
+    }
+
+    .hadith-reader-card {
+        width: 100%;
+
+        border-radius: 14px;
+    }
+
+    .hadith-reader-top {
+        padding: 12px;
+    }
+
+    .hadith-reader-card .hadith-arabic {
+        padding:
+            1.25rem
+            1rem;
+
+        font-size: clamp(1.35rem, 6vw, 1.9rem);
+        line-height: 2;
+    }
+
+    .hadith-reader-card .hadith-translation {
+        padding:
+            0
+            1rem
+            1rem;
+
+        line-height: 1.68;
+    }
+
+    .hadith-narrator {
+        padding-inline: 1rem;
+    }
+
+    .hadith-reference {
+        padding-inline: 1rem;
+    }
+
+    .hadith-reader-actions {
+        justify-content: stretch;
+
+        padding-inline: 1rem;
+        padding-bottom: 1rem;
+    }
+
+    .hadith-reader-actions .hadith-button {
+        flex: 1 1 calc(50% - 8px);
+    }
+
+    .hadith-go-to {
+        width: 100%;
+        padding-inline: 1rem;
+    }
+
+    .hadith-search-results,
+    .hadith-bookmarks,
+    .hadith-note {
+        width: 100%;
+    }
+}
+
+
+/* ============================================================
+   16. SMALL MOBILE
+   ============================================================ */
+
+@media (max-width: 480px) {
+
+    .hadith-hero-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .hadith-button {
+        min-height: 44px;
+    }
+
+    .hadith-reader-top {
+        gap: 8px;
+    }
+
+    .hadith-reader-card .hadith-arabic {
+        padding-inline: .85rem;
+
+        font-size: clamp(1.25rem, 7vw, 1.7rem);
+        line-height: 1.95;
+    }
+
+    .hadith-reader-card .hadith-translation {
+        padding-inline: .85rem;
+
+        font-size: .96rem;
+        line-height: 1.62;
+    }
+
+    .hadith-narrator {
+        padding-inline: .85rem;
+    }
+
+    .hadith-reference {
+        padding-inline: .85rem;
+    }
+
+    .hadith-reader-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+
+        gap: 7px;
+    }
+
+    .hadith-reader-actions .hadith-button {
+        width: 100%;
+        flex: none;
+    }
+
+    .hadith-go-to-controls {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .hadith-result {
+        padding: 13px;
+    }
+
+    .hadith-bookmarks {
+        padding: 14px;
+    }
+}
+
+
+/* ============================================================
+   17. VERY SMALL DEVICES
+   ============================================================ */
+
+@media (max-width: 360px) {
+
+    .hadith-reader-card .hadith-arabic {
+        font-size: 1.22rem;
+    }
+
+    .hadith-reader-card .hadith-translation {
+        font-size: .9rem;
+    }
+
+    .hadith-reader-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .hadith-reader-actions .hadith-button {
+        width: 100%;
+    }
+}
+
+
+/* ============================================================
+   18. ACCESSIBILITY
+   ============================================================ */
+
+.hadith-page button:focus-visible,
+.hadith-page a:focus-visible,
+.hadith-page input:focus-visible,
+.hadith-page select:focus-visible {
+    outline: 3px solid rgba(212, 175, 55, .55);
+    outline-offset: 2px;
+}
+
+
+/* ============================================================
+   19. REDUCED MOTION
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .hadith-page *,
+    .hadith-page *::before,
+    .hadith-page *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+
+/* ============================================================
+   20. PRINT
+   ============================================================ */
+
+@media print {
+
+    .hadith-hero-actions,
+    .hadith-controls,
+    .hadith-reader-actions,
+    .hadith-go-to,
+    .hadith-bookmarks {
+        display: none !important;
+    }
+
+    .hadith-reader-card {
+        box-shadow: none !important;
+        border: 0 !important;
+    }
+
+    .hadith-reader-card .hadith-arabic,
+    .hadith-reader-card .hadith-translation,
+    .hadith-narrator,
+    .hadith-reference {
+        color: #000 !important;
+    }
+}

@@ -1,0 +1,521 @@
+/*
+ * Adhan Display
+ * Phase 1 - Responsive UI V1
+ *
+ * Global responsive safety layer.
+ * JavaScript untouched.
+ * Existing page-specific CSS remains authoritative.
+ */
+
+/* ============================================================
+   GLOBAL RESPONSIVE SAFETY
+   ============================================================ */
+
+html {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+img,
+svg,
+video,
+canvas {
+    max-width: 100%;
+    height: auto;
+}
+
+button,
+input,
+select,
+textarea {
+    max-width: 100%;
+}
+
+pre,
+code {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+table {
+    max-width: 100%;
+}
+
+
+/* ============================================================
+   PAGE SHELL / CONTAINERS
+   ============================================================ */
+
+.page-shell,
+.ad2-page,
+.page-container,
+.main-content {
+    max-width: 100%;
+    min-width: 0;
+}
+
+.page-shell > *,
+.ad2-page > * {
+    min-width: 0;
+}
+
+.ad2-grid,
+.prayer-tools-grid,
+.discover-feature-grid,
+.discover-knowledge-grid,
+.islamic-tools,
+.islamic-inspiration-grid {
+    min-width: 0;
+}
+
+.ad2-grid > *,
+.prayer-tools-grid > *,
+.discover-feature-grid > *,
+.discover-knowledge-grid > *,
+.islamic-tools > *,
+.islamic-inspiration-grid > * {
+    min-width: 0;
+}
+
+
+/* ============================================================
+   TEXT SAFETY
+   ============================================================ */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+strong,
+small,
+label,
+a {
+    overflow-wrap: anywhere;
+}
+
+.hero,
+.hero-copy,
+.page-hero,
+.prayer-hero,
+.quran-hero,
+.hadith-hero,
+.discover-hero,
+.islamic-hero {
+    min-width: 0;
+}
+
+.hero-copy,
+.prayer-hero-copy,
+.quran-hero-copy,
+.hadith-hero-copy,
+.discover-hero-copy,
+.islamic-hero-copy {
+    min-width: 0;
+}
+
+
+/* ============================================================
+   1200 PX
+   ============================================================ */
+
+@media (max-width: 1199px) {
+
+    .page-shell,
+    .ad2-page {
+        width: 100%;
+    }
+
+    .hero,
+    .page-hero,
+    .prayer-hero,
+    .quran-hero,
+    .hadith-hero,
+    .discover-hero,
+    .islamic-hero {
+        min-width: 0;
+    }
+
+    .hero-actions,
+    .prayer-hero-actions,
+    .quran-hero-actions,
+    .hadith-hero-actions,
+    .discover-hero-actions,
+    .islamic-hero-actions {
+        flex-wrap: wrap;
+    }
+}
+
+
+/* ============================================================
+   TABLET
+   ============================================================ */
+
+@media (max-width: 1024px) {
+
+    .page-shell,
+    .ad2-page {
+        padding-inline: clamp(1rem, 3vw, 1.5rem);
+    }
+
+    .ad2-grid,
+    .prayer-tools-grid,
+    .discover-feature-grid,
+    .discover-knowledge-grid,
+    .islamic-tools,
+    .islamic-inspiration-grid {
+        width: 100%;
+    }
+
+    .prayer-compact-layout,
+    .prayer-tools-grid,
+    .discover-feature-grid,
+    .discover-knowledge-grid,
+    .islamic-tools,
+    .islamic-inspiration-grid {
+        min-width: 0;
+    }
+
+    .quran-controls,
+    .hadith-controls,
+    .discover-controls {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .quran-search,
+    .hadith-search,
+    .discover-search {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .quran-search-input,
+    .hadith-search-input,
+    .discover-search-input {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .prayer-qibla-card,
+    .hadith-reader-card,
+    .quran-ayah,
+    .islamic-inspiration-card,
+    .discover-feature-card,
+    .discover-hadith-card,
+    .discover-dua-card {
+        min-width: 0;
+        max-width: 100%;
+    }
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 767px) {
+
+    .page-shell,
+    .ad2-page {
+        padding-inline: 1rem;
+    }
+
+    /*
+     * Prevent large desktop flex rows from forcing horizontal
+     * overflow on mobile.
+     */
+    .hero-actions,
+    .prayer-hero-actions,
+    .quran-hero-actions,
+    .hadith-hero-actions,
+    .discover-hero-actions,
+    .islamic-hero-actions,
+    .prayer-reader-actions,
+    .hadith-reader-actions,
+    .quran-ayah-actions,
+    .tasbih-actions,
+    .prayer-qibla-actions {
+        flex-wrap: wrap;
+        min-width: 0;
+    }
+
+    .hero-actions > *,
+    .prayer-hero-actions > *,
+    .quran-hero-actions > *,
+    .hadith-hero-actions > *,
+    .discover-hero-actions > *,
+    .islamic-hero-actions > * {
+        max-width: 100%;
+    }
+
+    /*
+     * Form controls should never create viewport overflow.
+     */
+    input,
+    select,
+    textarea,
+    button {
+        max-width: 100%;
+    }
+
+    /*
+     * Long Arabic text should remain inside its card.
+     */
+    .quran-arabic,
+    .hadith-arabic,
+    .islamic-arabic-content,
+    .adhkar-arabic,
+    .name-arabic {
+        max-width: 100%;
+        overflow-wrap: anywhere;
+        word-break: normal;
+    }
+
+    /*
+     * Search/result rows can shrink on narrow screens.
+     */
+    .quran-search-results,
+    .hadith-search-results,
+    .hadith-result,
+    .hadith-result-top,
+    .bookmark-item,
+    .hadith-bookmark-item {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    /*
+     * Touch targets.
+     */
+    .ad2-button,
+    .ad2-button-primary,
+    .ad2-button-secondary,
+    .hadith-icon-button,
+    .prayer-qibla-button,
+    .adhkar-count-button,
+    .tasbih-main-button {
+        min-height: 44px;
+    }
+
+    /*
+     * Avoid controls becoming wider than the viewport.
+     */
+    .ad2-button,
+    .ad2-button-primary,
+    .ad2-button-secondary {
+        max-width: 100%;
+    }
+
+    /*
+     * Cards should not create their own horizontal scrollbar.
+     */
+    .ad2-card,
+    .prayer-next-card,
+    .prayer-qibla-card,
+    .hadith-reader-card,
+    .quran-ayah,
+    .discover-feature-card,
+    .discover-hadith-card,
+    .discover-dua-card,
+    .islamic-inspiration-card,
+    .islamic-tool-view {
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    /*
+     * Tables and long technical content remain scrollable
+     * inside themselves rather than moving the entire page.
+     */
+    .table-wrapper,
+    .calendar-events,
+    .calendar-tool,
+    .quran-search-results {
+        max-width: 100%;
+    }
+}
+
+
+/* ============================================================
+   SMALL MOBILE
+   ============================================================ */
+
+@media (max-width: 480px) {
+
+    .page-shell,
+    .ad2-page {
+        padding-inline: 0.75rem;
+    }
+
+    .ad2-section-heading,
+    .discover-section-heading,
+    .hadith-section-heading {
+        min-width: 0;
+    }
+
+    .ad2-section-heading > *,
+    .discover-section-heading > *,
+    .hadith-section-heading > * {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    /*
+     * Keep action groups usable without horizontal overflow.
+     */
+    .hero-actions,
+    .prayer-hero-actions,
+    .quran-hero-actions,
+    .hadith-hero-actions,
+    .discover-hero-actions,
+    .islamic-hero-actions,
+    .tasbih-actions,
+    .prayer-qibla-actions {
+        width: 100%;
+    }
+
+    .hero-actions > .ad2-button,
+    .prayer-hero-actions > .ad2-button,
+    .quran-hero-actions > .ad2-button,
+    .hadith-hero-actions > .ad2-button,
+    .discover-hero-actions > .ad2-button,
+    .islamic-hero-actions > .ad2-button {
+        flex: 1 1 auto;
+    }
+
+    /*
+     * Quran reading area.
+     */
+    .quran-arabic {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    /*
+     * Hadith reading area.
+     */
+    .hadith-arabic,
+    .hadith-translation {
+        max-width: 100%;
+    }
+
+    /*
+     * Islamic tools.
+     */
+    .islamic-tool-view,
+    .islamic-tool-view > *,
+    .names-grid,
+    .adhkar-list {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    /*
+     * Qibla card.
+     */
+    .prayer-qibla-compass {
+        max-width: 100%;
+    }
+}
+
+
+/* ============================================================
+   VERY SMALL MOBILE
+   ============================================================ */
+
+@media (max-width: 360px) {
+
+    .page-shell,
+    .ad2-page {
+        padding-inline: 0.625rem;
+    }
+
+    .ad2-button,
+    .ad2-button-primary,
+    .ad2-button-secondary,
+    .prayer-qibla-button {
+        width: 100%;
+    }
+
+    .tasbih-actions {
+        width: 100%;
+    }
+
+    .tasbih-actions > * {
+        flex: 1 1 0;
+    }
+
+    .prayer-qibla-actions > * {
+        flex: 1 1 100%;
+    }
+}
+
+
+/* ============================================================
+   COARSE POINTER / TOUCH DEVICES
+   ============================================================ */
+
+@media (pointer: coarse) {
+
+    .ad2-button,
+    .ad2-button-primary,
+    .ad2-button-secondary,
+    .prayer-qibla-button,
+    .hadith-icon-button,
+    .adhkar-count-button {
+        min-height: 44px;
+    }
+
+    .hadith-icon-button {
+        min-width: 44px;
+    }
+}
+
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+    }
+}
+
+
+/* ============================================================
+   PRINT
+   ============================================================ */
+
+@media print {
+
+    html,
+    body {
+        overflow: visible;
+        max-width: none;
+    }
+
+    .page-shell,
+    .ad2-page {
+        max-width: none;
+        padding-inline: 0;
+    }
+}

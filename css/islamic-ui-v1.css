@@ -1,0 +1,1255 @@
+/* ============================================================
+   ADHAN DISPLAY - ISLAMIC UI V1
+   Page-level visual layer
+   Does not modify Islamic JavaScript functionality.
+   ============================================================ */
+
+.islamic-page {
+    --islamic-accent: var(--ad2-color-brand, #d4af37);
+    --islamic-accent-soft: color-mix(
+        in srgb,
+        var(--islamic-accent) 12%,
+        transparent
+    );
+    --islamic-surface: var(--ad2-color-surface, rgba(255, 255, 255, 0.04));
+    --islamic-border: var(--ad2-color-border, rgba(255, 255, 255, 0.1));
+    --islamic-muted: var(--ad2-color-text-muted, #8f969d);
+    --islamic-radius: var(--ad2-radius-lg, 1.25rem);
+    --islamic-shadow: var(--ad2-shadow-md, 0 18px 50px rgba(0, 0, 0, 0.16));
+
+    width: 100%;
+    max-width: var(--ad2-layout-max-width, 1280px);
+    margin-inline: auto;
+    padding-block: clamp(1rem, 2vw, 2rem);
+    overflow: clip;
+}
+
+.islamic-page *,
+.islamic-page *::before,
+.islamic-page *::after {
+    box-sizing: border-box;
+}
+
+.islamic-page button,
+.islamic-page input,
+.islamic-page a {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+
+.islamic-hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr);
+    gap: clamp(1.25rem, 3vw, 2.5rem);
+    align-items: stretch;
+    margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+    padding: clamp(1.5rem, 4vw, 3rem);
+    border: 1px solid var(--islamic-border);
+    border-radius: clamp(1.25rem, 3vw, 1.75rem);
+    background:
+        radial-gradient(
+            circle at 85% 15%,
+            color-mix(in srgb, var(--islamic-accent) 13%, transparent),
+            transparent 34%
+        ),
+        linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--islamic-accent) 6%, transparent),
+            var(--islamic-surface)
+        );
+    box-shadow: var(--islamic-shadow);
+    isolation: isolate;
+}
+
+.islamic-hero::after {
+    content: "";
+    position: absolute;
+    width: 220px;
+    height: 220px;
+    right: -80px;
+    bottom: -110px;
+    border-radius: 50%;
+    border: 1px solid color-mix(
+        in srgb,
+        var(--islamic-accent) 16%,
+        transparent
+    );
+    pointer-events: none;
+    z-index: -1;
+}
+
+.islamic-hero > * {
+    min-width: 0;
+}
+
+.islamic-hero h1 {
+    max-width: 12ch;
+    margin: 0.45rem 0 1rem;
+    font-size: clamp(2rem, 5vw, 4rem);
+    line-height: 0.98;
+    letter-spacing: -0.045em;
+    text-wrap: balance;
+}
+
+.islamic-hero p {
+    max-width: 62ch;
+    margin: 0;
+    color: var(--islamic-muted);
+    font-size: clamp(0.95rem, 1.5vw, 1.08rem);
+    line-height: 1.7;
+}
+
+.islamic-date-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 220px;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    border: 1px solid var(--islamic-border);
+    border-radius: var(--islamic-radius);
+    background: color-mix(
+        in srgb,
+        var(--islamic-surface) 88%,
+        transparent
+    );
+    backdrop-filter: blur(16px);
+}
+
+.islamic-date-label {
+    display: block;
+    margin-bottom: 0.65rem;
+    color: var(--islamic-accent);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.islamic-date-panel strong,
+.islamic-date-panel h2,
+.islamic-date-panel h3 {
+    margin: 0;
+}
+
+.islamic-date-panel p {
+    margin-top: 0.55rem;
+    color: var(--islamic-muted);
+}
+
+/* ============================================================
+   TOOL GRID
+   ============================================================ */
+
+.islamic-tools {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.9rem;
+    margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.islamic-tool-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+    min-height: 190px;
+    padding: clamp(1.15rem, 2vw, 1.5rem);
+    border: 1px solid var(--islamic-border);
+    border-radius: var(--islamic-radius);
+    background: var(--islamic-surface);
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    overflow: hidden;
+    transition:
+        transform 180ms ease,
+        border-color 180ms ease,
+        background 180ms ease,
+        box-shadow 180ms ease;
+}
+
+.islamic-tool-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(
+            circle at 100% 0,
+            color-mix(in srgb, var(--islamic-accent) 13%, transparent),
+            transparent 48%
+        );
+    opacity: 0;
+    transition: opacity 180ms ease;
+    pointer-events: none;
+}
+
+.islamic-tool-card:hover {
+    transform: translateY(-3px);
+    border-color: color-mix(
+        in srgb,
+        var(--islamic-accent) 48%,
+        var(--islamic-border)
+    );
+    box-shadow: 0 16px 35px rgba(0, 0, 0, 0.12);
+}
+
+.islamic-tool-card:hover::before,
+.islamic-tool-card:focus-visible::before {
+    opacity: 1;
+}
+
+.islamic-tool-card:focus-visible {
+    outline: 3px solid color-mix(
+        in srgb,
+        var(--islamic-accent) 45%,
+        transparent
+    );
+    outline-offset: 3px;
+}
+
+.islamic-tool-label {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 0.65rem;
+    color: var(--islamic-accent);
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+}
+
+.islamic-tool-card strong {
+    position: relative;
+    z-index: 1;
+    max-width: 18ch;
+    margin-bottom: 0.55rem;
+    font-size: 1.08rem;
+    line-height: 1.25;
+}
+
+.islamic-tool-description {
+    position: relative;
+    z-index: 1;
+    max-width: 34ch;
+    color: var(--islamic-muted);
+    font-size: 0.84rem;
+    line-height: 1.55;
+}
+
+.islamic-tool-arrow {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    margin-top: auto;
+    margin-left: auto;
+    border: 1px solid var(--islamic-border);
+    border-radius: 999px;
+    color: var(--islamic-accent);
+    transition:
+        transform 180ms ease,
+        background 180ms ease;
+}
+
+.islamic-tool-card:hover .islamic-tool-arrow {
+    transform: translateX(3px);
+    background: var(--islamic-accent-soft);
+}
+
+/* ============================================================
+   INSPIRATION
+   ============================================================ */
+
+.islamic-inspiration-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.islamic-inspiration-card {
+    position: relative;
+    min-width: 0;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    border: 1px solid var(--islamic-border);
+    border-radius: var(--islamic-radius);
+    background: var(--islamic-surface);
+    overflow: hidden;
+}
+
+.islamic-inspiration-card::before {
+    content: "“";
+    position: absolute;
+    top: -0.35rem;
+    right: 1rem;
+    color: color-mix(
+        in srgb,
+        var(--islamic-accent) 12%,
+        transparent
+    );
+    font-family: Georgia, serif;
+    font-size: 7rem;
+    line-height: 1;
+    pointer-events: none;
+}
+
+.islamic-inspiration-card .ad2-eyebrow {
+    position: relative;
+    z-index: 1;
+}
+
+.islamic-inspiration-card h2 {
+    position: relative;
+    z-index: 1;
+    margin: 0.55rem 0 1rem;
+    font-size: 1.25rem;
+}
+
+.islamic-inspiration-card p {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    color: var(--ad2-color-text, inherit);
+    font-size: 1rem;
+    line-height: 1.75;
+}
+
+.islamic-inspiration-card small {
+    position: relative;
+    z-index: 1;
+    display: block;
+    margin-top: 1rem;
+    color: var(--islamic-muted);
+    line-height: 1.5;
+}
+
+.islamic-arabic-content {
+    direction: rtl;
+    font-family:
+        "Noto Naskh Arabic",
+        "Amiri",
+        "Scheherazade New",
+        serif;
+    font-size: clamp(1.35rem, 2.8vw, 2rem) !important;
+    line-height: 1.9 !important;
+}
+
+/* ============================================================
+   PRAYER CONTEXT
+   ============================================================ */
+
+.islamic-prayer-context {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: clamp(1.15rem, 2vw, 1.5rem);
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--islamic-border);
+    border-radius: var(--islamic-radius);
+    background:
+        linear-gradient(
+            90deg,
+            color-mix(in srgb, var(--islamic-accent) 7%, transparent),
+            transparent
+        ),
+        var(--islamic-surface);
+}
+
+.islamic-prayer-context h2 {
+    margin: 0.35rem 0 0.4rem;
+    font-size: 1.1rem;
+}
+
+.islamic-prayer-context p {
+    margin: 0;
+    color: var(--islamic-muted);
+    line-height: 1.5;
+}
+
+/* ============================================================
+   TOOL VIEWS
+   ============================================================ */
+
+.islamic-tool-view {
+    width: 100%;
+    max-width: 1180px;
+    margin-inline: auto;
+    padding-block: 0.5rem 2rem;
+}
+
+.islamic-tool-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--islamic-border);
+}
+
+.islamic-tool-header h1,
+.islamic-tool-header h2,
+.islamic-tool-header h3 {
+    margin: 0.35rem 0 0;
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    letter-spacing: -0.035em;
+}
+
+.islamic-tool-header p {
+    max-width: 58ch;
+    margin: 0.6rem 0 0;
+    color: var(--islamic-muted);
+    line-height: 1.6;
+}
+
+.islamic-tool-header .ad2-button {
+    flex: 0 0 auto;
+}
+
+.islamic-loading {
+    display: grid;
+    min-height: 180px;
+    place-items: center;
+    padding: 2rem;
+    border: 1px dashed var(--islamic-border);
+    border-radius: var(--islamic-radius);
+    color: var(--islamic-muted);
+    text-align: center;
+}
+
+/* ============================================================
+   99 NAMES
+   ============================================================ */
+
+.names-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.names-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: min(100%, 430px);
+}
+
+.names-search-icon {
+    position: absolute;
+    left: 0.9rem;
+    color: var(--islamic-muted);
+    pointer-events: none;
+}
+
+.names-search input {
+    width: 100%;
+    min-height: 46px;
+    padding: 0.7rem 0.9rem 0.7rem 2.5rem;
+    border: 1px solid var(--islamic-border);
+    border-radius: 999px;
+    background: var(--islamic-surface);
+    color: inherit;
+    font: inherit;
+}
+
+.names-search input::placeholder {
+    color: var(--islamic-muted);
+}
+
+.names-search input:focus {
+    outline: 3px solid color-mix(
+        in srgb,
+        var(--islamic-accent) 24%,
+        transparent
+    );
+    border-color: var(--islamic-accent);
+}
+
+.names-count {
+    flex: 0 0 auto;
+    color: var(--islamic-muted);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.names-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.8rem;
+}
+
+.name-card {
+    position: relative;
+    min-width: 0;
+    min-height: 190px;
+    padding: 1.25rem;
+    border: 1px solid var(--islamic-border);
+    border-radius: var(--islamic-radius);
+    background: var(--islamic-surface);
+    overflow: hidden;
+    transition:
+        transform 180ms ease,
+        border-color 180ms ease;
+}
+
+.name-card:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(
+        in srgb,
+        var(--islamic-accent) 40%,
+        var(--islamic-border)
+    );
+}
+
+.name-number {
+    display: block;
+    margin-bottom: 1rem;
+    color: var(--islamic-accent);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+}
+
+.name-arabic {
+    margin-bottom: 0.7rem;
+    color: var(--islamic-accent);
+    font-family:
+        "Noto Naskh Arabic",
+        "Amiri",
+        "Scheherazade New",
+        serif;
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    line-height: 1.5;
+}
+
+.name-card strong {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.95rem;
+}
+
+.name-card p {
+    margin: 0;
+    color: var(--islamic-muted);
+    font-size: 0.82rem;
+    line-height: 1.55;
+}
+
+/* ============================================================
+   ADHKAR
+   ============================================================ */
+
+.adhkar-list {
+    display: grid;
+    gap: 0.8rem;
+}
+
+.adhkar-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1.25rem;
+    align-items: center;
+    min-width: 0;
+    padding: clamp(1rem, 2vw, 1.5rem);
+    border: 1px solid var(--islamic-border);
+    border-radius: var(--islamic-radius);
+    background: var(--islamic-surface);
+}
+
+.adhkar-content {
+    min-width: 0;
+}
+
+.adhkar-arabic {
+    margin-bottom: 0.75rem;
+    direction: rtl;
+    font-family:
+        "Noto Naskh Arabic",
+        "Amiri",
+        "Scheherazade New",
+        serif;
+    font-size: clamp(1.35rem, 3vw, 2rem);
+    line-height: 1.9;
+}
+
+.adhkar-content p {
+    margin: 0;
+    color: var(--islamic-muted);
+    line-height: 1.65;
+}
+
+.adhkar-count-button {
+    flex: 0 0 auto;
+    min-width: 82px;
+    min-height: 82px;
+    padding: 0.75rem;
+    border: 1px solid color-mix(
+        in srgb,
+        var(--islamic-accent) 35%,
+        var(--islamic-border)
+    );
+    border-radius: 50%;
+    background: var(--islamic-accent-soft);
+    color: inherit;
+    cursor: pointer;
+    transition:
+        transform 150ms ease,
+        background 150ms ease,
+        border-color 150ms ease;
+}
+
+.adhkar-count-button:hover {
+    transform: scale(1.04);
+}
+
+.adhkar-count-button:active {
+    transform: scale(0.97);
+}
+
+.adhkar-count-button:focus-visible {
+    outline: 3px solid color-mix(
+        in srgb,
+        var(--islamic-accent) 40%,
+        transparent
+    );
+    outline-offset: 3px;
+}
+
+.adhkar-count-button strong {
+    display: block;
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.adhkar-count-button span {
+    display: block;
+    margin-top: 0.25rem;
+    color: var(--islamic-muted);
+    font-size: 0.68rem;
+}
+
+.adhkar-count-button.is-complete {
+    border-color: var(--islamic-accent);
+    background: color-mix(
+        in srgb,
+        var(--islamic-accent) 20%,
+        transparent
+    );
+}
+
+/* ============================================================
+   TASBIH
+   ============================================================ */
+
+.tasbih-container {
+    display: grid;
+    grid-template-columns: minmax(260px, 0.65fr) minmax(320px, 1.35fr);
+    gap: 1rem;
+    align-items: stretch;
+}
+
+.tasbih-counter,
+.tasbih-tap-shell {
+    border: 1px solid var(--islamic-border);
+    border-radius: var(--islamic-radius);
+    background: var(--islamic-surface);
+}
+
+.tasbih-counter {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.tasbih-counter > strong {
+    display: block;
+    margin-top: 0.75rem;
+    color: var(--islamic-accent);
+    font-size: clamp(4rem, 10vw, 7rem);
+    line-height: 0.95;
+    letter-spacing: -0.06em;
+}
+
+.tasbih-tap-shell {
+    display: grid;
+    min-height: 360px;
+    place-items: center;
+    padding: 2rem;
+}
+
+.tasbih-tap-shell button,
+.tasbih-tap-button {
+    display: grid;
+    width: min(72vw, 260px);
+    aspect-ratio: 1;
+    place-items: center;
+    border: 1px solid color-mix(
+        in srgb,
+        var(--islamic-accent) 45%,
+        var(--islamic-border)
+    );
+    border-radius: 50%;
+    background:
+        radial-gradient(
+            circle at 35% 25%,
+            color-mix(in srgb, white 10%, transparent),
+            transparent 42%
+        ),
+        var(--islamic-accent-soft);
+    color: inherit;
+    cursor: pointer;
+    box-shadow:
+        0 0 0 12px color-mix(
+            in srgb,
+            var(--islamic-accent) 4%,
+            transparent
+        ),
+        0 20px 50px rgba(0, 0, 0, 0.14);
+    transition:
+        transform 160ms ease,
+        box-shadow 160ms ease;
+}
+
+.tasbih-tap-shell button:hover,
+.tasbih-tap-button:hover {
+    transform: scale(1.025);
+}
+
+.tasbih-tap-shell button:active,
+.tasbih-tap-button:active {
+    transform: scale(0.97);
+}
+
+.tasbih-tap-shell button:focus-visible,
+.tasbih-tap-button:focus-visible {
+    outline: 3px solid color-mix(
+        in srgb,
+        var(--islamic-accent) 45%,
+        transparent
+    );
+    outline-offset: 5px;
+}
+
+/* ============================================================
+   QIYAM
+   ============================================================ */
+
+.qiyam-tool {
+    max-width: 980px;
+}
+
+.qiyam-tool > * {
+    min-width: 0;
+}
+
+.qiyam-tool .ad2-card,
+.qiyam-tool section,
+.qiyam-tool article {
+    max-width: 100%;
+}
+
+.qiyam-tool input,
+.qiyam-tool select,
+.qiyam-tool button {
+    min-height: 44px;
+}
+
+/* ============================================================
+   RAMADAN
+   ============================================================ */
+
+.ramadan-tool {
+    display: grid;
+    gap: 1rem;
+}
+
+.ramadan-intro,
+.ramadan-progress,
+.ramadan-time-card {
+    border: 1px solid var(--islamic-border);
+    border-radius: var(--islamic-radius);
+    background: var(--islamic-surface);
+}
+
+.ramadan-intro {
+    padding: clamp(1.25rem, 3vw, 2rem);
+}
+
+.ramadan-intro h2 {
+    margin: 0 0 0.5rem;
+    font-size: clamp(1.5rem, 3vw, 2.2rem);
+}
+
+.ramadan-intro p {
+    margin: 0;
+    color: var(--islamic-muted);
+    line-height: 1.65;
+}
+
+.ramadan-progress {
+    padding: 1.25rem;
+}
+
+.ramadan-progress-label,
+.ramadan-progress-times {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.ramadan-progress-label span,
+.ramadan-progress-times span {
+    color: var(--islamic-muted);
+}
+
+.ramadan-progress-label strong {
+    color: var(--islamic-accent);
+}
+
+.ramadan-progress-track {
+    height: 10px;
+    margin: 0.9rem 0;
+    overflow: hidden;
+    border-radius: 999px;
+    background: color-mix(
+        in srgb,
+        var(--islamic-border) 75%,
+        transparent
+    );
+}
+
+.ramadan-progress-track span {
+    display: block;
+    height: 100%;
+    width: var(--progress, 0%);
+    border-radius: inherit;
+    background: var(--islamic-accent);
+}
+
+.ramadan-times {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
+}
+
+.ramadan-time-card {
+    padding: 1.25rem;
+}
+
+.ramadan-time-card span,
+.ramadan-time-card small {
+    display: block;
+    color: var(--islamic-muted);
+}
+
+.ramadan-time-card strong {
+    display: block;
+    margin: 0.4rem 0;
+    color: var(--islamic-accent);
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+/* ============================================================
+   CALENDAR
+   ============================================================ */
+
+.calendar-tool-page {
+    max-width: 1120px;
+}
+
+.calendar-tool {
+    display: grid;
+    gap: 1rem;
+}
+
+.calendar-current,
+.calendar-events {
+    border: 1px solid var(--islamic-border);
+    border-radius: var(--islamic-radius);
+    background: var(--islamic-surface);
+}
+
+.calendar-current {
+    padding: clamp(1.25rem, 3vw, 2rem);
+}
+
+.calendar-current strong {
+    display: block;
+    color: var(--islamic-accent);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    line-height: 1;
+}
+
+.calendar-current h2 {
+    margin: 0.6rem 0 0.35rem;
+}
+
+.calendar-current p {
+    margin: 0;
+    color: var(--islamic-muted);
+}
+
+.calendar-events {
+    overflow: hidden;
+}
+
+.calendar-events-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--islamic-border);
+}
+
+.calendar-events-header > span:last-child {
+    color: var(--islamic-muted);
+    font-size: 0.78rem;
+}
+
+.calendar-event {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--islamic-border);
+}
+
+.calendar-event:last-child {
+    border-bottom: 0;
+}
+
+.calendar-event > div {
+    min-width: 0;
+}
+
+.calendar-event strong {
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.calendar-event span {
+    color: var(--islamic-muted);
+    font-size: 0.82rem;
+}
+
+.calendar-event.is-current {
+    background: var(--islamic-accent-soft);
+}
+
+.calendar-event-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding-inline: 0.7rem;
+    border: 1px solid color-mix(
+        in srgb,
+        var(--islamic-accent) 30%,
+        transparent
+    );
+    border-radius: 999px;
+    color: var(--islamic-accent) !important;
+    font-size: 0.68rem !important;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* ============================================================
+   TOOL CLOSE
+   ============================================================ */
+
+[data-islamic-tool-close] {
+    min-height: 44px;
+}
+
+/* ============================================================
+   TABLET
+   ============================================================ */
+
+@media (max-width: 1024px) {
+    .islamic-hero {
+        grid-template-columns: 1fr;
+    }
+
+    .islamic-hero h1 {
+        max-width: 16ch;
+    }
+
+    .islamic-tools {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .names-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .tasbih-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 767px) {
+    .islamic-page {
+        padding-block: 0.75rem 1.5rem;
+    }
+
+    .islamic-hero {
+        gap: 1rem;
+        padding: 1.25rem;
+        border-radius: 1.15rem;
+    }
+
+    .islamic-hero h1 {
+        max-width: none;
+        font-size: clamp(2rem, 11vw, 3.2rem);
+    }
+
+    .islamic-date-panel {
+        min-height: 0;
+        padding: 1.1rem;
+    }
+
+    .islamic-tools,
+    .islamic-inspiration-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .islamic-tool-card {
+        min-height: 165px;
+    }
+
+    .islamic-inspiration-card {
+        padding: 1.25rem;
+    }
+
+    .islamic-prayer-context {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .islamic-prayer-context .ad2-button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .islamic-tool-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .islamic-tool-header .ad2-button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .names-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .names-search {
+        width: 100%;
+    }
+
+    .names-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .adhkar-card {
+        grid-template-columns: 1fr;
+    }
+
+    .adhkar-count-button {
+        justify-self: end;
+    }
+
+    .tasbih-tap-shell {
+        min-height: 300px;
+        padding: 1.25rem;
+    }
+
+    .ramadan-times {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================================
+   SMALL MOBILE
+   ============================================================ */
+
+@media (max-width: 480px) {
+    .islamic-hero {
+        padding: 1rem;
+    }
+
+    .islamic-tool-card {
+        min-height: 150px;
+        padding: 1rem;
+    }
+
+    .islamic-tool-card strong {
+        font-size: 1rem;
+    }
+
+    .names-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .name-card {
+        min-height: 0;
+    }
+
+    .adhkar-card {
+        padding: 1rem;
+    }
+
+    .adhkar-arabic {
+        font-size: 1.35rem;
+    }
+
+    .adhkar-count-button {
+        justify-self: stretch;
+        width: 100%;
+        min-height: 58px;
+        border-radius: 999px;
+    }
+
+    .tasbih-counter {
+        padding: 1.35rem;
+    }
+
+    .tasbih-counter > strong {
+        font-size: 4.5rem;
+    }
+
+    .tasbih-tap-shell {
+        min-height: 260px;
+    }
+
+    .tasbih-tap-shell button,
+    .tasbih-tap-button {
+        width: min(62vw, 220px);
+    }
+
+    .calendar-event {
+        grid-template-columns: 1fr;
+        gap: 0.6rem;
+    }
+}
+
+/* ============================================================
+   VERY SMALL MOBILE
+   ============================================================ */
+
+@media (max-width: 360px) {
+    .islamic-hero h1 {
+        font-size: 1.9rem;
+    }
+
+    .islamic-tool-description {
+        font-size: 0.78rem;
+    }
+
+    .islamic-arabic-content {
+        font-size: 1.25rem !important;
+    }
+
+    .name-arabic {
+        font-size: 1.75rem;
+    }
+
+    .tasbih-tap-shell button,
+    .tasbih-tap-button {
+        width: 190px;
+    }
+}
+
+/* ============================================================
+   TOUCH DEVICES
+   ============================================================ */
+
+@media (pointer: coarse) {
+    .islamic-tool-card {
+        min-height: 170px;
+    }
+
+    .adhkar-count-button {
+        min-width: 88px;
+        min-height: 88px;
+    }
+
+    .names-search input {
+        min-height: 48px;
+    }
+
+    [data-islamic-tool-close] {
+        min-height: 46px;
+    }
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    .islamic-page *,
+    .islamic-page *::before,
+    .islamic-page *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}
+
+/* ============================================================
+   PRINT
+   ============================================================ */
+
+@media print {
+    .islamic-page {
+        max-width: none;
+        padding: 0;
+    }
+
+    .islamic-hero,
+    .islamic-tool-card,
+    .islamic-inspiration-card,
+    .islamic-prayer-context,
+    .islamic-tool-view,
+    .name-card,
+    .adhkar-card,
+    .tasbih-counter,
+    .tasbih-tap-shell,
+    .ramadan-intro,
+    .ramadan-progress,
+    .ramadan-time-card,
+    .calendar-current,
+    .calendar-events {
+        box-shadow: none !important;
+        break-inside: avoid;
+    }
+
+    .islamic-tool-card:hover {
+        transform: none;
+    }
+}

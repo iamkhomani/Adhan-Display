@@ -1,0 +1,436 @@
+/*
+ * Adhan Display
+ * Prayer UI V3
+ *
+ * Purpose:
+ * Repair light-mode readability on the Prayer page.
+ *
+ * Dark mode is intentionally untouched.
+ *
+ * Existing Prayer functionality is untouched.
+ */
+
+
+/* ============================================================
+   LIGHT MODE BASE
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .prayer-page {
+    color: #252525 !important;
+}
+
+
+/* ============================================================
+   NEXT PRAYER HERO CARD
+   ============================================================ */
+
+/*
+ * Main problem visible in the screenshot:
+ *
+ * Maghrib
+ * 19:38
+ *
+ * are almost white against the light card/background.
+ */
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-next-card {
+    color: #202020 !important;
+}
+
+
+/* Next prayer label */
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-next-label {
+    color: #7b5e0b !important;
+
+    opacity: 1 !important;
+
+    text-shadow: none !important;
+}
+
+
+/* Prayer name */
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-next-name {
+    color: #202020 !important;
+
+    opacity: 1 !important;
+
+    text-shadow: none !important;
+}
+
+
+/* Prayer time */
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-next-time {
+    color: #171717 !important;
+
+    opacity: 1 !important;
+
+    text-shadow: none !important;
+}
+
+
+/* Countdown */
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-next-countdown {
+    color: #555555 !important;
+
+    opacity: 1 !important;
+
+    text-shadow: none !important;
+}
+
+
+/* Any text directly inside next card */
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-next-card p,
+:root:not([data-theme="dark"]) .prayer-page .prayer-next-card span,
+:root:not([data-theme="dark"]) .prayer-page .prayer-next-card strong {
+    opacity: 1 !important;
+
+    text-shadow: none !important;
+}
+
+
+/* ============================================================
+   NEXT PRAYER STATUS / BADGE
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-next-card .ad2-status,
+:root:not([data-theme="dark"]) .prayer-page .prayer-next-card [class*="status"] {
+    color: #4b4b4b !important;
+
+    opacity: 1 !important;
+}
+
+
+/* ============================================================
+   PRAYER SCHEDULE
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-compact-layout {
+    color: #252525 !important;
+}
+
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-compact-row {
+    color: #252525 !important;
+
+    opacity: 1 !important;
+}
+
+
+/* All common text elements inside prayer rows */
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-compact-row span,
+:root:not([data-theme="dark"]) .prayer-page .prayer-compact-row strong,
+:root:not([data-theme="dark"]) .prayer-page .prayer-compact-row p,
+:root:not([data-theme="dark"]) .prayer-page .prayer-compact-row time {
+    color: #303030 !important;
+
+    opacity: 1 !important;
+}
+
+
+/* Prayer name */
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-compact-row .prayer-name,
+:root:not([data-theme="dark"]) .prayer-page .prayer-compact-row [class*="name"] {
+    color: #252525 !important;
+}
+
+
+/* Prayer time */
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-compact-row .prayer-time,
+:root:not([data-theme="dark"]) .prayer-page .prayer-compact-row [class*="time"] {
+    color: #202020 !important;
+}
+
+
+/* Next row */
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-compact-row.is-next {
+    color: #202020 !important;
+}
+
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-compact-row.is-next span,
+:root:not([data-theme="dark"]) .prayer-page .prayer-compact-row.is-next strong,
+:root:not([data-theme="dark"]) .prayer-page .prayer-compact-row.is-next time {
+    color: #202020 !important;
+
+    opacity: 1 !important;
+}
+
+
+/* ============================================================
+   COMPACT SIDE
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-compact-side {
+    color: #303030 !important;
+}
+
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-compact-side span,
+:root:not([data-theme="dark"]) .prayer-page .prayer-compact-side strong,
+:root:not([data-theme="dark"]) .prayer-page .prayer-compact-side p {
+    color: #404040 !important;
+
+    opacity: 1 !important;
+}
+
+
+/* ============================================================
+   INFO STRIP
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-info-strip {
+    color: #303030 !important;
+}
+
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-info-strip span,
+:root:not([data-theme="dark"]) .prayer-page .prayer-info-strip strong,
+:root:not([data-theme="dark"]) .prayer-page .prayer-info-strip p {
+    color: #404040 !important;
+
+    opacity: 1 !important;
+}
+
+
+/* ============================================================
+   QIBLA CARD
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-qibla-card {
+    color: #303030 !important;
+}
+
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-qibla-card h1,
+:root:not([data-theme="dark"]) .prayer-page .prayer-qibla-card h2,
+:root:not([data-theme="dark"]) .prayer-page .prayer-qibla-card h3,
+:root:not([data-theme="dark"]) .prayer-page .prayer-qibla-card strong {
+    color: #252525 !important;
+
+    opacity: 1 !important;
+}
+
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-qibla-card p,
+:root:not([data-theme="dark"]) .prayer-page .prayer-qibla-card span {
+    color: #555555 !important;
+
+    opacity: 1 !important;
+}
+
+
+/* Qibla compass supporting text */
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-qibla-card .qibla-status,
+:root:not([data-theme="dark"]) .prayer-page .prayer-qibla-card [class*="status"] {
+    color: #555555 !important;
+
+    opacity: 1 !important;
+}
+
+
+/* ============================================================
+   QIBLA BUTTON
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-qibla-button {
+    color: #35393c !important;
+
+    background: #f7f3e8 !important;
+
+    border-color: #d6c486 !important;
+
+    opacity: 1 !important;
+
+    text-shadow: none !important;
+}
+
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-qibla-button:hover {
+    color: #171717 !important;
+
+    background: #eee6d1 !important;
+
+    border-color: #bfa64f !important;
+}
+
+
+/* ============================================================
+   PRAYER TOOLS
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-tools-grid {
+    color: #303030 !important;
+}
+
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-tool-button {
+    color: #303030 !important;
+
+    background: #f7f3e8 !important;
+
+    border-color: #d6c486 !important;
+
+    opacity: 1 !important;
+
+    text-shadow: none !important;
+}
+
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-tool-button span,
+:root:not([data-theme="dark"]) .prayer-page .prayer-tool-button strong,
+:root:not([data-theme="dark"]) .prayer-page .prayer-tool-button p {
+    color: #303030 !important;
+
+    opacity: 1 !important;
+}
+
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-tool-button:hover {
+    color: #171717 !important;
+
+    background: #eee6d1 !important;
+
+    border-color: #bfa64f !important;
+}
+
+
+/* ============================================================
+   SETTINGS STRIP
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-settings-strip {
+    color: #303030 !important;
+}
+
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-settings-strip span,
+:root:not([data-theme="dark"]) .prayer-page .prayer-settings-strip strong,
+:root:not([data-theme="dark"]) .prayer-page .prayer-settings-strip p,
+:root:not([data-theme="dark"]) .prayer-page .prayer-settings-strip label {
+    color: #444444 !important;
+
+    opacity: 1 !important;
+}
+
+
+/* ============================================================
+   GENERIC PRAYER TEXT
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-section-heading,
+:root:not([data-theme="dark"]) .prayer-page .prayer-eyebrow {
+    color: #80620e !important;
+
+    opacity: 1 !important;
+}
+
+
+:root:not([data-theme="dark"]) .prayer-page .prayer-page p {
+    color: #444444 !important;
+}
+
+
+/* ============================================================
+   LINKS
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .prayer-page a {
+    color: #70540b !important;
+
+    opacity: 1 !important;
+}
+
+
+:root:not([data-theme="dark"]) .prayer-page a:hover {
+    color: #4e3a07 !important;
+}
+
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .prayer-page button {
+    text-shadow: none !important;
+}
+
+
+:root:not([data-theme="dark"]) .prayer-page button:disabled {
+    color: #777777 !important;
+
+    opacity: .85 !important;
+}
+
+
+/* ============================================================
+   FOCUS
+   ============================================================ */
+
+:root:not([data-theme="dark"]) .prayer-page :focus-visible {
+    outline-color: #9a7412 !important;
+
+    outline-offset: 3px !important;
+}
+
+
+/* ============================================================
+   DARK MODE
+   ============================================================ */
+
+/*
+ * No dark-mode colors are specified here.
+ *
+ * Existing dark-mode styling remains untouched.
+ */
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 680px) {
+
+    :root:not([data-theme="dark"]) .prayer-page .prayer-next-name,
+    :root:not([data-theme="dark"]) .prayer-page .prayer-next-time {
+        opacity: 1 !important;
+
+        text-shadow: none !important;
+    }
+
+}
+
+
+@media (max-width: 480px) {
+
+    :root:not([data-theme="dark"]) .prayer-page .prayer-next-name,
+    :root:not([data-theme="dark"]) .prayer-page .prayer-next-time {
+        color: #202020 !important;
+    }
+
+}
+
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .prayer-page *,
+    .prayer-page *::before,
+    .prayer-page *::after {
+        transition: none !important;
+        animation: none !important;
+    }
+
+}
