@@ -3103,3 +3103,8 @@
         font-size: 14px;
     }
 }
+
+/* Dashboard Prayer Tracker title contrast in dark theme */
+:root[data-theme="dark"] .dashboard-tracker-card__title {
+    color: #ffffff;
+}
