@@ -1,4 +1,4 @@
-﻿import {
+import {
     state,
     saveQuranState
 } from '../state.js';
@@ -4248,8 +4248,130 @@ export function renderQuranPage() {
                 data-q2-reader
             ></div>
 
+            <button
+                class="q2-back-to-top"
+                data-q2-back-to-top
+                type="button"
+                aria-label="Back to top"
+                title="Back to top"
+                hidden
+            >
+                ↑
+            </button>
+
         </section>
     `;
+}
+
+
+
+function bindQuranBackToTop() {
+    const button = document.querySelector('[data-q2-back-to-top]');
+
+    if (!button) {
+        return;
+    }
+
+    const oldScrollHandler = window.__q2BackToTopScrollHandler;
+    if (oldScrollHandler) {
+        window.removeEventListener('scroll', oldScrollHandler);
+    }
+
+    if (window.__q2BackToTopPlayerObserver) {
+        window.__q2BackToTopPlayerObserver.disconnect();
+        window.__q2BackToTopPlayerObserver = null;
+    }
+
+    const update = () => {
+        const currentButton = document.querySelector(
+            '[data-q2-back-to-top]'
+        );
+
+        if (!currentButton) {
+            window.removeEventListener('scroll', update);
+            if (window.__q2BackToTopScrollHandler === update) {
+                window.__q2BackToTopScrollHandler = null;
+            }
+            return;
+        }
+
+        const onQuranPage = Boolean(
+            document.querySelector('.q2-page')
+        );
+
+        currentButton.hidden = !onQuranPage || window.scrollY < 450;
+
+        const player = document.querySelector('[data-q2-player]');
+        const playerVisible = player &&
+            !player.classList.contains('is-closed') &&
+            getComputedStyle(player).display !== 'none';
+
+        if (playerVisible) {
+            const rect = player.getBoundingClientRect();
+            const gap = 20;
+            const buttonHeight = currentButton.offsetHeight || 46;
+            const bottom = window.innerHeight - rect.top + gap;
+
+            currentButton.style.bottom =
+                `${Math.max(24, bottom)}px`;
+
+            currentButton.style.visibility =
+                rect.top < buttonHeight + gap ? 'hidden' : 'visible';
+        } else {
+            currentButton.style.bottom = '24px';
+            currentButton.style.visibility = 'visible';
+        }
+    };
+
+    window.__q2BackToTopScrollHandler = update;
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+
+    button.addEventListener('click', () => {
+        window.scrollTo({
+            top: 0,
+            behavior: window.matchMedia(
+                '(prefers-reduced-motion: reduce)'
+            ).matches ? 'auto' : 'smooth'
+        });
+    });
+
+    const player = document.querySelector('[data-q2-player]');
+    if (player && 'MutationObserver' in window) {
+        window.__q2BackToTopPlayerObserver = new MutationObserver(() => {
+            requestAnimationFrame(update);
+        });
+        window.__q2BackToTopPlayerObserver.observe(player, {
+            attributes: true,
+            attributeFilter: ['class', 'style']
+        });
+    }
+
+    if (!window.__q2BackToTopNavigationHandler) {
+        window.__q2BackToTopNavigationHandler = () => {
+            if (!document.querySelector('[data-q2-back-to-top]')) {
+                const handler = window.__q2BackToTopScrollHandler;
+                if (handler) {
+                    window.removeEventListener('scroll', handler);
+                    window.removeEventListener('resize', handler);
+                }
+
+                window.__q2BackToTopScrollHandler = null;
+
+                if (window.__q2BackToTopPlayerObserver) {
+                    window.__q2BackToTopPlayerObserver.disconnect();
+                    window.__q2BackToTopPlayerObserver = null;
+                }
+            }
+        };
+
+        window.addEventListener(
+            'adhan:navigate',
+            window.__q2BackToTopNavigationHandler
+        );
+    }
+
+    update();
 }
 
 
@@ -4477,6 +4599,8 @@ export function bindQuranPage() {
             renderSurahList
         );
 
+
+    bindQuranBackToTop();
 
     initializeQuran();
 }
