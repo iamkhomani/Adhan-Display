@@ -3104,6 +3104,132 @@
     }
 }
 
+
+/* Dashboard Prayer Tracker card */
+.dashboard-tracker-card {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    width: 100%;
+    padding: 22px 24px;
+    border: 1px solid var(--ad-gold, #d4af37);
+    border-radius: var(--ad-radius-lg, 18px);
+    background: linear-gradient(
+        110deg,
+        rgba(212, 175, 55, 0.13),
+        rgba(255, 255, 255, 0.025)
+    );
+    box-shadow: var(--ad-shadow, none);
+    color: var(--ad-text, inherit);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 180ms ease, transform 180ms ease;
+}
+
+.dashboard-tracker-card:hover {
+    border-color: var(--ad-gold, #d4af37);
+    transform: translateY(-2px);
+}
+
+.dashboard-tracker-card:focus-visible {
+    outline: 3px solid var(--ad-gold, #d4af37);
+    outline-offset: 4px;
+}
+
+.dashboard-tracker-card__icon {
+    display: grid;
+    flex: 0 0 46px;
+    width: 46px;
+    height: 46px;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--ad-gold, #d4af37);
+    color: #171717;
+    font-size: 25px;
+    font-weight: 700;
+}
+
+.dashboard-tracker-card__content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.dashboard-tracker-card__eyebrow {
+    color: var(--ad-gold, #d4af37);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+}
+
+.dashboard-tracker-card__title {
+    color: var(--ad-text, inherit);
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.dashboard-tracker-card__description {
+    color: var(--ad-text-soft, inherit);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.dashboard-tracker-card__action {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    color: var(--ad-gold, #d4af37);
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+@media (max-width: 600px) {
+    .dashboard-tracker-card {
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 14px;
+        padding: 18px;
+    }
+
+    .dashboard-tracker-card__content {
+        flex-basis: calc(100% - 64px);
+    }
+
+    .dashboard-tracker-card__action {
+        margin-left: 60px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dashboard-tracker-card {
+        transition: none;
+    }
+
+    .dashboard-tracker-card:hover {
+        transform: none;
+    }
+}
+
+/* Prayer Tracker contrast improvements (dark theme) */
+:root[data-theme="dark"] .prayer-tool-view .ad2-eyebrow {
+    color: #f0d987;
+}
+
+:root[data-theme="dark"] .prayer-tool-view .prayer-tool-header h2 {
+    color: #ffffff;
+}
+
+:root[data-theme="dark"] .prayer-tool-view .prayer-tool-header p,
+:root[data-theme="dark"] .prayer-tool-view .tracker-stat span,
+:root[data-theme="dark"] .prayer-tool-view .tracker-day-heading small,
+:root[data-theme="dark"] .prayer-tool-view .tracker-day-score {
+    color: #c4c4bf;
+}
+
 /* Dashboard Prayer Tracker title contrast in dark theme */
 :root[data-theme="dark"] .dashboard-tracker-card__title {
     color: #ffffff;

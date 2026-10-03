@@ -319,6 +319,19 @@ window.addEventListener(
         }
 
         activePrayerTool = action;
+
+        if (state.page !== 'prayer') {
+            state.page = 'prayer';
+
+            if (window.location.hash !== '#prayer') {
+                window.history.replaceState(
+                    null,
+                    '',
+                    '#prayer'
+                );
+            }
+        }
+
         render();
     }
 );
@@ -520,6 +533,20 @@ function render() {
     if (state.page === 'home') {
         bindQiblaCompass();
         loadDashboardAyah();
+
+        const trackerButton = document.querySelector(
+            '[data-dashboard-prayer-tracker]'
+        );
+
+        if (trackerButton) {
+            trackerButton.addEventListener('click', () => {
+                window.dispatchEvent(
+                    new CustomEvent('adhan:prayer-action', {
+                        detail: { action: 'tracker' }
+                    })
+                );
+            });
+        }
     }
 
     if (state.page === 'quran') {
@@ -823,6 +850,29 @@ function renderDashboard() {
 
                 </div>
 
+            </section>
+
+            <section class="ad2-section dashboard-tracker-section">
+                <button
+                    type="button"
+                    class="dashboard-tracker-card"
+                    data-dashboard-prayer-tracker
+                    aria-label="Open Prayer Tracker"
+                >
+                    <span class="dashboard-tracker-card__icon" aria-hidden="true">✓</span>
+
+                    <span class="dashboard-tracker-card__content">
+                        <span class="dashboard-tracker-card__eyebrow">DAILY WORSHIP</span>
+                        <span class="dashboard-tracker-card__title">Prayer Tracker</span>
+                        <span class="dashboard-tracker-card__description">
+                            Keep track of your daily prayers.
+                        </span>
+                    </span>
+
+                    <span class="dashboard-tracker-card__action">
+                        Track Your Prayers <span aria-hidden="true">→</span>
+                    </span>
+                </button>
             </section>
 
             <section class="ad2-section">
