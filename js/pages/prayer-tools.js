@@ -853,7 +853,7 @@ export function renderTracker() {
             <div class="tracker-list">
 
                 ${Array.from(
-                    { length: 7 },
+                    { length: 1 },
                     (_, index) => {
                         const date = new Date(today);
                         date.setDate(
