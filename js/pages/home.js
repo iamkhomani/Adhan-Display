@@ -10,6 +10,7 @@ import {
 } from '../core/time.js';
 import { bus } from '../core/bus.js';
 import { toast } from '../core/ui.js';
+import { t, locale, isRtl } from '../core/i18n.js';
 import { prayerState, loadPrayerTimes, qibla, hijriFor } from '../services/prayer.js';
 import { location } from '../services/location.js';
 import { tracker } from '../services/tracker.js';
@@ -20,7 +21,9 @@ import {
     updateTimelineNow, openLocationDialog, upcomingEvents
 } from './components.js';
 
-const WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+function weekdayName(key) {
+    return formatGregorian(key, { weekday: 'long' });
+}
 
 
 function setupCard() {
@@ -31,11 +34,11 @@ function setupCard() {
     return `
         <section class="setup" aria-labelledby="setup-title">
             <div>
-                <h2 id="setup-title" class="setup-title">Set your location</h2>
-                <p>Times below are for Utrecht until you choose your own location.</p>
+                <h2 id="setup-title" class="setup-title">${esc(t('home.setupTitle'))}</h2>
+                <p>${esc(t('home.setupText'))}</p>
             </div>
             <div class="setup-actions">
-                <button type="button" class="button button-primary" data-action="location">${icon('locate')} Choose location</button>
+                <button type="button" class="button button-primary" data-action="location">${icon('locate')} ${esc(t('home.chooseLocation'))}</button>
             </div>
         </section>
     `;
@@ -50,16 +53,16 @@ function heroHTML() {
         if (prayerState.status === 'error') {
             return `
                 <section class="hero hero-empty hero-error">
-                    <h1 class="hero-error-title">Prayer times could not be loaded</h1>
-                    <p class="hero-note">${esc(prayerState.error?.message || 'No connection')}. Check your internet connection and try again. Saved times appear automatically once they have been loaded before.</p>
-                    <button type="button" class="button button-primary" data-retry>${icon('refresh')} Try again</button>
+                    <h1 class="hero-error-title">${esc(t('home.errorTitle'))}</h1>
+                    <p class="hero-note">${esc(prayerState.error?.message || t('error.network'))}. ${esc(t('home.errorText'))}</p>
+                    <button type="button" class="button button-primary" data-retry>${icon('refresh')} ${esc(t('common.tryAgain'))}</button>
                 </section>
             `;
         }
 
         return `
             <section class="hero hero-empty" aria-busy="true">
-                <p class="hero-label">Loading prayer times</p>
+                <p class="hero-label">${esc(t('home.loading'))}</p>
                 <div class="skeleton skeleton-title"></div>
                 <div class="skeleton skeleton-time"></div>
             </section>
@@ -78,24 +81,24 @@ function heroHTML() {
                 ${otherTimeZone(now) ? `<span class="hero-local" data-local-time>${esc(localTimeText(now))}</span>` : ''}
             </div>
 
-            <p class="hero-label">${isSunrise ? 'Sunrise, end of Fajr time' : next.isTomorrow ? 'Next prayer, tomorrow' : 'Next prayer'}</p>
+            <p class="hero-label">${esc(isSunrise ? t('home.sunriseLabel') : next.isTomorrow ? t('home.nextTomorrow') : t('home.next'))}</p>
             <h1 class="hero-name" id="hero-name">
                 <span>${esc(next.label)}</span>
-                <span class="hero-arabic" lang="ar" dir="rtl">${esc(next.arabic)}</span>
+                ${isRtl() ? '' : `<span class="hero-arabic" lang="ar" dir="rtl">${esc(next.arabic)}</span>`}
             </h1>
             <p class="hero-time">${timeHTML(next.hm, settings.timeFormat)}</p>
             <p class="hero-countdown">
-                <span data-countdown-words>in ${esc(formatDuration(remaining))}</span>
+                <span data-countdown-words>${esc(t('home.inDuration', { duration: formatDuration(remaining) }))}</span>
                 <span class="hero-countdown-exact tnum" data-countdown>${formatCountdown(remaining)}</span>
             </p>
 
             <div class="hero-actions">
                 ${isSunrise ? '' : `
                     <button type="button" class="chip ${alertOn ? 'is-on' : ''}" data-hero-alert="${next.name}" aria-pressed="${alertOn}">
-                        ${icon(alertOn ? 'bell' : 'bellOff', { size: 16 })} Adhan ${alertOn ? 'on' : 'off'}
+                        ${icon(alertOn ? 'bell' : 'bellOff', { size: 16 })} ${esc(t(alertOn ? 'home.adhanOn' : 'home.adhanOff'))}
                     </button>`}
-                ${current ? `<span class="chip chip-quiet">${icon('clock', { size: 16 })} Now: ${esc(current.label)}</span>` : ''}
-                <a class="chip chip-quiet" href="#display">${icon('monitor', { size: 16 })} Display mode</a>
+                ${current ? `<span class="chip chip-quiet">${icon('clock', { size: 16 })} ${esc(t('home.now', { prayer: current.label }))}</span>` : ''}
+                <a class="chip chip-quiet" href="#display">${icon('monitor', { size: 16 })} ${esc(t('display.title'))}</a>
             </div>
 
             ${timelineHTML(today.entries, now, prayerState.tz)}
@@ -111,7 +114,7 @@ function otherTimeZone(now) {
 
 function localTimeText(now) {
     const clock = formatClock(now, prayerState.tz, getSettings().timeFormat);
-    return `Local time in ${location.get().city}: ${clock.time}${clock.suffix ? ` ${clock.suffix}` : ''}`;
+    return t('home.localTime', { place: location.get().city, time: `${clock.time}${clock.suffix ? ` ${clock.suffix}` : ''}` });
 }
 
 function timesCard() {
@@ -128,11 +131,11 @@ function timesCard() {
     return `
         <section class="panel times-panel" aria-labelledby="times-title">
             <header class="panel-head">
-                <h2 id="times-title" class="panel-title">Today</h2>
+                <h2 id="times-title" class="panel-title">${esc(t('common.today'))}</h2>
                 <button type="button" class="link-button" data-action="location">${icon('pin', { size: 16 })} ${esc(loc.city)}</button>
             </header>
             ${prayerListHTML(today.entries)}
-            <a class="panel-foot" href="#prayer/month">Monthly timetable</a>
+            <a class="panel-foot" href="#prayer/month">${esc(t('home.monthly'))}</a>
         </section>
     `;
 }
@@ -150,19 +153,19 @@ function trackerCard() {
     return `
         <section class="panel tracker-panel" aria-labelledby="tracker-title">
             <header class="panel-head">
-                <h2 id="tracker-title" class="panel-title">Prayed today</h2>
-                <span class="panel-meta tnum">${record.Exempt ? 'Exempt' : `${done} of 5`}</span>
+                <h2 id="tracker-title" class="panel-title">${esc(t('home.prayedToday'))}</h2>
+                <span class="panel-meta tnum">${esc(record.Exempt ? t('tracker.exempt') : t('tracker.countOf5', { count: done }))}</span>
             </header>
-            <div class="pray-chips" role="group" aria-label="Mark prayers as prayed">
+            <div class="pray-chips" role="group" aria-label="${esc(t('tracker.markLabel'))}">
                 ${SALAH.map(name => `
                     <button type="button" class="pray-chip ${record[name] ? 'is-done' : ''}" data-track="${name}"
                         aria-pressed="${record[name]}" ${record.Exempt ? 'disabled' : ''}>
                         <span class="pray-check">${icon('check', { size: 16 })}</span>
-                        <span>${name}</span>
+                        <span>${esc(t(`prayer.${name}`))}</span>
                     </button>
                 `).join('')}
             </div>
-            <a class="panel-foot" href="#prayer/tracker">History and statistics</a>
+            <a class="panel-foot" href="#prayer/tracker">${esc(t('home.history'))}</a>
         </section>
     `;
 }
@@ -172,15 +175,15 @@ function qiblaCard() {
     const { bearing, distance } = qibla(loc.lat, loc.lon);
 
     return `
-        <a class="panel qibla-panel" href="#prayer/qibla" aria-label="Qibla direction ${Math.round(bearing)} degrees, open compass">
+        <a class="panel qibla-panel" href="#prayer/qibla" aria-label="${esc(t('qibla.cardLabel', { degrees: Math.round(bearing) }))}">
             <span class="mini-compass" aria-hidden="true">
-                <span class="mini-compass-n">N</span>
+                <span class="mini-compass-n">${esc(t('qibla.n'))}</span>
                 <span class="mini-compass-needle" style="transform:rotate(${bearing}deg)">${icon('navigation', { size: 22 })}</span>
             </span>
             <span>
-                <span class="panel-title">Qibla</span>
+                <span class="panel-title">${esc(t('qibla.title'))}</span>
                 <span class="qibla-degrees tnum">${Math.round(bearing)}°</span>
-                <span class="qibla-distance">${Math.round(distance).toLocaleString('en')} km to Makkah</span>
+                <span class="qibla-distance">${esc(t('qibla.distance', { km: Math.round(distance).toLocaleString(locale()) }))}</span>
             </span>
         </a>
     `;
@@ -203,23 +206,23 @@ function insights() {
     if (hijri?.month === 9) {
         items.push({
             icon: 'crescent',
-            title: `Ramadan, day ${hijri.day}`,
-            text: `Suhoor ends at Fajr (${timings.Fajr}). Iftar at Maghrib (${timings.Maghrib}).`
+            title: t('insight.ramadanDay', { day: hijri.day }),
+            text: t('insight.ramadanText', { fajr: timings.Fajr, maghrib: timings.Maghrib })
         });
     }
 
     if (today.weekday === 5) {
         items.push({
             icon: 'book',
-            title: 'Jumu’ah today',
-            text: 'Reading Surah Al-Kahf on Friday is recommended.',
+            title: t('insight.jumuahToday'),
+            text: t('insight.jumuahTodayText'),
             href: '#quran/18'
         });
     } else if (today.weekday === 4) {
         items.push({
             icon: 'book',
-            title: 'Jumu’ah is tomorrow',
-            text: 'Surah Al-Kahf may be read from Maghrib tonight until sunset on Friday.',
+            title: t('insight.jumuahTomorrow'),
+            text: t('insight.jumuahTomorrowText'),
             href: '#quran/18'
         });
     }
@@ -229,11 +232,11 @@ function insights() {
     const tomorrowHijri = hijriFor(tomorrowKey);
 
     if (hijri?.day >= 13 && hijri?.day <= 15 && hijri.month !== 9) {
-        items.push({ icon: 'moon', title: 'The white days', text: `Today is ${hijri.day} ${hijriMonthName(hijri.month)}, one of the three recommended fasting days.` });
+        items.push({ icon: 'moon', title: t('insight.whiteDays'), text: t('insight.whiteDaysText', { date: `${hijri.day} ${hijriMonthName(hijri.month)}` }) });
     } else if (tomorrowHijri?.day === 13 && tomorrowHijri.month !== 9) {
-        items.push({ icon: 'moon', title: 'White days start tomorrow', text: 'Fasting on the 13th, 14th and 15th of the month is a Sunnah.' });
+        items.push({ icon: 'moon', title: t('insight.whiteDaysTomorrow'), text: t('insight.whiteDaysTomorrowText') });
     } else if ((tomorrowWeekday === 1 || tomorrowWeekday === 4) && hijri?.month !== 9) {
-        items.push({ icon: 'sparkle', title: `Tomorrow is ${WEEKDAY_NAMES[tomorrowWeekday]}`, text: 'Fasting on Mondays and Thursdays is a Sunnah.' });
+        items.push({ icon: 'sparkle', title: t('insight.tomorrowIs', { day: weekdayName(tomorrowKey) }), text: t('insight.mondayThursday') });
     }
 
     const upcoming = upcomingEvents(key, offset)[0];
@@ -241,14 +244,14 @@ function insights() {
     if (upcoming) {
         items.push({
             icon: 'calendar',
-            title: upcoming.days === 0 ? `${upcoming.name} is today` : `${upcoming.name} in ${upcoming.days} ${upcoming.days === 1 ? 'day' : 'days'}`,
-            text: `${upcoming.note} Expected ${formatGregorian(upcoming.date, { day: 'numeric', month: 'long' })}, subject to moon sighting.`,
+            title: upcoming.days === 0 ? t('insight.eventToday', { name: upcoming.name }) : t('insight.eventIn', { name: upcoming.name, count: upcoming.days }),
+            text: `${upcoming.note} ${t('insight.expected', { date: formatGregorian(upcoming.date, { day: 'numeric', month: 'long' }) })}`,
             href: '#islamic/calendar'
         });
     }
 
     if (next && !items.length) {
-        items.push({ icon: 'clock', title: 'Stay consistent', text: 'Small deeds done regularly are the most beloved to Allah.' });
+        items.push({ icon: 'clock', title: t('insight.consistent'), text: t('insight.consistentText') });
     }
 
     return items.slice(0, 2);
@@ -262,7 +265,7 @@ function insightCard() {
     }
 
     return `
-        <section class="panel insight-panel" aria-label="Today">
+        <section class="panel insight-panel" aria-label="${esc(t('common.today'))}">
             ${list.map(item => {
                 const inner = `
                     <span class="insight-icon">${icon(item.icon, { size: 18 })}</span>
@@ -280,23 +283,23 @@ function readingCards() {
     const [text, reference] = pickOfDay(DAILY_HADITHS) || ['', ''];
 
     return `
-        <section class="reading" aria-label="Daily reading">
+        <section class="reading" aria-label="${esc(t('home.dailyReading'))}">
             <article class="panel ayah-panel" data-ayah-card>
-                <h2 class="panel-title">Ayah of the day</h2>
+                <h2 class="panel-title">${esc(t('home.ayahOfDay'))}</h2>
                 <div data-ayah-body><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text short"></div></div>
             </article>
             <article class="panel hadith-panel">
-                <h2 class="panel-title">Hadith of the day</h2>
-                <blockquote class="quote">${esc(text)}</blockquote>
+                <h2 class="panel-title">${esc(t('home.hadithOfDay'))}</h2>
+                <blockquote class="quote" lang="en">${esc(text)}</blockquote>
                 <p class="source">${esc(reference)}</p>
-                <a class="panel-foot" href="#hadith">Read more hadith</a>
+                <a class="panel-foot" href="#hadith">${esc(t('home.moreHadith'))}</a>
             </article>
         </section>
     `;
 }
 
 export const homePage = {
-    title: 'Prayer times',
+    titleKey: 'nav.home',
 
     render() {
         return `
@@ -312,9 +315,9 @@ export const homePage = {
                     ${insightCard()}
                 </div>
                 ${readingCards()}
-                <section class="shahada" aria-label="Shahada">
+                <section class="shahada" aria-label="${esc(t('home.shahada'))}">
                     <p class="shahada-arabic" lang="ar" dir="rtl">${esc(SHAHADA.arabic)}</p>
-                    <p class="shahada-meaning">${esc(SHAHADA.meaning)}</p>
+                    <p class="shahada-meaning">${esc(t('shahada.meaning'))}</p>
                 </section>
             </div>
         `;
@@ -365,7 +368,7 @@ export const homePage = {
             if (now.getMinutes() !== lastMinute) {
                 lastMinute = now.getMinutes();
                 if (words) {
-                    words.textContent = `in ${formatDuration(remaining)}`;
+                    words.textContent = t('home.inDuration', { duration: formatDuration(remaining) });
                 }
                 updateTimelineNow(root, now, prayerState.tz);
                 const local = root.querySelector('[data-local-time]');
@@ -384,7 +387,7 @@ export const homePage = {
             if (track && prayerState.todayKey) {
                 const record = tracker.toggle(prayerState.todayKey, track.dataset.track);
                 if (record[track.dataset.track] && tracker.count(record) === 5) {
-                    toast('All five prayers done today. Alhamdulillah.');
+                    toast(t('tracker.allFive'));
                 }
             } else if (heroAlert) {
                 const name = heroAlert.dataset.heroAlert;
@@ -428,11 +431,11 @@ async function loadAyah(root) {
             <p class="ayah-arabic" lang="ar" dir="rtl">${esc(ayah.text)}</p>
             ${ayah.translation ? `<p class="ayah-translation">${esc(ayah.translation)}</p>` : ''}
             <p class="source">${esc(ayah.surahName)} ${ayah.surah}:${ayah.numberInSurah}</p>
-            <a class="panel-foot" href="#quran/${ayah.surah}:${ayah.numberInSurah}">Read in context</a>
+            <a class="panel-foot" href="#quran/${ayah.surah}:${ayah.numberInSurah}">${esc(t('home.readInContext'))}</a>
         `;
     } catch {
         if (body.isConnected) {
-            body.innerHTML = '<p class="muted">The ayah of the day could not be loaded. It will appear when you are online.</p>';
+            body.innerHTML = `<p class="muted">${esc(t('home.ayahFailed'))}</p>`;
         }
     }
 }

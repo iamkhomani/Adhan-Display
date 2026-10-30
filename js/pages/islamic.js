@@ -18,22 +18,45 @@ import {
     ADHKAR, DAILY_DUAS, TASBIH_PHRASES, HOLY_SITES, LEARN_SALAH
 } from '../data/content.js';
 import { pageHeader, hijriText, timeHTML, upcomingEvents } from './components.js';
+import { t, locale } from '../core/i18n.js';
 
+/* [id, icon]; titles and descriptions are translation keys tool.<id> and tool.<id>.text */
 const TOOLS = [
-    ['adhkar', 'Morning & evening adhkar', 'Daily remembrance with counters', 'sun'],
-    ['tasbih', 'Tasbih counter', 'Count your dhikr', 'sparkle'],
-    ['names', '99 Names of Allah', 'Asma ul-Husna with meanings', 'star'],
-    ['ramadan', 'Ramadan', 'Countdown, suhoor and iftar', 'crescent'],
-    ['calendar', 'Islamic calendar', 'Hijri date and key occasions', 'calendar'],
-    ['qibla', 'Qibla compass', 'Direction of the Ka\u2018bah', 'compass']
+    ['adhkar', 'sun'],
+    ['tasbih', 'sparkle'],
+    ['names', 'star'],
+    ['ramadan', 'crescent'],
+    ['calendar', 'calendar'],
+    ['qibla', 'compass']
 ];
+
+function whenLabel(days) {
+    if (days === 0) {
+        return t('common.today');
+    }
+    if (days === 1) {
+        return t('common.tomorrow');
+    }
+    return t('common.days', { count: days });
+}
+
+function tasbihSub(tasbih) {
+    if (!tasbih.target) {
+        return t('tasbih.free');
+    }
+    const within = tasbih.count % tasbih.target;
+    const rounds = Math.floor(tasbih.count / tasbih.target);
+    return rounds
+        ? t('tasbih.ofRound', { target: tasbih.target, round: rounds + (within ? 1 : 0) })
+        : t('tasbih.of', { target: tasbih.target });
+}
 
 function todayKey() {
     return prayerState.todayKey || new Date().toISOString().slice(0, 10);
 }
 
 function backLink() {
-    return `<a class="back-link" href="#islamic">${icon('left', { size: 18 })} Islamic</a>`;
+    return `<a class="back-link" href="#islamic">${icon('left', { size: 18 })} ${esc(t('nav.islamic'))}</a>`;
 }
 
 /* ---------------------------------------------------------------
@@ -50,50 +73,50 @@ function hubView() {
 
     return `
         <div class="page islamic-page">
-            ${pageHeader('Islamic', hijri ? `Today is ${hijriText(hijri)}.` : 'Remembrance, the calendar and places of worship.')}
+            ${pageHeader(t('nav.islamic'), hijri ? t('islamic.today', { date: hijriText(hijri) }) : t('islamic.lead'))}
 
-            <nav class="tool-grid" aria-label="Tools">
-                ${TOOLS.map(([id, title, text, iconName]) => `
+            <nav class="tool-grid" aria-label="${esc(t('islamic.tools'))}">
+                ${TOOLS.map(([id, iconName]) => `
                     <a class="tool-card" href="${id === 'qibla' ? '#prayer/qibla' : `#islamic/${id}`}">
                         <span class="tool-icon">${icon(iconName, { size: 22 })}</span>
-                        <span><strong>${esc(title)}</strong><small>${esc(text)}</small></span>
+                        <span><strong>${esc(t(`tool.${id}`))}</strong><small>${esc(t(`tool.${id}.text`))}</small></span>
                     </a>
                 `).join('')}
             </nav>
 
             <div class="two-col">
                 <article class="panel dua-panel" aria-labelledby="dua-title">
-                    <h2 id="dua-title" class="panel-title">Du‘a of the day</h2>
+                    <h2 id="dua-title" class="panel-title">${esc(t('islamic.duaOfDay'))}</h2>
                     <p class="dua-arabic" lang="ar" dir="rtl">${esc(arabic)}</p>
                     <p class="dua-transliteration">${esc(transliteration)}</p>
-                    <p class="dua-meaning">${esc(meaning)}</p>
+                    <p class="dua-meaning" lang="en">${esc(meaning)}</p>
                     <p class="source">${esc(reference)}</p>
                 </article>
 
                 <section class="panel" aria-labelledby="events-title">
                     <header class="panel-head">
-                        <h2 id="events-title" class="panel-title">Coming up</h2>
-                        <a class="link-button" href="#islamic/calendar">Calendar</a>
+                        <h2 id="events-title" class="panel-title">${esc(t('islamic.comingUp'))}</h2>
+                        <a class="link-button" href="#islamic/calendar">${esc(t('islamic.calendarLink'))}</a>
                     </header>
                     <ul class="event-list">
                         ${events.map(event => `
                             <li class="event">
-                                <span class="event-when tnum">${event.days === 0 ? 'Today' : event.days === 1 ? 'Tomorrow' : `${event.days} days`}</span>
+                                <span class="event-when tnum">${esc(whenLabel(event.days))}</span>
                                 <span><strong>${esc(event.name)}</strong><small>${esc(formatGregorian(event.date, { weekday: 'short', day: 'numeric', month: 'long' }))}</small></span>
                             </li>
                         `).join('')}
                     </ul>
-                    <p class="panel-note">Expected dates; the start of a month depends on the moon sighting.</p>
+                    <p class="panel-note">${esc(t('islamic.expectedNote'))}</p>
                 </section>
             </div>
 
             <section class="section" id="discover" aria-labelledby="sites-title">
-                <h2 id="sites-title" class="section-title">The holy mosques, live</h2>
+                <h2 id="sites-title" class="section-title">${esc(t('islamic.holyMosques'))}</h2>
                 <div class="link-grid">
-                    ${HOLY_SITES.map(([name, city, text, url]) => `
+                    ${HOLY_SITES.map(([id, url]) => `
                         <a class="link-card" href="${esc(url)}" target="_blank" rel="noopener noreferrer">
                             <span class="link-card-icon">${icon('video', { size: 20 })}</span>
-                            <span><strong>${esc(name)}</strong><small>${esc(city)}, live on YouTube</small></span>
+                            <span><strong>${esc(t(`site.${id}`))}</strong><small>${esc(t('islamic.liveOn', { city: t(`site.${id}.city`) }))}</small></span>
                             ${icon('external', { size: 16, className: 'link-card-arrow' })}
                         </a>
                     `).join('')}
@@ -101,28 +124,28 @@ function hubView() {
             </section>
 
             <section class="section" aria-labelledby="nearby-title">
-                <h2 id="nearby-title" class="section-title">Near ${esc(loc.city)}</h2>
+                <h2 id="nearby-title" class="section-title">${esc(t('islamic.near', { place: loc.city }))}</h2>
                 <div class="link-grid">
                     <a class="link-card" href="https://www.google.com/maps/search/mosque/@${coords},14z" target="_blank" rel="noopener noreferrer">
                         <span class="link-card-icon">${icon('mosque', { size: 20 })}</span>
-                        <span><strong>Mosques</strong><small>Open Google Maps around your location</small></span>
+                        <span><strong>${esc(t('islamic.mosques'))}</strong><small>${esc(t('islamic.mosquesText'))}</small></span>
                         ${icon('external', { size: 16, className: 'link-card-arrow' })}
                     </a>
                     <a class="link-card" href="https://www.google.com/maps/search/halal+food/@${coords},14z" target="_blank" rel="noopener noreferrer">
                         <span class="link-card-icon">${icon('food', { size: 20 })}</span>
-                        <span><strong>Halal food</strong><small>Restaurants and shops nearby</small></span>
+                        <span><strong>${esc(t('islamic.halal'))}</strong><small>${esc(t('islamic.halalText'))}</small></span>
                         ${icon('external', { size: 16, className: 'link-card-arrow' })}
                     </a>
                 </div>
             </section>
 
             <section class="section" aria-labelledby="learn-title">
-                <h2 id="learn-title" class="section-title">Learn how to pray</h2>
+                <h2 id="learn-title" class="section-title">${esc(t('islamic.learn'))}</h2>
                 <div class="link-grid">
-                    ${LEARN_SALAH.map(([name, text, url]) => `
+                    ${LEARN_SALAH.map(([id, url]) => `
                         <a class="link-card" href="${esc(url)}" target="_blank" rel="noopener noreferrer">
                             <span class="link-card-icon">${icon('hand', { size: 20 })}</span>
-                            <span><strong>${esc(name)}</strong><small>${esc(text)}</small></span>
+                            <span><strong>${esc(t(`learn.${id}`))}</strong><small>${esc(t(`learn.${id}.text`))}</small></span>
                             ${icon('external', { size: 16, className: 'link-card-arrow' })}
                         </a>
                     `).join('')}
@@ -148,14 +171,14 @@ function saveAdhkarProgress(counts) {
 function adhkarView() {
     const counts = adhkarProgress();
     const asr = prayerState.today?.entries.find(entry => entry.name === 'Asr');
-    const period = asr?.passed || (!asr && new Date().getHours() >= 15) ? 'evening' : 'morning';
+    const evening = asr?.passed || (!asr && new Date().getHours() >= 15);
 
     return `
         <div class="page tool-page">
             ${backLink()}
-            ${pageHeader('Morning & evening adhkar',
-                `Recite these after Fajr and after Asr. Tap a counter as you go; progress resets each day. It is ${period} now.`,
-                `<button type="button" class="button button-ghost" data-adhkar-reset>${icon('refresh', { size: 18 })} Reset</button>`)}
+            ${pageHeader(t('tool.adhkar'),
+                `${t('adhkar.lead')} ${t(evening ? 'adhkar.evening' : 'adhkar.morning')}`,
+                `<button type="button" class="button button-ghost" data-adhkar-reset>${icon('refresh', { size: 18 })} ${esc(t('common.reset'))}</button>`)}
             <ol class="adhkar">
                 ${ADHKAR.map((item, index) => {
                     const count = Math.min(item.count, counts[index] || 0);
@@ -163,16 +186,16 @@ function adhkarView() {
                     return `
                         <li class="panel dhikr ${done ? 'is-done' : ''}" data-dhikr="${index}">
                             <header class="dhikr-head">
-                                <h2 class="dhikr-title">${esc(item.title)}</h2>
-                                <span class="dhikr-times">${item.count === 1 ? 'Once' : `${item.count} times`}</span>
+                                <h2 class="dhikr-title">${esc(t(item.title))}</h2>
+                                <span class="dhikr-times">${esc(t('adhkar.times', { count: item.count }))}</span>
                             </header>
                             ${item.arabic ? `<p class="dhikr-arabic" lang="ar" dir="rtl">${esc(item.arabic)}</p>` : ''}
                             ${item.transliteration ? `<p class="dhikr-transliteration">${esc(item.transliteration)}</p>` : ''}
-                            <p class="dhikr-meaning">${esc(item.meaning)}</p>
+                            ${item.note ? `<p class="dhikr-meaning">${esc(t(item.note))}</p>` : `<p class="dhikr-meaning" lang="en">${esc(item.meaning)}</p>`}
                             <footer class="dhikr-foot">
                                 <span class="source">${esc(item.reference)}</span>
-                                ${item.quran ? `<a class="button button-ghost" href="#quran/${item.quran}">${icon('book', { size: 18 })} Open in the Quran</a>` : ''}
-                                <button type="button" class="counter ${done ? 'is-done' : ''}" data-count="${index}" aria-label="Count ${esc(item.title)}: ${count} of ${item.count}">
+                                ${item.quran ? `<a class="button button-ghost" href="#quran/${item.quran}">${icon('book', { size: 18 })} ${esc(t('adhkar.openQuran'))}</a>` : ''}
+                                <button type="button" class="counter ${done ? 'is-done' : ''}" data-count="${index}" aria-label="${esc(t('adhkar.countLabel', { title: t(item.title), count, total: item.count }))}">
                                     ${done ? icon('check', { size: 18 }) : ''}<span class="tnum">${count} / ${item.count}</span>
                                 </button>
                             </footer>
@@ -203,14 +226,13 @@ function tasbihView() {
     const phrase = TASBIH_PHRASES[tasbih.phrase];
     const circumference = 2 * Math.PI * 46;
     const progress = tasbih.target ? (tasbih.count % tasbih.target || (tasbih.count ? tasbih.target : 0)) / tasbih.target : 0;
-    const rounds = tasbih.target ? Math.floor(tasbih.count / tasbih.target) : 0;
 
     return `
         <div class="page tool-page tasbih-page">
             ${backLink()}
-            ${pageHeader('Tasbih counter', 'Tap the circle for each dhikr. Your count is saved on this device.')}
+            ${pageHeader(t('tool.tasbih'), t('tasbih.lead'))}
 
-            <div class="chips-scroll" role="group" aria-label="Dhikr">
+            <div class="chips-scroll" role="group" aria-label="${esc(t('tasbih.dhikr'))}">
                 ${TASBIH_PHRASES.map((item, index) => `
                     <button type="button" class="chip ${index === tasbih.phrase ? 'is-on' : ''}" data-phrase="${index}" aria-pressed="${index === tasbih.phrase}">${esc(item.label)}</button>
                 `).join('')}
@@ -218,27 +240,27 @@ function tasbihView() {
 
             <div class="tasbih">
                 <p class="tasbih-phrase" lang="ar" dir="rtl">${esc(phrase.arabic)}</p>
-                <button type="button" class="tasbih-button" data-tasbih="add" aria-label="Count. Current count ${tasbih.count}">
+                <button type="button" class="tasbih-button" data-tasbih="add" aria-label="${esc(t('tasbih.countLabel', { count: tasbih.count }))}">
                     <svg class="tasbih-ring" viewBox="0 0 100 100" aria-hidden="true">
                         <circle cx="50" cy="50" r="46" class="ring-track"/>
                         <circle cx="50" cy="50" r="46" class="ring-fill" data-ring
                             style="stroke-dasharray:${circumference};stroke-dashoffset:${circumference * (1 - progress)}"/>
                     </svg>
                     <span class="tasbih-count tnum" data-tasbih-count>${tasbih.count}</span>
-                    <span class="tasbih-sub" data-tasbih-sub>${tasbih.target ? `of ${tasbih.target}${rounds ? `, round ${rounds + (tasbih.count % tasbih.target ? 1 : 0)}` : ''}` : 'Free count'}</span>
+                    <span class="tasbih-sub" data-tasbih-sub>${esc(tasbihSub(tasbih))}</span>
                 </button>
 
-                <div class="segmented" role="group" aria-label="Target">
-                    ${[[33, '33'], [99, '99'], [100, '100'], [0, 'No limit']].map(([value, label]) => `
+                <div class="segmented" role="group" aria-label="${esc(t('tasbih.target'))}">
+                    ${[[33, '33'], [99, '99'], [100, '100'], [0, t('tasbih.noLimit')]].map(([value, label]) => `
                         <button type="button" class="segment ${tasbih.target === value ? 'is-active' : ''}" data-target="${value}" aria-pressed="${tasbih.target === value}">${label}</button>
                     `).join('')}
                 </div>
 
                 <div class="button-row">
-                    <button type="button" class="button button-ghost" data-tasbih="minus">${icon('minus', { size: 18 })} Undo</button>
-                    <button type="button" class="button button-ghost" data-tasbih="reset">${icon('refresh', { size: 18 })} Reset</button>
+                    <button type="button" class="button button-ghost" data-tasbih="minus">${icon('minus', { size: 18 })} ${esc(t('tasbih.undo'))}</button>
+                    <button type="button" class="button button-ghost" data-tasbih="reset">${icon('refresh', { size: 18 })} ${esc(t('common.reset'))}</button>
                 </div>
-                <p class="panel-note tnum" data-tasbih-total>Total counted on this device: ${tasbih.total.toLocaleString('en')}</p>
+                <p class="panel-note tnum" data-tasbih-total>${esc(t('tasbih.total', { count: tasbih.total.toLocaleString(locale()) }))}</p>
             </div>
         </div>
     `;
@@ -273,15 +295,12 @@ function updateTasbih(root, change) {
     const circumference = 2 * Math.PI * 46;
     const within = tasbih.target ? tasbih.count % tasbih.target : 0;
     const progress = tasbih.target ? (within || (tasbih.count ? tasbih.target : 0)) / tasbih.target : 0;
-    const rounds = tasbih.target ? Math.floor(tasbih.count / tasbih.target) : 0;
 
     root.querySelector('[data-tasbih-count]').textContent = tasbih.count;
     root.querySelector('[data-ring]').style.strokeDashoffset = String(circumference * (1 - progress));
-    root.querySelector('[data-tasbih-sub]').textContent = tasbih.target
-        ? `of ${tasbih.target}${rounds ? `, round ${rounds + (within ? 1 : 0)}` : ''}`
-        : 'Free count';
-    root.querySelector('[data-tasbih-total]').textContent = `Total counted on this device: ${tasbih.total.toLocaleString('en')}`;
-    root.querySelector('[data-tasbih="add"]').setAttribute('aria-label', `Count. Current count ${tasbih.count}`);
+    root.querySelector('[data-tasbih-sub]').textContent = tasbihSub(tasbih);
+    root.querySelector('[data-tasbih-total]').textContent = t('tasbih.total', { count: tasbih.total.toLocaleString(locale()) });
+    root.querySelector('[data-tasbih="add"]').setAttribute('aria-label', t('tasbih.countLabel', { count: tasbih.count }));
     root.querySelector('.tasbih').classList.toggle('is-complete', Boolean(reached));
 
     if (reached) {
@@ -297,12 +316,12 @@ function namesView() {
     return `
         <div class="page tool-page">
             ${backLink()}
-            ${pageHeader('99 Names of Allah', 'Asma ul-Husna, the most beautiful names.')}
+            ${pageHeader(t('tool.names'), t('names.lead'))}
             <div class="filter-field">
                 ${icon('search', { size: 16 })}
-                <input type="search" placeholder="Search a name or meaning" data-names-filter aria-label="Search names">
+                <input type="search" placeholder="${esc(t('names.search'))}" data-names-filter aria-label="${esc(t('names.search'))}">
             </div>
-            <div data-names>${spinner('Loading the names')}</div>
+            <div data-names>${spinner()}</div>
         </div>
     `;
 }
@@ -328,7 +347,7 @@ async function loadNames(root) {
                     </li>
                 `).join('')}
             </ol>
-            <p class="panel-note" data-names-empty hidden>No name matches your search.</p>
+            <p class="panel-note" data-names-empty hidden>${esc(t('names.noMatch'))}</p>
         `;
 
         root.querySelector('[data-names-filter]').addEventListener('input', event => {
@@ -342,7 +361,7 @@ async function loadNames(root) {
             box.querySelector('[data-names-empty]').hidden = visible > 0;
         });
     } catch (error) {
-        box.innerHTML = emptyState({ title: 'The names could not be loaded', text: error.message });
+        box.innerHTML = emptyState({ title: t('names.failed'), text: error.message });
     }
 }
 
@@ -372,16 +391,16 @@ function ramadanView() {
 
         body = `
             <section class="panel ramadan-now">
-                <p class="ramadan-day">Day <span class="tnum">${hijri.day}</span> of Ramadan</p>
-                <div class="fast-bar" role="img" aria-label="Today's fast is ${Math.round(progress)}% complete">
+                <p class="ramadan-day">${t('ramadan.dayOf', { day: `<span class="tnum">${hijri.day}</span>` })}</p>
+                <div class="fast-bar" role="img" aria-label="${esc(t('ramadan.fastProgress', { percent: Math.round(progress) }))}">
                     <span style="width:${progress}%" data-fast-bar></span>
                 </div>
                 <div class="fast-times">
-                    <div><span>Suhoor ends</span><strong>${fajr ? timeHTML(fajr.hm) : '--:--'}</strong></div>
-                    <div><span>Iftar</span><strong>${maghrib ? timeHTML(maghrib.hm) : '--:--'}</strong></div>
+                    <div><span>${esc(t('ramadan.suhoorEnds'))}</span><strong>${fajr ? timeHTML(fajr.hm) : '--:--'}</strong></div>
+                    <div><span>${esc(t('ramadan.iftar'))}</span><strong>${maghrib ? timeHTML(maghrib.hm) : '--:--'}</strong></div>
                 </div>
-                ${hijri.day >= 20 ? '<p class="panel-note">The last ten nights have begun. Seek Laylat al-Qadr in the odd nights.</p>' : ''}
-                ${eid ? `<p class="panel-note">Eid al-Fitr is expected on ${esc(formatGregorian(eid.date))}.</p>` : ''}
+                ${hijri.day >= 20 ? `<p class="panel-note">${esc(t('ramadan.lastTen'))}</p>` : ''}
+                ${eid ? `<p class="panel-note">${esc(t('ramadan.eidExpected', { date: formatGregorian(eid.date) }))}</p>` : ''}
             </section>
         `;
     } else if (start) {
@@ -389,29 +408,29 @@ function ramadanView() {
         const target = zonedDate(y, m, d, 0, 0, prayerState.tz);
         body = `
             <section class="panel ramadan-count" data-ramadan-target="${target.getTime()}">
-                <p class="ramadan-lead">Ramadan ${hijriFor(start.date)?.year || ''} is expected to begin on</p>
+                <p class="ramadan-lead">${esc(t('ramadan.beginsOn', { year: hijriFor(start.date)?.year || '' }))}</p>
                 <p class="ramadan-date">${esc(formatGregorian(start.date, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))}</p>
                 <div class="countdown" aria-live="off">
-                    ${['Days', 'Hours', 'Minutes', 'Seconds'].map(label => `<div><span class="tnum" data-unit="${label}">--</span><small>${label}</small></div>`).join('')}
+                    ${['Days', 'Hours', 'Minutes', 'Seconds'].map(unit => `<div><span class="tnum" data-unit="${unit}">--</span><small>${esc(t(`ramadan.${unit.toLowerCase()}`))}</small></div>`).join('')}
                 </div>
-                <p class="panel-note">Subject to the sighting of the moon. The first tarawih prayer is on the night before.</p>
+                <p class="panel-note">${esc(t('ramadan.note'))}</p>
             </section>
         `;
     } else {
-        body = emptyState({ title: 'The Ramadan date could not be calculated in this browser' });
+        body = emptyState({ title: t('ramadan.unavailable') });
     }
 
     return `
         <div class="page tool-page">
             ${backLink()}
-            ${pageHeader('Ramadan', isRamadan ? 'May Allah accept your fasting and prayers.' : 'Prepare your heart and your worship.')}
+            ${pageHeader(t('tool.ramadan'), t(isRamadan ? 'ramadan.leadDuring' : 'ramadan.leadBefore'))}
             ${body}
             ${!isRamadan && fajr && maghrib ? `
                 <section class="panel">
-                    <h2 class="panel-title">If you fast today</h2>
+                    <h2 class="panel-title">${esc(t('ramadan.ifFast'))}</h2>
                     <div class="fast-times">
-                        <div><span>Suhoor ends at Fajr</span><strong>${timeHTML(fajr.hm)}</strong></div>
-                        <div><span>Iftar at Maghrib</span><strong>${timeHTML(maghrib.hm)}</strong></div>
+                        <div><span>${esc(t('ramadan.suhoorAtFajr'))}</span><strong>${timeHTML(fajr.hm)}</strong></div>
+                        <div><span>${esc(t('ramadan.iftarAtMaghrib'))}</span><strong>${timeHTML(maghrib.hm)}</strong></div>
                     </div>
                 </section>` : ''}
         </div>
@@ -464,7 +483,7 @@ function calendarView() {
     return `
         <div class="page tool-page">
             ${backLink()}
-            ${pageHeader('Islamic calendar', 'Dates follow the Umm al-Qura calendar.')}
+            ${pageHeader(t('tool.calendar'), t('calendar.lead'))}
 
             <section class="panel hijri-today">
                 ${hijri ? `
@@ -474,15 +493,15 @@ function calendarView() {
                         <p class="hijri-month-ar" lang="ar" dir="rtl">${esc(hijriMonthArabic(hijri.month))}</p>
                         <p class="muted">${esc(formatGregorian(key, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))}</p>
                     </div>
-                ` : '<p>The Hijri date is not available in this browser.</p>'}
+                ` : `<p>${esc(t('calendar.unavailable'))}</p>`}
             </section>
 
             <section class="panel" aria-labelledby="occasions-title">
-                <h2 id="occasions-title" class="panel-title">Occasions in the coming year</h2>
+                <h2 id="occasions-title" class="panel-title">${esc(t('calendar.occasions'))}</h2>
                 <ul class="event-list">
                     ${events.map(event => `
                         <li class="event ${event.days === 0 ? 'is-today' : ''}">
-                            <span class="event-when tnum">${event.days === 0 ? 'Today' : event.days === 1 ? 'Tomorrow' : `${event.days} days`}</span>
+                            <span class="event-when tnum">${esc(whenLabel(event.days))}</span>
                             <span>
                                 <strong>${esc(event.name)}</strong>
                                 <small>${esc(formatGregorian(event.date, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))}, ${event.day} ${esc(hijriMonthName(event.month))}</small>
@@ -495,11 +514,14 @@ function calendarView() {
 
             ${whiteStart ? `
                 <section class="panel">
-                    <h2 class="panel-title">White days</h2>
-                    <p>Fasting on the 13th, 14th and 15th of each Hijri month is a Sunnah. ${daysBetweenKeys(key, whiteStart) <= 0 ? 'They are this week' : 'Next'}: ${esc(formatGregorian(whiteStart, { weekday: 'long', day: 'numeric', month: 'long' }))} to ${esc(formatGregorian(addDaysToKey(whiteStart, 2), { weekday: 'long', day: 'numeric', month: 'long' }))}.</p>
+                    <h2 class="panel-title">${esc(t('calendar.whiteDays'))}</h2>
+                    <p>${esc(t('calendar.whiteDaysText'))} ${esc(t(daysBetweenKeys(key, whiteStart) <= 0 ? 'calendar.whiteNow' : 'calendar.whiteNext', {
+                        from: formatGregorian(whiteStart, { weekday: 'long', day: 'numeric', month: 'long' }),
+                        to: formatGregorian(addDaysToKey(whiteStart, 2), { weekday: 'long', day: 'numeric', month: 'long' })
+                    }))}</p>
                 </section>` : ''}
 
-            <p class="fine-print">Local moon sighting can differ by a day. You can shift the Hijri date in <a href="#settings/prayer">Settings</a>.</p>
+            <p class="fine-print">${esc(t('calendar.fineprint'))} <a href="#settings/prayer">${esc(t('nav.settings'))}</a></p>
         </div>
     `;
 }
@@ -520,7 +542,7 @@ function viewFor(tool) {
 }
 
 export const islamicPage = {
-    title: 'Islamic',
+    titleKey: 'nav.islamic',
 
     render(path) {
         return viewFor(path[0]);
@@ -579,17 +601,17 @@ export const islamicPage = {
                 counter.classList.toggle('is-done', done);
                 counter.closest('.dhikr').classList.toggle('is-done', done);
                 counter.innerHTML = `${done ? icon('check', { size: 18 }) : ''}<span class="tnum">${next} / ${item.count}</span>`;
-                counter.setAttribute('aria-label', `Count ${item.title}: ${next} of ${item.count}`);
+                counter.setAttribute('aria-label', t('adhkar.countLabel', { title: t(item.title), count: next, total: item.count }));
                 navigator.vibrate?.(done ? [50, 30, 50] : 10);
             } else if (target.closest('[data-adhkar-reset]')) {
-                if (await confirmDialog('Reset all counters for today?', { confirm: 'Reset' })) {
+                if (await confirmDialog(t('adhkar.resetConfirm'), { confirm: t('common.reset') })) {
                     saveAdhkarProgress({});
                     root.innerHTML = adhkarView();
                 }
             } else if (tasbihAction) {
                 const action = tasbihAction.dataset.tasbih;
                 if (action === 'reset') {
-                    if (tasbihState().count && !(await confirmDialog('Set the counter back to zero?', { confirm: 'Reset' }))) {
+                    if (tasbihState().count && !(await confirmDialog(t('tasbih.resetConfirm'), { confirm: t('common.reset') }))) {
                         return;
                     }
                 }
@@ -600,7 +622,7 @@ export const islamicPage = {
             } else if (goal) {
                 store.set('tasbih', { ...tasbihState(), target: Number(goal.dataset.target), count: 0 });
                 root.innerHTML = tasbihView();
-                toast('Counter reset for the new target', { duration: 2000 });
+                toast(t('tasbih.targetReset'), { duration: 2000 });
             }
         });
 

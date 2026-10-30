@@ -35,6 +35,16 @@
     unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200F, U+25CC;
 }
 
+/* Cyrillic letters for Russian; only downloaded when the page uses them. */
+@font-face {
+    font-family: "Manrope";
+    src: url("../fonts/manrope-cyrillic.woff2") format("woff2");
+    font-weight: 200 800;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+
 /* 2. Tokens -------------------------------------------------------------- */
 
 :root,
@@ -262,7 +272,9 @@ mark {
 
 /* 4. Typography --------------------------------------------------------- */
 
-[lang="ar"] {
+/* Arabic text inside the page (Quran, du'a, prayer names). The html element
+   itself can be lang="ar" for the Arabic interface, which uses --font-ui. */
+:not(html)[lang="ar"] {
     font-family: var(--font-arabic);
     font-weight: 400;
 }
@@ -3879,3 +3891,116 @@ body[data-page="display"] .banner {
         scroll-behavior: auto !important;
     }
 }
+
+/* 99. Languages and right-to-left --------------------------------------- */
+
+/* Interface fonts per script. Manrope stays first for Latin letters and digits. */
+html[lang="zh"] {
+    --font-ui: "Manrope", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", "Noto Sans SC", "Source Han Sans SC", sans-serif;
+    --font-display: var(--font-ui);
+}
+
+html[lang="hi"] {
+    --font-ui: "Manrope", "Noto Sans Devanagari", "Nirmala UI", "Kohinoor Devanagari", "Mangal", sans-serif;
+    --font-display: var(--font-ui);
+}
+
+html[lang="bn"] {
+    --font-ui: "Manrope", "Noto Sans Bengali", "Nirmala UI", "Kohinoor Bangla", "Vrinda", sans-serif;
+    --font-display: var(--font-ui);
+}
+
+html[lang="ar"],
+html[lang="ur"] {
+    --font-ui: "Manrope", "Noto Sans Arabic", "Segoe UI", "SF Arabic", "Geeza Pro", Tahoma, sans-serif;
+    --font-display: var(--font-ui);
+}
+
+/* Marcellus has no Cyrillic, so Russian headings use Manrope. */
+html[lang="ru"] {
+    --font-display: var(--font-ui);
+}
+
+/* Scripts without capitals or with tall marks read better without tracking and with more line height. */
+html[lang="zh"] body,
+html[lang="hi"] body,
+html[lang="bn"] body,
+html[lang="ar"] body,
+html[lang="ur"] body {
+    letter-spacing: 0;
+    line-height: 1.65;
+}
+
+html[lang="zh"] *,
+html[lang="hi"] *,
+html[lang="bn"] *,
+html[lang="ar"] *,
+html[lang="ur"] * {
+    letter-spacing: normal;
+}
+
+/* Right-to-left (Arabic, Urdu): mirror the few physical left/right rules. */
+[dir="rtl"] .icon-left,
+[dir="rtl"] .icon-right,
+[dir="rtl"] .icon-prev,
+[dir="rtl"] .icon-next {
+    transform: scaleX(-1);
+}
+
+[dir="rtl"] .ampm { margin-left: 0; margin-right: 0.2em; }
+[dir="rtl"] .skip-link { left: auto; right: 12px; }
+[dir="rtl"] .topbar-actions { margin-left: 0; margin-right: auto; }
+[dir="rtl"] .site-footer a { margin-right: 0; margin-left: 14px; }
+
+[dir="rtl"] .search-field .icon,
+[dir="rtl"] .filter-field .icon,
+[dir="rtl"] .search-bar > .icon {
+    left: auto;
+    right: 14px;
+}
+
+[dir="rtl"] .search-field input,
+[dir="rtl"] .filter-field input,
+[dir="rtl"] .search-bar input {
+    padding: 0 40px 0 14px;
+}
+
+[dir="rtl"] .switch::after { left: auto; right: 3px; }
+[dir="rtl"] .switch:checked::after { transform: translateX(-18px); }
+
+[dir="rtl"] .place-option,
+[dir="rtl"] .result { text-align: right; }
+
+[dir="rtl"] .facts dd,
+[dir="rtl"] .time-value,
+[dir="rtl"] .bar-row > :last-child,
+[dir="rtl"] .month-table td { text-align: left; }
+
+[dir="rtl"] .month-table tbody th,
+[dir="rtl"] .month-table th:first-child,
+[dir="rtl"] .month-table .col-hijri { text-align: right; }
+
+[dir="rtl"] .month-print { margin-left: 0; margin-right: auto; }
+[dir="rtl"] .heat-legend span:first-child { margin-right: 0; margin-left: 4px; }
+[dir="rtl"] .heat-legend span:last-child { margin-left: 0; margin-right: 4px; }
+[dir="rtl"] .ayah-ref { margin-right: 0; margin-left: 6px; }
+[dir="rtl"] .intro-list { padding-left: 0; padding-right: 20px; }
+[dir="rtl"] .time-row { padding: 6px 14px 6px 4px; }
+
+@media (max-width: 600px) {
+    [dir="rtl"] .time-row { padding-left: 4px; padding-right: 10px; }
+    [dir="rtl"] .month-table th,
+    [dir="rtl"] .month-table td { text-align: center; }
+    [dir="rtl"] .month-table th:first-child { padding-left: 2px; padding-right: 10px; text-align: right; }
+    [dir="rtl"] .month-table td:last-child { padding-right: 2px; padding-left: 8px; }
+}
+
+/* Clocks, countdowns and times stay left-to-right so digits keep their order. */
+[dir="rtl"] .display-clock,
+[dir="rtl"] .countdown,
+[dir="rtl"] .stepper-value,
+[dir="rtl"] .qibla-dial,
+[dir="rtl"] .compass {
+    direction: ltr;
+}
+

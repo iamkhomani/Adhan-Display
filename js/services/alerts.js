@@ -12,6 +12,7 @@ import { getSettings } from '../core/storage.js';
 import { ADHAN_SOUNDS } from '../data/content.js';
 import { formatHMText } from '../core/time.js';
 import { toast } from '../core/ui.js';
+import { t } from '../core/i18n.js';
 
 const MAX_LATE_MS = 2 * 60 * 1000;
 const CHIME = 'audio/chime.mp3';
@@ -33,7 +34,7 @@ function audio() {
         player.addEventListener('ended', () => setPlaying(null));
         player.addEventListener('error', () => {
             if (nowPlaying) {
-                toast('The adhan sound could not be played');
+                toast(t('alert.soundFailed'));
                 setPlaying(null);
             }
         });
@@ -144,18 +145,19 @@ function onPrayerTime({ prayer, late }) {
 
     const time = formatHMText(prayer.hm, settings.timeFormat);
     const title = `${prayer.label} ${time}`;
+    const message = t('alert.timeFor', { prayer: prayer.label });
 
     if (settings.sound !== 'none') {
-        play(soundSource(settings.sound), `It is time for ${prayer.label}`, 'adhan').then(started => {
+        play(soundSource(settings.sound), message, 'adhan').then(started => {
             if (!started) {
-                toast(`It is time for ${prayer.label}. Tap anywhere once to allow the adhan sound next time.`, { duration: 15000 });
+                toast(`${message}. ${t('alert.tapToAllow')}`, { duration: 15000 });
             }
         });
     } else {
-        toast(`It is time for ${prayer.label}`, { duration: 15000 });
+        toast(message, { duration: 15000 });
     }
 
-    notify(title, `It is time for the ${prayer.label} prayer.`);
+    notify(title, message);
 }
 
 function onReminder({ prayer, minutes, late }) {
@@ -163,17 +165,17 @@ function onReminder({ prayer, minutes, late }) {
         return;
     }
 
-    const message = `${prayer.label} in ${minutes} minutes`;
+    const message = t('alert.reminder', { prayer: prayer.label, count: minutes });
     toast(message, { duration: 20000 });
     play(CHIME, message, 'reminder');
-    notify(message, 'Time to prepare for prayer.');
+    notify(message, t('alert.prepare'));
 }
 
 function onTahajjud() {
-    const message = 'The last third of the night has begun';
+    const message = t('alert.lastThird');
     toast(message, { duration: 20000 });
     play(CHIME, message, 'reminder');
-    notify(message, 'A good time for tahajjud and du‘a.');
+    notify(message, t('alert.lastThirdBody'));
 }
 
 export const alerts = {
@@ -217,28 +219,28 @@ export const alerts = {
         const source = soundSource(sound);
 
         if (!source) {
-            toast('Silent mode: no sound will play');
+            toast(t('alert.silent'));
             return;
         }
 
-        const started = await play(source, 'Sound preview', 'preview');
+        const started = await play(source, t('alert.preview'), 'preview');
 
         if (started) {
             previewTimer = setTimeout(() => this.stop(), 15000);
         } else {
-            toast('The sound could not be played in this browser');
+            toast(t('alert.previewFailed'));
         }
     },
 
     async requestNotifications() {
         if (!('Notification' in window)) {
-            throw new Error('This browser does not support notifications.');
+            throw new Error(t('alert.noNotifications'));
         }
 
         const result = await Notification.requestPermission();
 
         if (result !== 'granted') {
-            throw new Error('Notifications were not allowed. You can change this in your browser settings.');
+            throw new Error(t('alert.notificationsBlocked'));
         }
 
         return true;

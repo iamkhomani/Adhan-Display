@@ -13,6 +13,7 @@ import {
     searchQuran, audioUrl, tafsir, sanitizeHtml
 } from '../services/quran.js';
 import { pageHeader } from './components.js';
+import { t, locale } from '../core/i18n.js';
 
 const SITE = 'https://adhandisplay.com/';
 
@@ -66,7 +67,7 @@ function audioElement() {
             audio.src = next;
             audio.play().catch(() => {});
         } else {
-            toast('This recitation could not be played. Try another reciter.');
+            toast(t('quran.recitationFailed'));
             updatePlayer();
         }
     });
@@ -181,18 +182,18 @@ function updatePlayer() {
 
     document.body.classList.add('has-player');
     slot.innerHTML = `
-        <div class="player" role="region" aria-label="Quran audio">
+        <div class="player" role="region" aria-label="${esc(t('quran.audio'))}">
             <div class="player-progress"><span data-player-progress></span></div>
             <a class="player-info" href="#quran/${ayah.surah}:${ayah.numberInSurah}">
                 <strong>${esc(ayah.surahName || player.title)} ${ayah.surah}:${ayah.numberInSurah}</strong>
                 <small data-player-reciter>${esc(reciterName(reciterId))}</small>
             </a>
             <div class="player-controls">
-                <button type="button" class="icon-button" data-player="prev" aria-label="Previous ayah" ${player.index <= 0 ? 'disabled' : ''}>${icon('prev')}</button>
-                <button type="button" class="icon-button player-play" data-player="toggle" aria-label="${playing ? 'Pause' : 'Play'}">${icon(playing ? 'pause' : 'play')}</button>
-                <button type="button" class="icon-button" data-player="next" aria-label="Next ayah" ${player.index >= player.queue.length - 1 ? 'disabled' : ''}>${icon('next')}</button>
-                <button type="button" class="icon-button ${player.repeat ? 'is-on' : ''}" data-player="repeat" aria-pressed="${player.repeat}" aria-label="Repeat this ayah">${icon('repeat', { size: 18 })}</button>
-                <button type="button" class="icon-button" data-player="close" aria-label="Close player">${icon('close', { size: 18 })}</button>
+                <button type="button" class="icon-button" data-player="prev" aria-label="${esc(t('quran.prevAyah'))}" ${player.index <= 0 ? 'disabled' : ''}>${icon('prev')}</button>
+                <button type="button" class="icon-button player-play" data-player="toggle" aria-label="${esc(t(playing ? 'common.pause' : 'common.play'))}">${icon(playing ? 'pause' : 'play')}</button>
+                <button type="button" class="icon-button" data-player="next" aria-label="${esc(t('quran.nextAyah'))}" ${player.index >= player.queue.length - 1 ? 'disabled' : ''}>${icon('next')}</button>
+                <button type="button" class="icon-button ${player.repeat ? 'is-on' : ''}" data-player="repeat" aria-pressed="${player.repeat}" aria-label="${esc(t('quran.repeat'))}">${icon('repeat', { size: 18 })}</button>
+                <button type="button" class="icon-button" data-player="close" aria-label="${esc(t('quran.closePlayer'))}">${icon('close', { size: 18 })}</button>
             </div>
         </div>
     `;
@@ -264,8 +265,8 @@ function continueCard() {
     return `
         <a class="continue" href="#quran/${Number(last.surah)}:${Number(last.ayah)}" data-continue>
             ${icon('book', { size: 22 })}
-            <span><span class="continue-label">Continue reading</span>
-            <strong data-continue-name>Surah ${Number(last.surah)}, ayah ${Number(last.ayah)}</strong></span>
+            <span><span class="continue-label">${esc(t('quran.continue'))}</span>
+            <strong data-continue-name>${esc(t('quran.surahAyah', { surah: t('quran.surahN', { n: Number(last.surah) }), ayah: Number(last.ayah) }))}</strong></span>
             ${icon('right')}
         </a>
     `;
@@ -274,20 +275,20 @@ function continueCard() {
 function browseView() {
     return `
         <div class="page quran-page">
-            ${pageHeader('Quran', 'Read, listen and reflect.')}
+            ${pageHeader(t('nav.quran'), t('quran.lead'))}
             ${continueCard()}
             <form class="search-bar" data-quran-search role="search">
                 ${icon('search', { size: 18 })}
-                <input type="search" name="q" placeholder="Search the Quran" value="${esc(browse.query)}" aria-label="Search the Quran">
-                <button type="submit" class="button button-primary">Search</button>
+                <input type="search" name="q" placeholder="${esc(t('quran.search'))}" value="${esc(browse.query)}" aria-label="${esc(t('quran.search'))}">
+                <button type="submit" class="button button-primary">${esc(t('common.search'))}</button>
             </form>
             <div data-search-results></div>
-            <div class="segmented" role="tablist" aria-label="Browse by">
-                ${[['surahs', 'Surahs'], ['juz', 'Juz'], ['bookmarks', 'Bookmarks']].map(([id, label]) => `
+            <div class="segmented" role="tablist" aria-label="${esc(t('quran.browseBy'))}">
+                ${[['surahs', t('quran.surahs')], ['juz', t('quran.juz')], ['bookmarks', t('quran.bookmarks')]].map(([id, label]) => `
                     <button type="button" role="tab" class="segment ${browse.tab === id ? 'is-active' : ''}" data-browse-tab="${id}" aria-selected="${browse.tab === id}">${label}</button>
                 `).join('')}
             </div>
-            <div data-browse-body>${spinner('Loading surahs')}</div>
+            <div data-browse-body>${spinner()}</div>
         </div>
     `;
 }
@@ -301,7 +302,7 @@ async function renderBrowseBody(root) {
 
     if (browse.tab === 'juz') {
         body.innerHTML = `<div class="juz-grid">${Array.from({ length: 30 }, (_, i) => `
-            <a class="juz-card" href="#quran/juz/${i + 1}"><span>Juz</span><strong class="tnum">${i + 1}</strong></a>`).join('')}</div>`;
+            <a class="juz-card" href="#quran/juz/${i + 1}"><span>${esc(t('quran.juz'))}</span><strong class="tnum">${i + 1}</strong></a>`).join('')}</div>`;
         return;
     }
 
@@ -312,15 +313,15 @@ async function renderBrowseBody(root) {
                 ${bookmarks.map(item => `
                     <li class="bookmark">
                         <a href="#quran/${Number(item.surah)}:${Number(item.ayah)}">
-                            <strong>${esc(item.surahName || `Surah ${item.surah}`)} ${Number(item.surah)}:${Number(item.ayah)}</strong>
+                            <strong>${esc(item.surahName || t('quran.surahN', { n: item.surah }))} ${Number(item.surah)}:${Number(item.ayah)}</strong>
                             <span class="bookmark-arabic" lang="ar" dir="rtl">${esc(item.text || '')}</span>
                             ${item.translationText ? `<span class="bookmark-text">${esc(item.translationText)}</span>` : ''}
                         </a>
-                        <button type="button" class="icon-button" data-remove-bookmark="${Number(item.number)}" aria-label="Remove bookmark">${icon('trash', { size: 18 })}</button>
+                        <button type="button" class="icon-button" data-remove-bookmark="${Number(item.number)}" aria-label="${esc(t('quran.removeBookmark'))}">${icon('trash', { size: 18 })}</button>
                     </li>
                 `).join('')}
             </ul>
-        ` : emptyState({ title: 'No bookmarks yet', text: 'Tap the bookmark icon next to an ayah while reading to save it here.' });
+        ` : emptyState({ title: t('quran.noBookmarks'), text: t('quran.noBookmarksText') });
         return;
     }
 
@@ -340,7 +341,7 @@ async function renderBrowseBody(root) {
         body.innerHTML = `
             <div class="filter-field">
                 ${icon('search', { size: 16 })}
-                <input type="search" placeholder="Filter surahs by name or number" value="${esc(browse.filter)}" data-surah-filter aria-label="Filter surahs">
+                <input type="search" placeholder="${esc(t('quran.filter'))}" value="${esc(browse.filter)}" data-surah-filter aria-label="${esc(t('quran.filter'))}">
             </div>
             <ol class="surah-grid" data-surah-grid>
                 ${items.map(item => `
@@ -348,11 +349,11 @@ async function renderBrowseBody(root) {
                         <span class="surah-number tnum">${item.number}</span>
                         <span class="surah-names">
                             <strong>${esc(item.englishName)}</strong>
-                            <small>${esc(item.meaning)}, ${item.ayahs} ayahs</small>
+                            <small>${esc(t('quran.surahMeta', { meaning: item.meaning, count: item.ayahs }))}</small>
                         </span>
                         <span class="surah-arabic" lang="ar" dir="rtl">${esc(item.name.replace(/^سُورَةُ\s*/, ''))}</span>
                     </a></li>
-                `).join('') || '<li class="muted">No surah matches this filter.</li>'}
+                `).join('') || `<li class="muted">${esc(t('quran.noMatch'))}</li>`}
             </ol>
         `;
 
@@ -369,9 +370,9 @@ async function renderBrowseBody(root) {
 
     } catch (error) {
         body.innerHTML = emptyState({
-            title: 'The surah list could not be loaded',
+            title: t('quran.listFailed'),
             text: error.message,
-            action: '<button type="button" class="button button-primary" data-reload-browse>Try again</button>'
+            action: `<button type="button" class="button button-primary" data-reload-browse>${esc(t('common.tryAgain'))}</button>`
         });
     }
 }
@@ -386,7 +387,7 @@ async function runSearch(root, query) {
         return;
     }
 
-    box.innerHTML = spinner('Searching');
+    box.innerHTML = spinner(t('common.searching'));
 
     const arabic = /[؀-ۿ]/.test(query);
     const edition = arabic ? 'quran-simple-clean' : quranPrefs.get().selectedTranslation;
@@ -398,8 +399,8 @@ async function runSearch(root, query) {
         box.innerHTML = `
             <section class="search-results" aria-live="polite">
                 <header class="panel-head">
-                    <h2 class="panel-title">${result.count ? `${result.count} ${result.count === 1 ? 'result' : 'results'}` : 'No results'}</h2>
-                    <button type="button" class="link-button" data-clear-search>Clear</button>
+                    <h2 class="panel-title">${esc(result.count ? t('common.results', { count: result.count }) : t('common.noResults'))}</h2>
+                    <button type="button" class="link-button" data-clear-search>${esc(t('common.clear'))}</button>
                 </header>
                 ${result.count ? `<ol class="result-list">
                     ${result.matches.slice(0, 100).map(match => `
@@ -407,11 +408,11 @@ async function runSearch(root, query) {
                             <strong>${esc(match.surahName)} ${match.surah}:${match.numberInSurah}</strong>
                             <span ${arabic ? 'lang="ar" dir="rtl" class="result-arabic"' : ''}>${highlight(match.text, query)}</span>
                         </a></li>`).join('')}
-                </ol>${result.count > 100 ? '<p class="panel-note">Showing the first 100 results. Add words to narrow the search.</p>' : ''}` : '<p class="panel-note">Try a different word, or check the spelling.</p>'}
+                </ol>${result.count > 100 ? `<p class="panel-note">${esc(t('quran.first100'))}</p>` : ''}` : `<p class="panel-note">${esc(t('quran.tryOther'))}</p>`}
             </section>
         `;
     } catch (error) {
-        box.innerHTML = emptyState({ title: 'Search failed', text: error.message });
+        box.innerHTML = emptyState({ title: t('common.searchFailed'), text: error.message });
     }
 }
 
@@ -423,12 +424,12 @@ function readerShell(kind, number) {
     return `
         <div class="page reader" data-reader>
             <div class="reader-bar">
-                <a class="icon-button" href="#quran" aria-label="All surahs">${icon('left')}</a>
-                <div class="reader-bar-title" data-reader-title>${kind === 'juz' ? `Juz ${number}` : `Surah ${number}`}</div>
-                <button type="button" class="icon-button" data-reader-play aria-label="Play from the start">${icon('play', { size: 18 })}</button>
-                <button type="button" class="icon-button" data-reader-options aria-label="Reading options">${icon('type', { size: 18 })}</button>
+                <a class="icon-button" href="#quran" aria-label="${esc(t('quran.allSurahs'))}">${icon('left')}</a>
+                <div class="reader-bar-title" data-reader-title>${esc(kind === 'juz' ? t('quran.juzN', { n: number }) : t('quran.surahN', { n: number }))}</div>
+                <button type="button" class="icon-button" data-reader-play aria-label="${esc(t('quran.playAll'))}">${icon('play', { size: 18 })}</button>
+                <button type="button" class="icon-button" data-reader-options aria-label="${esc(t('quran.options'))}">${icon('type', { size: 18 })}</button>
             </div>
-            <div class="reader-body" data-reader-body>${spinner('Loading')}</div>
+            <div class="reader-body" data-reader-body>${spinner()}</div>
         </div>
     `;
 }
@@ -439,14 +440,14 @@ function ayahHTML(ayah, prefs, showSurahLabel) {
     return `
         ${showSurahLabel ? `<h3 class="juz-surah">${esc(ayah.surahName)}</h3>` : ''}
         <article class="ayah" id="ayah-${ayah.number}" data-ayah="${ayah.number}" data-key="${ayah.surah}:${ayah.numberInSurah}">
-            <p class="ayah-arabic" lang="ar" dir="rtl">${esc(ayah.text)} <span class="ayah-end" aria-label="Ayah ${ayah.numberInSurah}">\u06DD${toArabicDigits(ayah.numberInSurah)}</span></p>
+            <p class="ayah-arabic" lang="ar" dir="rtl">${esc(ayah.text)} <span class="ayah-end" aria-label="${esc(t('quran.ayahN', { n: ayah.numberInSurah }))}">\u06DD${toArabicDigits(ayah.numberInSurah)}</span></p>
             ${prefs.showTranslation && ayah.translation ? `<p class="ayah-translation"><span class="ayah-ref tnum">${ayah.surah}:${ayah.numberInSurah}</span> ${esc(ayah.translation)}</p>` : ''}
             <div class="ayah-actions">
                 ${prefs.showTranslation && ayah.translation ? '' : `<span class="ayah-ref tnum">${ayah.surah}:${ayah.numberInSurah}</span>`}
-                <button type="button" class="icon-button" data-ayah-play="${ayah.number}" aria-label="Play ayah ${ayah.numberInSurah}">${icon('play', { size: 16 })}</button>
-                <button type="button" class="icon-button ${bookmarked ? 'is-on' : ''}" data-ayah-bookmark="${ayah.number}" aria-pressed="${bookmarked}" aria-label="Bookmark ayah ${ayah.numberInSurah}">${icon(bookmarked ? 'bookmarkFilled' : 'bookmark', { size: 16 })}</button>
-                <button type="button" class="text-button" data-ayah-tafsir="${ayah.number}">Tafsir</button>
-                <button type="button" class="icon-button" data-ayah-share="${ayah.number}" aria-label="Share ayah ${ayah.numberInSurah}">${icon('share', { size: 16 })}</button>
+                <button type="button" class="icon-button" data-ayah-play="${ayah.number}" aria-label="${esc(t('quran.playAyah', { n: ayah.numberInSurah }))}">${icon('play', { size: 16 })}</button>
+                <button type="button" class="icon-button ${bookmarked ? 'is-on' : ''}" data-ayah-bookmark="${ayah.number}" aria-pressed="${bookmarked}" aria-label="${esc(t('quran.bookmarkAyah', { n: ayah.numberInSurah }))}">${icon(bookmarked ? 'bookmarkFilled' : 'bookmark', { size: 16 })}</button>
+                <button type="button" class="text-button" data-ayah-tafsir="${ayah.number}">${esc(t('quran.tafsir'))}</button>
+                <button type="button" class="icon-button" data-ayah-share="${ayah.number}" aria-label="${esc(t('quran.shareAyah', { n: ayah.numberInSurah }))}">${icon('share', { size: 16 })}</button>
             </div>
         </article>
     `;
@@ -463,7 +464,7 @@ function readerContent() {
         let lastSurah = null;
         return `
             <header class="surah-head">
-                <h1 class="surah-title">Juz <span class="num">${reading.number}</span></h1>
+                <h1 class="surah-title">${esc(t('quran.juzN', { n: reading.number }))}</h1>
             </header>
             <div class="ayahs" style="--quran-scale:${prefs.fontSize / 100}">
                 ${reading.ayahs.map(ayah => {
@@ -473,8 +474,8 @@ function readerContent() {
                 }).join('')}
             </div>
             <nav class="reader-nav">
-                ${reading.number > 1 ? `<a class="button button-ghost" href="#quran/juz/${reading.number - 1}">${icon('left', { size: 18 })} Juz ${reading.number - 1}</a>` : '<span></span>'}
-                ${reading.number < 30 ? `<a class="button button-ghost" href="#quran/juz/${reading.number + 1}">Juz ${reading.number + 1} ${icon('right', { size: 18 })}</a>` : ''}
+                ${reading.number > 1 ? `<a class="button button-ghost" href="#quran/juz/${reading.number - 1}">${icon('left', { size: 18 })} ${esc(t('quran.juzN', { n: reading.number - 1 }))}</a>` : '<span></span>'}
+                ${reading.number < 30 ? `<a class="button button-ghost" href="#quran/juz/${reading.number + 1}">${esc(t('quran.juzN', { n: reading.number + 1 }))} ${icon('right', { size: 18 })}</a>` : ''}
             </nav>
         `;
     }
@@ -486,15 +487,15 @@ function readerContent() {
         <header class="surah-head">
             <p class="surah-arabic-name" lang="ar" dir="rtl">${esc(info.name)}</p>
             <h1 class="surah-title">${esc(info.englishName)}</h1>
-            <p class="surah-meta">${esc(info.meaning)}. ${info.type === 'Medinan' ? 'Medinan' : 'Meccan'}, ${info.ayahs} ayahs.</p>
+            <p class="surah-meta">${esc(t('quran.surahInfo', { meaning: info.meaning, type: t(info.type === 'Medinan' ? 'quran.medinan' : 'quran.meccan'), count: info.ayahs }))}</p>
         </header>
         ${hasBasmala ? '<p class="basmala" lang="ar" dir="rtl">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</p>' : ''}
         <div class="ayahs" style="--quran-scale:${prefs.fontSize / 100}">
             ${reading.ayahs.map(ayah => ayahHTML(ayah, prefs, false)).join('')}
         </div>
         <nav class="reader-nav">
-            ${info.number > 1 ? `<a class="button button-ghost" href="#quran/${info.number - 1}">${icon('left', { size: 18 })} Previous surah</a>` : '<span></span>'}
-            ${info.number < 114 ? `<a class="button button-primary" href="#quran/${info.number + 1}">Next surah ${icon('right', { size: 18 })}</a>` : ''}
+            ${info.number > 1 ? `<a class="button button-ghost" href="#quran/${info.number - 1}">${icon('left', { size: 18 })} ${esc(t('quran.prevSurah'))}</a>` : '<span></span>'}
+            ${info.number < 114 ? `<a class="button button-primary" href="#quran/${info.number + 1}">${esc(t('quran.nextSurah'))} ${icon('right', { size: 18 })}</a>` : ''}
         </nav>
     `;
 }
@@ -514,7 +515,7 @@ async function loadReader(root, kind, number, focusAyah) {
         }
 
         reading = { kind, number, info: data.info || null, ayahs: data.ayahs };
-        title.textContent = kind === 'juz' ? `Juz ${number}` : `${data.info.englishName}`;
+        title.textContent = kind === 'juz' ? t('quran.juzN', { n: number }) : `${data.info.englishName}`;
         document.title = `${title.textContent} | Adhan Display`;
         body.innerHTML = readerContent();
         markPlaying(false);
@@ -537,9 +538,9 @@ async function loadReader(root, kind, number, focusAyah) {
         trackReading(root);
     } catch (error) {
         body.innerHTML = emptyState({
-            title: 'This section could not be loaded',
+            title: t('quran.sectionFailed'),
             text: error.message,
-            action: `<button type="button" class="button button-primary" data-reader-retry>${icon('refresh')} Try again</button>`
+            action: `<button type="button" class="button button-primary" data-reader-retry>${icon('refresh')} ${esc(t('common.tryAgain'))}</button>`
         });
     }
 }
@@ -573,31 +574,31 @@ function trackReading(root) {
 async function openOptions(root) {
     const prefs = quranPrefs.get();
     const { root: dialog, close } = openDialog({
-        title: 'Reading options',
+        title: t('quran.options'),
         body: `
-            <label class="field-label" for="opt-translation">Translation</label>
-            <select id="opt-translation" class="select" data-opt="translation"><option>Loading</option></select>
+            <label class="field-label" for="opt-translation">${esc(t('quran.translation'))}</label>
+            <select id="opt-translation" class="select" data-opt="translation"><option>${esc(t('common.loading'))}</option></select>
 
-            <label class="field-label" for="opt-reciter">Reciter</label>
-            <select id="opt-reciter" class="select" data-opt="reciter"><option>Loading</option></select>
+            <label class="field-label" for="opt-reciter">${esc(t('quran.reciter'))}</label>
+            <select id="opt-reciter" class="select" data-opt="reciter"><option>${esc(t('common.loading'))}</option></select>
 
-            <label class="field-label" for="opt-size">Arabic text size</label>
+            <label class="field-label" for="opt-size">${esc(t('quran.arabicSize'))}</label>
             <div class="range-row">
                 <span class="range-small" lang="ar">ع</span>
                 <input id="opt-size" type="range" min="80" max="160" step="10" value="${prefs.fontSize}" data-opt="size">
                 <span class="range-large" lang="ar">ع</span>
             </div>
 
-            <label class="switch-row"><span>Show translation</span>
+            <label class="switch-row"><span>${esc(t('quran.showTranslation'))}</span>
                 <input type="checkbox" class="switch" data-opt="showTranslation" ${prefs.showTranslation ? 'checked' : ''}></label>
-            <label class="switch-row"><span>Play the next ayah automatically</span>
+            <label class="switch-row"><span>${esc(t('quran.autoPlay'))}</span>
                 <input type="checkbox" class="switch" data-opt="autoPlay" ${prefs.autoPlay ? 'checked' : ''}></label>
         `,
         onClose: () => {
             if (reading && root.isConnected) {
                 const translation = quranPrefs.get().selectedTranslation;
                 if (translation !== prefs.selectedTranslation) {
-                    root.querySelector('[data-reader-body]').innerHTML = spinner('Loading translation');
+                    root.querySelector('[data-reader-body]').innerHTML = spinner();
                     loadReader(root, reading.kind, reading.number, null);
                 } else {
                     root.querySelector('[data-reader-body]').innerHTML = readerContent();
@@ -634,7 +635,7 @@ async function openOptions(root) {
 export async function fillTranslationSelect(select, selected) {
     try {
         const list = await translations();
-        const languageNames = new Intl.DisplayNames(['en'], { type: 'language' });
+        const languageNames = new Intl.DisplayNames([locale(), 'en'], { type: 'language' });
         const groups = new Map();
 
         list.forEach(item => {
@@ -676,12 +677,12 @@ export async function fillReciterSelect(select, selected) {
 
 async function openTafsir(ayah) {
     const { root } = openDialog({
-        title: `Tafsir of ${ayah.surahName || 'Surah'} ${ayah.surah}:${ayah.numberInSurah}`,
+        title: t('quran.tafsirTitle', { ref: `${ayah.surahName} ${ayah.surah}:${ayah.numberInSurah}` }),
         wide: true,
         body: `
             <p class="ayah-arabic dialog-arabic" lang="ar" dir="rtl">${esc(ayah.text)}</p>
             ${ayah.translation ? `<p class="ayah-translation">${esc(ayah.translation)}</p>` : ''}
-            <div class="tafsir" data-tafsir>${spinner('Loading tafsir')}</div>
+            <div class="tafsir" data-tafsir lang="en">${spinner()}</div>
         `
     });
 
@@ -691,13 +692,13 @@ async function openTafsir(ayah) {
         const result = await tafsir(ayah.surah, ayah.numberInSurah);
         box.innerHTML = `
             <p class="source">${esc(result.name)}</p>
-            ${sanitizeHtml(result.html) || '<p>No tafsir is available for this ayah.</p>'}
-            <p><a class="link-button" href="https://quran.com/${ayah.surah}:${ayah.numberInSurah}" target="_blank" rel="noopener noreferrer">${icon('external', { size: 16 })} Open on Quran.com</a></p>
+            ${sanitizeHtml(result.html) || `<p>${esc(t('quran.noTafsir'))}</p>`}
+            <p><a class="link-button" href="https://quran.com/${ayah.surah}:${ayah.numberInSurah}" target="_blank" rel="noopener noreferrer">${icon('external', { size: 16 })} ${esc(t('quran.openQuranCom'))}</a></p>
         `;
     } catch (error) {
         box.innerHTML = `
-            <p class="field-error">The tafsir could not be loaded. ${esc(error.message)}</p>
-            <p><a class="link-button" href="https://quran.com/${ayah.surah}:${ayah.numberInSurah}" target="_blank" rel="noopener noreferrer">${icon('external', { size: 16 })} Read it on Quran.com</a></p>
+            <p class="field-error">${esc(t('quran.tafsirFailed'))} ${esc(error.message)}</p>
+            <p><a class="link-button" href="https://quran.com/${ayah.surah}:${ayah.numberInSurah}" target="_blank" rel="noopener noreferrer">${icon('external', { size: 16 })} ${esc(t('quran.openQuranCom'))}</a></p>
         `;
     }
 }
@@ -731,7 +732,7 @@ function parsePath(path) {
 }
 
 export const quranPage = {
-    title: 'Quran',
+    titleKey: 'nav.quran',
 
     render(path) {
         const route = parsePath(path);
@@ -758,7 +759,7 @@ export const quranPage = {
                 const name = root.querySelector('[data-continue-name]');
                 const info = last && list.find(item => item.number === Number(last.surah));
                 if (name && info) {
-                    name.textContent = `${info.englishName}, ayah ${last.ayah}`;
+                    name.textContent = t('quran.surahAyah', { surah: info.englishName, ayah: last.ayah });
                 }
             }).catch(() => {});
 
@@ -818,7 +819,7 @@ export const quranPage = {
                 if (current && current.number === Number(play.dataset.ayahPlay) && player.visible) {
                     togglePlay();
                 } else {
-                    playFrom(reading.ayahs, index, reading.info?.englishName || `Juz ${reading.number}`);
+                    playFrom(reading.ayahs, index, reading.info?.englishName || t('quran.juzN', { n: reading.number }));
                 }
             } else if (bookmark) {
                 const ayah = findAyah(bookmark.dataset.ayahBookmark);
@@ -827,7 +828,7 @@ export const quranPage = {
                     bookmark.classList.toggle('is-on', added);
                     bookmark.setAttribute('aria-pressed', String(added));
                     bookmark.innerHTML = icon(added ? 'bookmarkFilled' : 'bookmark', { size: 16 });
-                    toast(added ? 'Bookmark saved' : 'Bookmark removed', { duration: 2000 });
+                    toast(t(added ? 'quran.bookmarkSaved' : 'quran.bookmarkRemoved'), { duration: 2000 });
                 }
             } else if (tafsirButton) {
                 const ayah = findAyah(tafsirButton.dataset.ayahTafsir);
@@ -838,13 +839,13 @@ export const quranPage = {
                 const ayah = findAyah(share.dataset.ayahShare);
                 if (ayah) {
                     shareText({
-                        title: `Quran ${ayah.surah}:${ayah.numberInSurah}`,
+                        title: `${t('nav.quran')} ${ayah.surah}:${ayah.numberInSurah}`,
                         text: `${ayah.text}\n\n${ayah.translation}\n\n${ayah.surahName} ${ayah.surah}:${ayah.numberInSurah}`,
                         url: `${SITE}#quran/${ayah.surah}:${ayah.numberInSurah}`
                     });
                 }
             } else if (target.closest('[data-reader-play]') && reading) {
-                playFrom(reading.ayahs, 0, reading.info?.englishName || `Juz ${reading.number}`);
+                playFrom(reading.ayahs, 0, reading.info?.englishName || t('quran.juzN', { n: reading.number }));
             } else if (target.closest('[data-reader-options]')) {
                 openOptions(root);
             } else if (target.closest('[data-reader-retry]')) {

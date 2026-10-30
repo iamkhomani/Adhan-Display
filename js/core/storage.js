@@ -251,7 +251,7 @@ export function exportBackup(version) {
 
 export function importBackup(backup) {
     if (!backup || typeof backup !== 'object' || Array.isArray(backup)) {
-        throw new Error('This file is not an Adhan Display backup.');
+        throw Object.assign(new Error('This file is not an Adhan Display backup.'), { code: 'notBackup' });
     }
 
     const source = backup.data && typeof backup.data === 'object' && !Array.isArray(backup.data)
@@ -261,7 +261,7 @@ export function importBackup(backup) {
     const entries = Object.entries(source).filter(([key]) => isUserKey(key));
 
     if (!entries.length) {
-        throw new Error('No Adhan Display data was found in this file.');
+        throw Object.assign(new Error('No Adhan Display data was found in this file.'), { code: 'noBackupData' });
     }
 
     if (source[`${PREFIX}auto_loc`] === undefined && source[`${PREFIX}location_auto`] !== undefined) {

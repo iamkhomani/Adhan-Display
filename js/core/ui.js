@@ -4,6 +4,7 @@
 
 import { esc } from './util.js';
 import { icon } from './icons.js';
+import { t } from './i18n.js';
 
 let toastTimer = null;
 
@@ -44,7 +45,7 @@ export function openDialog({ title, body, className = '', onClose = null, wide =
     dialog.innerHTML = `
         <div class="dialog-head">
             <h2 class="dialog-title">${esc(title)}</h2>
-            <button type="button" class="icon-button" data-dialog-close aria-label="Close">${icon('close')}</button>
+            <button type="button" class="icon-button" data-dialog-close aria-label="${esc(t('common.close'))}">${icon('close')}</button>
         </div>
         <div class="dialog-body">${body}</div>
     `;
@@ -77,15 +78,15 @@ export function openDialog({ title, body, className = '', onClose = null, wide =
     return { root: dialog, close };
 }
 
-export function confirmDialog(message, { confirm = 'Confirm', danger = false } = {}) {
+export function confirmDialog(message, { confirm = t('common.confirm'), danger = false } = {}) {
     return new Promise(resolve => {
         let answered = false;
         const { root, close } = openDialog({
-            title: 'Please confirm',
+            title: t('common.pleaseConfirm'),
             body: `
                 <p class="dialog-text">${esc(message)}</p>
                 <div class="dialog-actions">
-                    <button type="button" class="button button-ghost" data-answer="no">Cancel</button>
+                    <button type="button" class="button button-ghost" data-answer="no">${esc(t('common.cancel'))}</button>
                     <button type="button" class="button ${danger ? 'button-danger' : 'button-primary'}" data-answer="yes">${esc(confirm)}</button>
                 </div>
             `,
@@ -122,15 +123,15 @@ export async function shareText({ title, text, url }) {
 
     try {
         await navigator.clipboard.writeText([text, url].filter(Boolean).join('\n\n'));
-        toast('Copied to clipboard');
+        toast(t('share.copied'));
         return 'copied';
     } catch {
-        toast('Sharing is not available in this browser');
+        toast(t('share.unavailable'));
         return 'failed';
     }
 }
 
-export function spinner(label = 'Loading') {
+export function spinner(label = t('common.loading')) {
     return `<div class="loading" role="status"><span class="spinner" aria-hidden="true"></span><span>${esc(label)}</span></div>`;
 }
 

@@ -11,7 +11,8 @@ import {
 } from '../core/time.js';
 import { prayerCalendar } from './api.js';
 import { location } from './location.js';
-import { PRAYER_INFO, JUMUAH, methodName } from '../data/content.js';
+import { PRAYER_ARABIC, methodName } from '../data/content.js';
+import { t } from '../core/i18n.js';
 
 const KAABA = { lat: 21.422487, lon: 39.826206 };
 
@@ -145,10 +146,8 @@ function makeDate(key, hm) {
 }
 
 function infoFor(name, key) {
-    if (name === 'Dhuhr' && weekdayOfKey(key) === 5) {
-        return JUMUAH;
-    }
-    return PRAYER_INFO[name];
+    const id = name === 'Dhuhr' && weekdayOfKey(key) === 5 ? 'Jumuah' : name;
+    return { label: t(`prayer.${id}`), arabic: PRAYER_ARABIC[id] };
 }
 
 export function hijriFor(key) {

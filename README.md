@@ -41,6 +41,11 @@ Live: [adhandisplay.com](https://adhandisplay.com)
 - Streaks, completion rates and a four-week overview
 - Make-up (qada) counter and an optional exemption mode
 
+**Languages**
+- The interface is available in 11 languages: English, 中文, हिन्दी, Español, Français, العربية (right-to-left), বাংলা, Português, Русский, اردو (right-to-left) and Nederlands
+- The language follows the browser on the first visit and can be changed in Settings, Appearance
+- The Quran translation follows the chosen language; hadith texts, tafsir and the meanings of adhkar stay in English
+
 ## Install as an app
 
 Adhan Display is a Progressive Web App.
@@ -51,7 +56,7 @@ Adhan Display is a Progressive Web App.
 ## Project structure
 
 ```
-index.html            Page shell, SEO and theme boot script
+index.html            Page shell, SEO and theme/language boot script
 sw.js                 Service worker (offline support)
 manifest.json         Web app manifest
 css/app.css           All styles (dark theme by default, light theme, print)
@@ -61,7 +66,8 @@ js/core/              Storage, time zones and Hijri dates, icons, UI helpers
 js/services/          Prayer times, location, adhan alerts, tracker, Quran and API access
 js/pages/             Home, Prayer, Quran, Hadith, Islamic, Settings and Display mode
 js/data/content.js    Daily hadith, du'as, adhkar and other static content
-fonts/                Self-hosted Manrope, Marcellus and Amiri Quran (SIL Open Font License)
+js/i18n/              Interface translations, one file per language (en.js is the base)
+fonts/                Self-hosted Manrope (Latin and Cyrillic), Marcellus and Amiri Quran (SIL Open Font License)
 images/icons/         App icons
 audio/                Adhan recordings and the reminder chime
 nginx.conf            Optional config for self-hosting with nginx
@@ -78,6 +84,16 @@ python3 -m http.server 8080
 ```
 
 Then open <http://localhost:8080>. A local web server is needed because browsers do not load JavaScript modules from `file://`.
+
+## Translations
+
+Every text in the interface comes from `js/i18n/<code>.js`. English (`en.js`) is the base; missing keys fall back to English. To add or improve a language, edit its file and run the check:
+
+```bash
+node test/i18n-check.mjs
+```
+
+It verifies that every key used in the code exists in English and that every language has the same keys and `{placeholders}`.
 
 ## Deployment
 

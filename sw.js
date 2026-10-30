@@ -7,10 +7,11 @@
  * - Audio is left to the browser (range requests), API data is cached by
  *   the app itself.
  *
- * Bump VERSION when files are added or removed.
+ * Bump VERSION when files are added or removed. Only the English base
+ * translation is pre-cached; the chosen language is cached when it loads.
  */
 
-const VERSION = 'adhan-display-5.0.0';
+const VERSION = 'adhan-display-5.1.0';
 
 const SHELL = [
     './',
@@ -20,12 +21,14 @@ const SHELL = [
     'js/app.js',
     'js/app-info.js',
     'js/core/bus.js',
+    'js/core/i18n.js',
     'js/core/icons.js',
     'js/core/storage.js',
     'js/core/time.js',
     'js/core/ui.js',
     'js/core/util.js',
     'js/data/content.js',
+    'js/i18n/en.js',
     'js/pages/components.js',
     'js/pages/display.js',
     'js/pages/hadith.js',

@@ -11,6 +11,7 @@ import { bus } from '../core/bus.js';
 import { openDialog, toast } from '../core/ui.js';
 import { location } from '../services/location.js';
 import { debounce } from '../core/util.js';
+import { t, isRtl } from '../core/i18n.js';
 
 const eventMemo = new Map();
 
@@ -21,9 +22,17 @@ export function upcomingEvents(key, offset = 0) {
     if (!eventMemo.has(memoKey)) {
         eventMemo.clear();
         eventMemo.set(memoKey, ISLAMIC_EVENTS
-            .map(([name, month, day, note]) => {
+            .map(([id, month, day]) => {
                 const date = nextHijriDate(month, day, key, offset);
-                return date ? { name, note, month, day, date, days: daysBetweenKeys(key, date) } : null;
+                return date ? {
+                    id,
+                    name: t(`event.${id}`),
+                    note: t(`event.${id}.note`),
+                    month,
+                    day,
+                    date,
+                    days: daysBetweenKeys(key, date)
+                } : null;
             })
             .filter(Boolean)
             .sort((a, b) => a.days - b.days));
@@ -41,12 +50,13 @@ export function hijriText(hijri) {
     if (!hijri) {
         return '';
     }
-    return `${hijri.day} ${hijriMonthName(hijri.month)} ${hijri.year}`;
+    return t('hijri.date', { day: hijri.day, month: hijriMonthName(hijri.month), year: hijri.year });
 }
 
 /* The list of today's six times with optional per-prayer adhan toggles. */
 export function prayerListHTML(entries, { bells = true } = {}) {
     const settings = getSettings();
+    const showArabic = !isRtl();
 
     return `
         <ol class="times">
@@ -59,13 +69,13 @@ export function prayerListHTML(entries, { bells = true } = {}) {
                     <li class="time-row ${state} ${entry.isCurrent ? 'is-current' : ''}" data-prayer-row="${entry.name}">
                         <span class="time-name">
                             <span class="time-label">${esc(entry.label)}</span>
-                            <span class="time-arabic" lang="ar" dir="rtl">${esc(entry.arabic)}</span>
+                            ${showArabic ? `<span class="time-arabic" lang="ar" dir="rtl">${esc(entry.arabic)}</span>` : ''}
                         </span>
-                        ${entry.isNext ? `<span class="time-flag">${entry.isTomorrow ? 'Tomorrow' : 'Next'}</span>` : entry.isCurrent ? '<span class="time-flag time-flag-now">Now</span>' : '<span class="time-flag-space"></span>'}
+                        ${entry.isNext ? `<span class="time-flag">${esc(entry.isTomorrow ? t('times.tomorrow') : t('times.next'))}</span>` : entry.isCurrent ? `<span class="time-flag time-flag-now">${esc(t('times.now'))}</span>` : '<span class="time-flag-space"></span>'}
                         <span class="time-value">${timeHTML(entry.hm, settings.timeFormat)}</span>
                         ${bells ? (canAlert ? `
                             <button type="button" class="bell ${on ? 'is-on' : ''}" data-toggle-alert="${entry.name}"
-                                aria-pressed="${on}" aria-label="Adhan for ${esc(entry.label)} ${on ? 'on' : 'off'}">
+                                aria-pressed="${on}" aria-label="${esc(t(on ? 'times.adhanOn' : 'times.adhanOff', { prayer: entry.label }))}">
                                 ${icon(on ? 'bell' : 'bellOff', { size: 18 })}
                             </button>` : '<span class="bell-space" aria-hidden="true"></span>') : ''}
                     </li>
@@ -85,16 +95,18 @@ export function bindAlertToggles(root) {
         }
 
         const name = button.dataset.toggleAlert;
+        const label = button.closest('[data-prayer-row]')?.querySelector('.time-label')?.textContent || t(`prayer.${name}`);
         const alerts = { ...getSettings().alerts };
         alerts[name] = !alerts[name];
         setSetting('alerts', alerts);
 
         button.classList.toggle('is-on', alerts[name]);
         button.setAttribute('aria-pressed', String(alerts[name]));
-        button.setAttribute('aria-label', `Adhan for ${name} ${alerts[name] ? 'on' : 'off'}`);
+        const message = t(alerts[name] ? 'times.adhanOn' : 'times.adhanOff', { prayer: label });
+        button.setAttribute('aria-label', message);
         button.innerHTML = icon(alerts[name] ? 'bell' : 'bellOff', { size: 18 });
 
-        toast(`Adhan for ${name} ${alerts[name] ? 'on' : 'off'}`, { duration: 2000 });
+        toast(message, { duration: 2000 });
         bus.emit('settings', { key: 'alerts' });
     });
 }
@@ -136,13 +148,13 @@ export function timelineHTML(entries, now, tz) {
             <span class="tl-mark ${entry.isNext ? 'is-next' : ''} ${entry.passed ? 'is-passed' : ''} ${index % 2 ? 'is-low' : ''}"
                 style="left:${left}%">
                 <span class="tl-dot"></span>
-                <span class="tl-label">${esc(entry.name === 'Sunrise' ? 'Sunrise' : entry.label)}</span>
+                <span class="tl-label">${esc(entry.label)}</span>
             </span>
         `;
     }).join('');
 
     return `
-        <div class="timeline" aria-hidden="true">
+        <div class="timeline" aria-hidden="true" dir="ltr">
             <div class="tl-track" style="background:${gradient}"></div>
             ${marks}
             <span class="tl-now" data-timeline-now style="left:${dayPercent(now, tz)}%"></span>
@@ -171,7 +183,7 @@ export function pageHeader(title, text = '', actions = '') {
 
 export function tabsHTML(base, tabs, active) {
     return `
-        <nav class="tabs" aria-label="Sections">
+        <nav class="tabs" aria-label="${esc(t('common.sections'))}">
             ${tabs.map(([id, label]) => `
                 <a class="tab ${id === active ? 'is-active' : ''}" href="#${base}${id ? `/${id}` : ''}"
                     ${id === active ? 'aria-current="page"' : ''}>${esc(label)}</a>
@@ -189,25 +201,26 @@ export function openLocationDialog() {
     const saved = location.saved();
 
     const { root, close } = openDialog({
-        title: 'Location',
+        title: t('location.title'),
         body: `
-            <p class="dialog-text">Prayer times are calculated for
-                <strong>${esc(current.city)}${current.country ? `, ${esc(current.country)}` : ''}</strong>${current.isDefault ? ' (default)' : ''}.</p>
+            <p class="dialog-text">${t(current.isDefault ? 'location.currentDefault' : 'location.current', {
+                place: `<strong>${esc(current.city)}${current.country ? `, ${esc(current.country)}` : ''}</strong>`
+            })}</p>
 
             <button type="button" class="button button-primary button-block" data-detect>
-                ${icon('locate')} Use my current location
+                ${icon('locate')} ${esc(t('location.useCurrent'))}
             </button>
             <p class="field-error" data-detect-error hidden></p>
 
-            <label class="field-label" for="place-search">Or search for a city</label>
+            <label class="field-label" for="place-search">${esc(t('location.searchLabel'))}</label>
             <div class="search-field">
                 ${icon('search', { size: 18 })}
-                <input id="place-search" type="search" autocomplete="off" placeholder="City name" data-place-search>
+                <input id="place-search" type="search" autocomplete="off" placeholder="${esc(t('location.searchPlaceholder'))}" data-place-search>
             </div>
             <div class="place-results" data-place-results></div>
 
             ${saved.length ? `
-                <p class="field-label">Saved places</p>
+                <p class="field-label">${esc(t('location.saved'))}</p>
                 <ul class="place-list">
                     ${saved.map((place, index) => `
                         <li>
@@ -215,7 +228,7 @@ export function openLocationDialog() {
                                 ${icon('pin', { size: 18 })}
                                 <span><strong>${esc(place.name)}</strong>${place.country ? `<small>${esc(place.country)}</small>` : ''}</span>
                             </button>
-                            <button type="button" class="icon-button" data-remove-saved="${index}" aria-label="Remove ${esc(place.name)}">${icon('close', { size: 16 })}</button>
+                            <button type="button" class="icon-button" data-remove-saved="${index}" aria-label="${esc(t('location.remove', { place: place.name }))}">${icon('close', { size: 16 })}</button>
                         </li>
                     `).join('')}
                 </ul>
@@ -229,25 +242,25 @@ export function openLocationDialog() {
         location.set(place);
         location.save(place);
         close();
-        toast(`Location set to ${place.city}`);
+        toast(t('location.set', { place: location.get().city }));
     };
 
     root.querySelector('[data-detect]').addEventListener('click', async event => {
         const button = event.currentTarget;
         const error = root.querySelector('[data-detect-error]');
         button.disabled = true;
-        button.innerHTML = `<span class="spinner spinner-small"></span> Finding your location`;
+        button.innerHTML = `<span class="spinner spinner-small"></span> ${esc(t('location.finding'))}`;
         error.hidden = true;
 
         try {
-            const place = await location.detect();
+            await location.detect();
             close();
-            toast(`Location set to ${place.city}`);
+            toast(t('location.set', { place: location.get().city }));
         } catch (failure) {
             error.textContent = failure.message;
             error.hidden = false;
             button.disabled = false;
-            button.innerHTML = `${icon('locate')} Use my current location`;
+            button.innerHTML = `${icon('locate')} ${esc(t('location.useCurrent'))}`;
         }
     });
 
@@ -259,7 +272,7 @@ export function openLocationDialog() {
             return;
         }
 
-        resultsBox.innerHTML = '<p class="muted small">Searching</p>';
+        resultsBox.innerHTML = `<p class="muted small">${esc(t('common.searching'))}</p>`;
 
         try {
             results = await location.search(query);
@@ -269,7 +282,7 @@ export function openLocationDialog() {
                         ${icon('pin', { size: 18 })}
                         <span><strong>${esc(place.name)}</strong><small>${esc(place.region)}</small></span>
                     </button></li>`).join('')}</ul>`
-                : '<p class="muted small">No places found. Check the spelling or try a nearby city.</p>';
+                : `<p class="muted small">${esc(t('location.noResults'))}</p>`;
         } catch (failure) {
             resultsBox.innerHTML = `<p class="field-error">${esc(failure.message)}</p>`;
         }

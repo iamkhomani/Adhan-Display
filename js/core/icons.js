@@ -66,5 +66,5 @@ export function icon(name, { size = 20, label = '', className = '' } = {}) {
         ? `role="img" aria-label="${label.replace(/"/g, '&quot;')}"`
         : 'aria-hidden="true" focusable="false"';
 
-    return `<svg class="icon ${className}" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" ${a11y}>${body}</svg>`;
+    return `<svg class="icon icon-${name} ${className}" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" ${a11y}>${body}</svg>`;
 }

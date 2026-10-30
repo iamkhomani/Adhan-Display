@@ -1,18 +1,21 @@
 /*
  * Static content. Kept small and sourced; references point to the
  * standard sunnah.com numbering.
+ *
+ * Interface labels are translation keys (see js/i18n). Hadith, du'a and
+ * dhikr meanings stay in English next to the Arabic, so religious texts are
+ * never machine-translated.
  */
 
-export const PRAYER_INFO = {
-    Fajr: { label: 'Fajr', arabic: 'الفجر' },
-    Sunrise: { label: 'Sunrise', arabic: 'الشروق' },
-    Dhuhr: { label: 'Dhuhr', arabic: 'الظهر' },
-    Asr: { label: 'Asr', arabic: 'العصر' },
-    Maghrib: { label: 'Maghrib', arabic: 'المغرب' },
-    Isha: { label: 'Isha', arabic: 'العشاء' }
+export const PRAYER_ARABIC = {
+    Fajr: 'الفجر',
+    Sunrise: 'الشروق',
+    Dhuhr: 'الظهر',
+    Asr: 'العصر',
+    Maghrib: 'المغرب',
+    Isha: 'العشاء',
+    Jumuah: 'الجمعة'
 };
-
-export const JUMUAH = { label: 'Jumu’ah', arabic: 'الجمعة' };
 
 export const CALCULATION_METHODS = [
     [3, 'Muslim World League'],
@@ -44,25 +47,27 @@ export function methodName(id) {
     return CALCULATION_METHODS.find(([value]) => value === Number(id))?.[1] || `Method ${id}`;
 }
 
+/* [value, translation key] */
 export const ASR_METHODS = [
-    [0, 'Standard (Shafi’i, Maliki, Hanbali)'],
-    [1, 'Hanafi']
+    [0, 'asr.standard'],
+    [1, 'asr.hanafi']
 ];
 
 export const HIGH_LATITUDE_RULES = [
-    [0, 'Automatic'],
-    [3, 'Angle based'],
-    [1, 'Middle of the night'],
-    [2, 'One seventh of the night']
+    [0, 'latitude.auto'],
+    [3, 'latitude.angle'],
+    [1, 'latitude.middle'],
+    [2, 'latitude.seventh']
 ];
 
+/* [id, translation key, file] */
 export const ADHAN_SOUNDS = [
-    ['default', 'Classic adhan', 'audio/adhan.mp3'],
-    ['makkah', 'Makkah', 'audio/makkah.mp3'],
-    ['madinah', 'Madinah', 'audio/madinah.mp3'],
-    ['alafasy', 'Mishary Alafasy', 'audio/alafasy.mp3'],
-    ['chime', 'Soft chime only', 'audio/chime.mp3'],
-    ['none', 'Silent (no sound)', '']
+    ['default', 'sound.default', 'audio/adhan.mp3'],
+    ['makkah', 'sound.makkah', 'audio/makkah.mp3'],
+    ['madinah', 'sound.madinah', 'audio/madinah.mp3'],
+    ['alafasy', 'sound.alafasy', 'audio/alafasy.mp3'],
+    ['chime', 'sound.chime', 'audio/chime.mp3'],
+    ['none', 'sound.none', '']
 ];
 
 export const DAILY_HADITHS = [
@@ -116,21 +121,21 @@ export const DAILY_DUAS = [
  */
 export const ADHKAR = [
     {
-        title: 'Ayat al-Kursi',
+        title: 'adhkar.0',
         quran: '2:255',
-        meaning: 'Recite the Verse of the Throne once in the morning and once in the evening.',
+        note: 'adhkar.0.note',
         count: 1,
         reference: 'Quran 2:255'
     },
     {
-        title: 'Al-Ikhlas, Al-Falaq and An-Nas',
+        title: 'adhkar.1',
         quran: '112',
-        meaning: 'Recite the last three surahs three times each, morning and evening.',
+        note: 'adhkar.1.note',
         count: 3,
         reference: 'Sunan Abi Dawud 5082'
     },
     {
-        title: 'Sayyid al-Istighfar',
+        title: 'adhkar.2',
         arabic: 'اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ لَكَ بِذَنْبِي فَاغْفِرْ لِي، فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ',
         transliteration: 'Allahumma anta rabbi la ilaha illa anta, khalaqtani wa ana ‘abduka, wa ana ‘ala ‘ahdika wa wa‘dika mastata‘tu, a‘udhu bika min sharri ma sana‘tu, abu’u laka bini‘matika ‘alayya, wa abu’u laka bidhanbi faghfir li, fa innahu la yaghfirudh-dhunuba illa anta.',
         meaning: 'O Allah, You are my Lord; there is no god but You. You created me and I am Your servant, and I keep Your covenant and promise as best I can. I seek refuge in You from the evil of what I have done. I acknowledge Your favour upon me and I acknowledge my sin, so forgive me, for none forgives sins except You.',
@@ -138,7 +143,7 @@ export const ADHKAR = [
         reference: 'Sahih al-Bukhari 6306'
     },
     {
-        title: 'Protection',
+        title: 'adhkar.3',
         arabic: 'بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ',
         transliteration: 'Bismillahil-ladhi la yadurru ma‘asmihi shay’un fil-ardi wa la fis-sama’i wa huwas-Sami‘ul-‘Alim.',
         meaning: 'In the name of Allah, with whose name nothing on earth or in the heavens can cause harm, and He is the All-Hearing, the All-Knowing.',
@@ -146,7 +151,7 @@ export const ADHKAR = [
         reference: 'Sunan Abi Dawud 5088'
     },
     {
-        title: 'Contentment',
+        title: 'adhkar.4',
         arabic: 'رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ نَبِيًّا',
         transliteration: 'Raditu billahi rabba, wa bil-islami dina, wa bi-Muhammadin sallallahu ‘alayhi wa sallama nabiyya.',
         meaning: 'I am pleased with Allah as my Lord, with Islam as my religion and with Muhammad ﷺ as my Prophet.',
@@ -154,7 +159,7 @@ export const ADHKAR = [
         reference: 'Sunan Abi Dawud 5072'
     },
     {
-        title: 'Reliance on Allah',
+        title: 'adhkar.5',
         arabic: 'حَسْبِيَ اللَّهُ لَا إِلَهَ إِلَّا هُوَ عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ',
         transliteration: 'Hasbiyallahu la ilaha illa huwa, ‘alayhi tawakkaltu wa huwa rabbul-‘arshil-‘azim.',
         meaning: 'Allah is sufficient for me; there is no god but Him. In Him I put my trust, and He is the Lord of the Mighty Throne.',
@@ -162,7 +167,7 @@ export const ADHKAR = [
         reference: 'Sunan Abi Dawud 5081'
     },
     {
-        title: 'Tasbih',
+        title: 'adhkar.6',
         arabic: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ',
         transliteration: 'Subhanallahi wa bihamdih.',
         meaning: 'Glory be to Allah and praise be to Him.',
@@ -170,7 +175,7 @@ export const ADHKAR = [
         reference: 'Sahih Muslim 2692'
     },
     {
-        title: 'Tahlil',
+        title: 'adhkar.7',
         arabic: 'لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ',
         transliteration: 'La ilaha illallahu wahdahu la sharika lah, lahul-mulku wa lahul-hamd, wa huwa ‘ala kulli shay’in qadir.',
         meaning: 'There is no god but Allah alone, without partner. His is the dominion and His is the praise, and He has power over all things.',
@@ -178,7 +183,7 @@ export const ADHKAR = [
         reference: 'Sahih al-Bukhari 3293'
     },
     {
-        title: 'Seeking forgiveness',
+        title: 'adhkar.8',
         arabic: 'أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ',
         transliteration: 'Astaghfirullaha wa atubu ilayh.',
         meaning: 'I seek Allah’s forgiveness and turn to Him in repentance.',
@@ -197,27 +202,30 @@ export const TASBIH_PHRASES = [
 ];
 
 /* [name, hijri month, hijri day, note] */
+/* [id, hijri month, hijri day]; names and notes are translation keys event.<id> */
 export const ISLAMIC_EVENTS = [
-    ['Islamic New Year', 1, 1, 'The first day of Muharram.'],
-    ['Day of Ashura', 1, 10, 'Fasting is recommended, together with the 9th or 11th.'],
-    ['Ramadan begins', 9, 1, 'The month of fasting and the Quran.'],
-    ['Last ten nights', 9, 21, 'Seek Laylat al-Qadr in the odd nights.'],
-    ['Eid al-Fitr', 10, 1, 'The festival marking the end of Ramadan.'],
-    ['First ten days of Dhul Hijjah', 12, 1, 'The best days of the year for good deeds.'],
-    ['Day of Arafah', 12, 9, 'Fasting is recommended for those not performing Hajj.'],
-    ['Eid al-Adha', 12, 10, 'The festival of sacrifice.']
+    ['newYear', 1, 1],
+    ['ashura', 1, 10],
+    ['ramadan', 9, 1],
+    ['lastTen', 9, 21],
+    ['eidFitr', 10, 1],
+    ['dhulHijjah', 12, 1],
+    ['arafah', 12, 9],
+    ['eidAdha', 12, 10]
 ];
 
+/* [id, url]; texts are translation keys site.<id>.* */
 export const HOLY_SITES = [
-    ['Masjid al-Haram', 'Makkah', 'The Sacred Mosque around the Ka‘bah, the direction of prayer.', 'https://www.youtube.com/results?search_query=makkah+live&sp=EgJAAQ%253D%253D'],
-    ['Al-Masjid an-Nabawi', 'Madinah', 'The Mosque of the Prophet ﷺ in Madinah.', 'https://www.youtube.com/results?search_query=madinah+live&sp=EgJAAQ%253D%253D'],
-    ['Al-Masjid al-Aqsa', 'Jerusalem', 'The third holiest mosque in Islam.', 'https://www.youtube.com/results?search_query=al+aqsa+live&sp=EgJAAQ%253D%253D']
+    ['haram', 'https://www.youtube.com/results?search_query=makkah+live&sp=EgJAAQ%253D%253D'],
+    ['nabawi', 'https://www.youtube.com/results?search_query=madinah+live&sp=EgJAAQ%253D%253D'],
+    ['aqsa', 'https://www.youtube.com/results?search_query=al+aqsa+live&sp=EgJAAQ%253D%253D']
 ];
 
+/* [id, url]; texts are translation keys learn.<id>.* */
 export const LEARN_SALAH = [
-    ['My Prayer Book', 'Learn the prayer step by step in your browser.', 'https://www.myprayer.org/pages/my-prayer-book'],
-    ['Namaz App for iPhone', 'Guided lessons for learning salah.', 'https://apps.apple.com/us/app/namaz-app-learn-salah-prayer/id1447056625'],
-    ['Namaz App for Android', 'Guided lessons for learning salah.', 'https://play.google.com/store/apps/details?id=com.nurios.namazapp']
+    ['book', 'https://www.myprayer.org/pages/my-prayer-book'],
+    ['ios', 'https://apps.apple.com/us/app/namaz-app-learn-salah-prayer/id1447056625'],
+    ['android', 'https://play.google.com/store/apps/details?id=com.nurios.namazapp']
 ];
 
 export const HADITH_COLLECTIONS = [
@@ -235,8 +243,7 @@ export const HADITH_COLLECTIONS = [
 
 export const SHAHADA = {
     arabic: 'أَشْهَدُ أَنْ لَا إِلَٰهَ إِلَّا اللَّهُ، وَأَشْهَدُ أَنَّ مُحَمَّدًا رَسُولُ اللَّهِ',
-    transliteration: 'Ashhadu an la ilaha illallah, wa ashhadu anna Muhammadan rasulullah.',
-    meaning: 'I bear witness that there is no god but Allah, and I bear witness that Muhammad is the Messenger of Allah.'
+    transliteration: 'Ashhadu an la ilaha illallah, wa ashhadu anna Muhammadan rasulullah.'
 };
 
 export const SUPPORT_URL = 'https://buymeacoffee.com/kmni';

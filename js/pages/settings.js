@@ -12,20 +12,22 @@ import { toast, confirmDialog } from '../core/ui.js';
 import { location } from '../services/location.js';
 import { alerts } from '../services/alerts.js';
 import { quranPrefs } from '../services/quran.js';
+import { t, lang, LANGUAGES } from '../core/i18n.js';
+import { store } from '../core/storage.js';
 import { CALCULATION_METHODS, ASR_METHODS, HIGH_LATITUDE_RULES, ADHAN_SOUNDS, SUPPORT_URL } from '../data/content.js';
 import { pageHeader, openLocationDialog } from './components.js';
 import { fillTranslationSelect, fillReciterSelect } from './quran.js';
 import { APP_VERSION, install } from '../app-info.js';
 
 const SECTIONS = [
-    ['appearance', 'Appearance'],
-    ['location', 'Location'],
-    ['prayer', 'Prayer times'],
-    ['alerts', 'Adhan and reminders'],
-    ['display', 'Display mode'],
-    ['quran', 'Quran'],
-    ['data', 'Your data'],
-    ['about', 'About']
+    'appearance',
+    'location',
+    'prayer',
+    'alerts',
+    'display',
+    'quran',
+    'data',
+    'about'
 ];
 
 function segmented(name, options, value) {
@@ -60,9 +62,9 @@ function stepper(name, value, min, max, label) {
     return `
         <div class="stepper" data-stepper="${esc(name)}" data-min="${min}" data-max="${max}">
             <span class="stepper-label">${esc(label)}</span>
-            <button type="button" class="icon-button" data-step="-1" aria-label="${esc(label)} minus one">${icon('minus', { size: 16 })}</button>
+            <button type="button" class="icon-button" data-step="-1" aria-label="${esc(t('settings.minusOne', { label }))}">${icon('minus', { size: 16 })}</button>
             <output class="stepper-value tnum" aria-live="polite">${value > 0 ? '+' : ''}${value}</output>
-            <button type="button" class="icon-button" data-step="1" aria-label="${esc(label)} plus one">${icon('plus', { size: 16 })}</button>
+            <button type="button" class="icon-button" data-step="1" aria-label="${esc(t('settings.plusOne', { label }))}">${icon('plus', { size: 16 })}</button>
         </div>
     `;
 }
@@ -91,15 +93,15 @@ function notificationControl() {
     const settings = getSettings();
 
     if (state === 'unsupported') {
-        return '<p class="field-hint">This browser does not support notifications.</p>';
+        return `<p class="field-hint">${esc(t('settings.notifyUnsupported'))}</p>`;
     }
 
     if (state === 'denied') {
-        return '<p class="field-hint">Notifications are blocked for this site. Allow them in your browser settings to use this option.</p>';
+        return `<p class="field-hint">${esc(t('settings.notifyBlocked'))}</p>`;
     }
 
-    return toggle('notify', settings.notify && state === 'granted', 'System notifications',
-        'Shows a notification at prayer time when this tab is in the background.');
+    return toggle('notify', settings.notify && state === 'granted', t('settings.notify'),
+        t('settings.notifyHint'));
 }
 
 function bodyHTML() {
@@ -108,124 +110,127 @@ function bodyHTML() {
     const prefs = quranPrefs.get();
 
     return [
-        sectionHTML('appearance', 'Appearance', `
-            ${field('Theme', segmented('theme', [['dark', 'Dark'], ['light', 'Light'], ['system', 'Match device']], settings.theme))}
-            ${field('Text size', segmented('size', [['compact', 'Small'], ['normal', 'Normal'], ['large', 'Large']], settings.size))}
-            ${field('Time format', segmented('timeFormat', [['24h', '24-hour'], ['12h', '12-hour']], settings.timeFormat))}
+        sectionHTML('appearance', t('settings.appearance'), `
+            ${field(`Language${lang().code === 'en' ? '' : ` · ${t('settings.language')}`}`,
+                select('lang', LANGUAGES.map(item => [item.code, item.name]), lang().code, t('settings.language')),
+                t('settings.languageHint'))}
+            ${field(t('settings.theme'), segmented('theme', [['dark', t('settings.themeDark')], ['light', t('settings.themeLight')], ['system', t('settings.themeSystem')]], settings.theme))}
+            ${field(t('settings.textSize'), segmented('size', [['compact', t('settings.sizeSmall')], ['normal', t('settings.sizeNormal')], ['large', t('settings.sizeLarge')]], settings.size))}
+            ${field(t('settings.timeFormat'), segmented('timeFormat', [['24h', t('settings.time24')], ['12h', t('settings.time12')]], settings.timeFormat))}
         `),
 
-        sectionHTML('location', 'Location', `
+        sectionHTML('location', t('settings.location'), `
             <div class="location-card">
                 ${icon('pin')}
                 <span><strong>${esc(loc.city)}${loc.country ? `, ${esc(loc.country)}` : ''}</strong>
-                <small class="tnum">${loc.lat.toFixed(4)}, ${loc.lon.toFixed(4)}${loc.isDefault ? ' (default)' : ''}</small></span>
-                <button type="button" class="button button-ghost" data-action="location">Change</button>
+                <small class="tnum">${loc.lat.toFixed(4)}, ${loc.lon.toFixed(4)}${loc.isDefault ? ` (${esc(t('settings.default'))})` : ''}</small></span>
+                <button type="button" class="button button-ghost" data-action="location">${esc(t('common.change'))}</button>
             </div>
-            ${toggle('autoLocation', settings.autoLocation, 'Update automatically',
-                'When location access is allowed, your position is refreshed each time you open the app.')}
+            ${toggle('autoLocation', settings.autoLocation, t('settings.autoLocation'),
+                t('settings.autoLocationHint'))}
         `),
 
-        sectionHTML('prayer', 'Prayer times', `
-            ${field('Calculation method', select('method', CALCULATION_METHODS, settings.method, 'Calculation method'),
-                'Choose the method used by your local mosque.')}
-            ${field('Asr time', select('school', ASR_METHODS, settings.school, 'Asr time'))}
-            ${field('High latitude rule', select('latAdjust', HIGH_LATITUDE_RULES, settings.latAdjust, 'High latitude rule'),
-                'Used where Fajr and Isha are hard to determine, such as summer in northern Europe.')}
+        sectionHTML('prayer', t('settings.prayer'), `
+            ${field(t('settings.method'), select('method', CALCULATION_METHODS, settings.method, t('settings.method')),
+                t('settings.methodHint'))}
+            ${field(t('settings.asr'), select('school', ASR_METHODS.map(([value, key]) => [value, t(key)]), settings.school, t('settings.asr')))}
+            ${field(t('settings.latitude'), select('latAdjust', HIGH_LATITUDE_RULES.map(([value, key]) => [value, t(key)]), settings.latAdjust, t('settings.latitude')),
+                t('settings.latitudeHint'))}
             <div class="field">
-                <span class="field-label">Adjust times (minutes)</span>
+                <span class="field-label">${esc(t('settings.adjust'))}</span>
                 <div class="steppers">
-                    ${PRAYER_KEYS.map(name => stepper(`tune:${name}`, settings.tune[name], -60, 60, name)).join('')}
+                    ${PRAYER_KEYS.map(name => stepper(`tune:${name}`, settings.tune[name], -60, 60, t(`prayer.${name}`))).join('')}
                 </div>
-                <p class="field-hint">Match the times of your local mosque. Adjustments are applied to every day.</p>
+                <p class="field-hint">${esc(t('settings.adjustHint'))}</p>
             </div>
             <div class="field">
-                <span class="field-label">Hijri date (days)</span>
-                <div class="steppers">${stepper('hijriOffset', settings.hijriOffset, -2, 2, 'Hijri date')}</div>
-                <p class="field-hint">Shift the Hijri date when your community follows a local moon sighting.</p>
+                <span class="field-label">${esc(t('settings.hijri'))}</span>
+                <div class="steppers">${stepper('hijriOffset', settings.hijriOffset, -2, 2, t('settings.hijriShort'))}</div>
+                <p class="field-hint">${esc(t('settings.hijriHint'))}</p>
             </div>
         `),
 
-        sectionHTML('alerts', 'Adhan and reminders', `
+        sectionHTML('alerts', t('settings.alerts'), `
             <div class="field">
-                <span class="field-label">Adhan sound</span>
+                <span class="field-label">${esc(t('settings.sound'))}</span>
                 <div class="inline-controls">
-                    ${select('sound', ADHAN_SOUNDS.map(([key, label]) => [key, label]), settings.sound, 'Adhan sound')}
-                    <button type="button" class="button button-ghost" data-preview>${icon(alerts.playing ? 'stop' : 'play', { size: 16 })} ${alerts.playing ? 'Stop' : 'Preview'}</button>
+                    ${select('sound', ADHAN_SOUNDS.map(([key, label]) => [key, t(label)]), settings.sound, t('settings.sound'))}
+                    <button type="button" class="button button-ghost" data-preview>${icon(alerts.playing ? 'stop' : 'play', { size: 16 })} ${esc(alerts.playing ? t('common.stop') : t('settings.preview'))}</button>
                 </div>
             </div>
-            ${field('Volume', `<input type="range" class="range" min="0" max="1" step="0.05" value="${settings.volume}" data-range="volume" aria-label="Volume">`)}
+            ${field(t('settings.volume'), `<input type="range" class="range" min="0" max="1" step="0.05" value="${settings.volume}" data-range="volume" aria-label="${esc(t('settings.volume'))}">`)}
             <div class="field">
-                <span class="field-label">Play the adhan for</span>
+                <span class="field-label">${esc(t('settings.playFor'))}</span>
                 <div class="check-grid">
                     ${SALAH.map(name => `
-                        <label class="check"><input type="checkbox" data-alert="${name}" ${settings.alerts[name] ? 'checked' : ''}><span>${name}</span></label>
+                        <label class="check"><input type="checkbox" data-alert="${name}" ${settings.alerts[name] ? 'checked' : ''}><span>${esc(t(`prayer.${name}`))}</span></label>
                     `).join('')}
                 </div>
             </div>
-            ${field('Reminder before the adhan', select('reminder', [[0, 'Off'], [5, '5 minutes before'], [10, '10 minutes before'], [15, '15 minutes before'], [20, '20 minutes before'], [30, '30 minutes before']], settings.reminder, 'Reminder before the adhan'),
-                'Plays a soft chime, for example as a reminder to make wudu.')}
-            ${toggle('tahajjud', settings.tahajjud, 'Remind me at the last third of the night', 'A soft chime for tahajjud.')}
+            ${field(t('settings.reminder'), select('reminder', [[0, t('common.off')], ...[5, 10, 15, 20, 30].map(count => [count, t('settings.minutesBefore', { count })])], settings.reminder, t('settings.reminder')),
+                t('settings.reminderHint'))}
+            ${toggle('tahajjud', settings.tahajjud, t('settings.tahajjud'), t('settings.tahajjudHint'))}
             <div data-notify>${notificationControl()}</div>
-            <p class="note">${icon('info', { size: 16 })} Sounds and notifications work while Adhan Display is open, also in a background tab or as an installed app. A sleeping device cannot play them. Browsers only allow sound after you have tapped the page once.</p>
+            <p class="note">${icon('info', { size: 16 })} ${esc(t('settings.alertsNote'))}</p>
         `),
 
-        sectionHTML('display', 'Display mode', `
-            <p class="field-hint">A full-screen clock for a tablet or screen at home or in the mosque.</p>
-            ${toggle('displayAwake', settings.displayAwake, 'Keep the screen on', 'Prevents the screen from turning off while display mode is open.')}
-            ${toggle('displayDim', settings.displayDim, 'Dim at night', 'Lowers the brightness between Isha and Fajr.')}
-            ${toggle('displaySeconds', settings.displaySeconds, 'Show seconds')}
-            <a class="button button-primary" href="#display">${icon('monitor', { size: 18 })} Open display mode</a>
+        sectionHTML('display', t('settings.display'), `
+            <p class="field-hint">${esc(t('settings.displayLead'))}</p>
+            ${toggle('displayAwake', settings.displayAwake, t('settings.displayAwake'), t('settings.displayAwakeHint'))}
+            ${toggle('displayDim', settings.displayDim, t('settings.displayDim'), t('settings.displayDimHint'))}
+            ${toggle('displaySeconds', settings.displaySeconds, t('settings.displaySeconds'))}
+            <a class="button button-primary" href="#display">${icon('monitor', { size: 18 })} ${esc(t('settings.openDisplay'))}</a>
         `),
 
-        sectionHTML('quran', 'Quran', `
-            ${field('Translation', '<select class="select" data-quran="translation" aria-label="Translation"><option>Loading</option></select>')}
-            ${field('Reciter', '<select class="select" data-quran="reciter" aria-label="Reciter"><option>Loading</option></select>')}
-            ${field('Arabic text size', `<input type="range" class="range" min="80" max="160" step="10" value="${prefs.fontSize}" data-quran="size" aria-label="Arabic text size">`)}
-            <label class="switch-row"><span>Show translation</span><input type="checkbox" class="switch" data-quran="showTranslation" ${prefs.showTranslation ? 'checked' : ''}></label>
-            <label class="switch-row"><span>Play the next ayah automatically</span><input type="checkbox" class="switch" data-quran="autoPlay" ${prefs.autoPlay ? 'checked' : ''}></label>
+        sectionHTML('quran', t('settings.quran'), `
+            ${field(t('quran.translation'), `<select class="select" data-quran="translation" aria-label="${esc(t('quran.translation'))}"><option>${esc(t('common.loading'))}</option></select>`)}
+            ${field(t('quran.reciter'), `<select class="select" data-quran="reciter" aria-label="${esc(t('quran.reciter'))}"><option>${esc(t('common.loading'))}</option></select>`)}
+            ${field(t('quran.arabicSize'), `<input type="range" class="range" min="80" max="160" step="10" value="${prefs.fontSize}" data-quran="size" aria-label="${esc(t('quran.arabicSize'))}">`)}
+            <label class="switch-row"><span>${esc(t('quran.showTranslation'))}</span><input type="checkbox" class="switch" data-quran="showTranslation" ${prefs.showTranslation ? 'checked' : ''}></label>
+            <label class="switch-row"><span>${esc(t('quran.autoPlay'))}</span><input type="checkbox" class="switch" data-quran="autoPlay" ${prefs.autoPlay ? 'checked' : ''}></label>
         `),
 
-        sectionHTML('data', 'Your data', `
-            <p class="field-hint">Everything is stored only in this browser. Make a backup to move your tracker, bookmarks and settings to another device.</p>
+        sectionHTML('data', t('settings.data'), `
+            <p class="field-hint">${esc(t('settings.dataLead'))}</p>
             <div class="button-row">
-                <button type="button" class="button button-ghost" data-data="export">${icon('download', { size: 18 })} Download backup</button>
-                <button type="button" class="button button-ghost" data-data="import">${icon('upload', { size: 18 })} Restore backup</button>
+                <button type="button" class="button button-ghost" data-data="export">${icon('download', { size: 18 })} ${esc(t('settings.export'))}</button>
+                <button type="button" class="button button-ghost" data-data="import">${icon('upload', { size: 18 })} ${esc(t('settings.import'))}</button>
                 <input type="file" accept="application/json,.json" data-import-file hidden>
             </div>
             <div class="button-row">
-                <button type="button" class="button button-ghost" data-data="cache">${icon('refresh', { size: 18 })} Clear cached data</button>
-                <button type="button" class="button button-danger-ghost" data-data="reset">${icon('trash', { size: 18 })} Reset everything</button>
+                <button type="button" class="button button-ghost" data-data="cache">${icon('refresh', { size: 18 })} ${esc(t('settings.cache'))}</button>
+                <button type="button" class="button button-danger-ghost" data-data="reset">${icon('trash', { size: 18 })} ${esc(t('settings.reset'))}</button>
             </div>
         `),
 
-        sectionHTML('about', 'About', `
+        sectionHTML('about', t('settings.about'), `
             <div class="about">
                 <img src="images/icons/icon-192.png" width="56" height="56" alt="" loading="lazy">
                 <div>
                     <strong>Adhan Display</strong>
-                    <span class="muted">Version ${esc(APP_VERSION)}</span>
+                    <span class="muted">${esc(t('settings.version', { version: APP_VERSION }))}</span>
                 </div>
             </div>
-            <p>Free prayer times, Quran and hadith, made as sadaqah jariyah. No account and no ads.</p>
+            <p>${esc(t('settings.aboutText'))}</p>
             <div class="button-row">
-                <button type="button" class="button button-primary" data-install hidden>${icon('download', { size: 18 })} Install app</button>
-                <a class="button button-ghost" href="${SUPPORT_URL}" target="_blank" rel="noopener noreferrer">${icon('heart', { size: 18 })} Support the project</a>
+                <button type="button" class="button button-primary" data-install hidden>${icon('download', { size: 18 })} ${esc(t('settings.install'))}</button>
+                <a class="button button-ghost" href="${SUPPORT_URL}" target="_blank" rel="noopener noreferrer">${icon('heart', { size: 18 })} ${esc(t('settings.support'))}</a>
             </div>
-            <p class="fine-print">Prayer times by AlAdhan. Quran text and audio by Al Quran Cloud and Islamic Network. Tafsir by Quran.com. Hadith by UmmahAPI. Place search by Open-Meteo and BigDataCloud.</p>
+            <p class="fine-print">${esc(t('settings.credits'))}</p>
         `)
     ].join('');
 }
 
 export const settingsPage = {
-    title: 'Settings',
+    titleKey: 'nav.settings',
 
     render() {
         return `
             <div class="page settings-page">
-                ${pageHeader('Settings')}
+                ${pageHeader(t('nav.settings'))}
                 <div class="settings-layout">
-                    <nav class="settings-nav" aria-label="Settings sections">
-                        ${SECTIONS.map(([id, label]) => `<a href="#settings/${id}" data-section-link="${id}">${esc(label)}</a>`).join('')}
+                    <nav class="settings-nav" aria-label="${esc(t('settings.sectionsLabel'))}">
+                        ${SECTIONS.map(id => `<a href="#settings/${id}" data-section-link="${id}">${esc(t(`settings.${id}`))}</a>`).join('')}
                     </nav>
                     <div class="settings-body" data-settings-body>${bodyHTML()}</div>
                 </div>
@@ -268,7 +273,7 @@ export const settingsPage = {
         ctx.on('alert-audio', () => {
             const button = root.querySelector('[data-preview]');
             if (button) {
-                button.innerHTML = `${icon(alerts.playing ? 'stop' : 'play', { size: 16 })} ${alerts.playing ? 'Stop' : 'Preview'}`;
+                button.innerHTML = `${icon(alerts.playing ? 'stop' : 'play', { size: 16 })} ${esc(alerts.playing ? t('common.stop') : t('settings.preview'))}`;
             }
         });
 
@@ -344,17 +349,17 @@ export const settingsPage = {
                 link.click();
                 link.remove();
                 setTimeout(() => URL.revokeObjectURL(url), 1000);
-                toast('Backup downloaded');
+                toast(t('settings.backupDone'));
             } else if (dataAction === 'import') {
                 root.querySelector('[data-import-file]').click();
             } else if (dataAction === 'cache') {
                 const removed = clearCache();
-                toast(`Cleared ${removed} cached ${removed === 1 ? 'item' : 'items'}. Fresh data will load when needed.`);
+                toast(t('settings.cacheCleared', { count: removed }));
                 changed('cache');
             } else if (dataAction === 'reset') {
                 const confirmed = await confirmDialog(
-                    'This deletes your settings, prayer tracker, bookmarks and saved places from this browser. Download a backup first if you want to keep them.',
-                    { confirm: 'Delete everything', danger: true }
+                    t('settings.resetConfirm'),
+                    { confirm: t('settings.resetButton'), danger: true }
                 );
                 if (confirmed) {
                     resetAll();
@@ -366,7 +371,12 @@ export const settingsPage = {
         root.addEventListener('change', async event => {
             const target = event.target;
 
-            if (target.matches('[data-select]')) {
+            if (target.matches('[data-select="lang"]')) {
+                const previous = lang().code;
+                store.setRaw('lang', target.value);
+                quranPrefs.followLanguage(previous, target.value);
+                window.location.reload();
+            } else if (target.matches('[data-select]')) {
                 const name = target.dataset.select;
                 const numeric = ['method', 'school', 'latAdjust', 'reminder'].includes(name);
                 setSetting(name, numeric ? Number(target.value) : target.value);
@@ -410,7 +420,7 @@ export const settingsPage = {
                 }[key];
                 if (patch) {
                     quranPrefs.update(patch);
-                    toast('Saved', { duration: 1500 });
+                    toast(t('settings.saved'), { duration: 1500 });
                 }
             } else if (target.matches('[data-import-file]')) {
                 const file = target.files?.[0];
@@ -419,10 +429,10 @@ export const settingsPage = {
                 }
                 try {
                     const count = importBackup(JSON.parse(await file.text()));
-                    toast(`Restored ${count} items. Reloading`);
+                    toast(t('settings.restored', { count }));
                     setTimeout(() => window.location.reload(), 1200);
                 } catch (error) {
-                    toast(error instanceof SyntaxError ? 'This file is not a valid backup.' : error.message);
+                    toast(error instanceof SyntaxError ? t('settings.notBackup') : error.code ? t(`settings.${error.code}`) : error.message);
                 }
                 target.value = '';
             }

@@ -9,6 +9,7 @@
 import { PREFIX } from '../core/storage.js';
 import { PRAYER_KEYS } from '../core/storage.js';
 import { cleanHM } from '../core/time.js';
+import { t, lang } from '../core/i18n.js';
 
 export const ENDPOINTS = {
     aladhan: 'https://api.aladhan.com/v1',
@@ -25,7 +26,7 @@ const MAX_CACHE_ENTRIES = 40;
 
 export class HttpError extends Error {
     constructor(status, message) {
-        super(message || `Request failed (${status})`);
+        super(message || t('error.request', { status }));
         this.status = status;
     }
 }
@@ -49,12 +50,12 @@ export async function fetchJson(url, { timeout = 15000, signal } = {}) {
         return await response.json();
     } catch (error) {
         if (error.name === 'AbortError') {
-            throw new Error(signal?.aborted ? 'Request cancelled' : 'The server took too long to respond');
+            throw new Error(signal?.aborted ? t('error.cancelled') : t('error.timeout'));
         }
         if (error instanceof HttpError) {
             throw error;
         }
-        throw new Error(navigator.onLine === false ? 'You are offline' : 'Could not reach the server');
+        throw new Error(navigator.onLine === false ? t('error.offline') : t('error.network'));
     } finally {
         clearTimeout(timer);
     }
@@ -151,7 +152,7 @@ function compactCalendar(json) {
     const list = Array.isArray(json?.data) ? json.data : [];
 
     if (!list.length) {
-        throw new Error('No prayer times were returned for this location');
+        throw new Error(t('error.noTimes'));
     }
 
     const days = list.map(day => {
@@ -230,7 +231,7 @@ export function namesOfAllah() {
  * ------------------------------------------------------------- */
 
 export async function searchPlaces(query) {
-    const params = new URLSearchParams({ name: query, count: '6', language: 'en', format: 'json' });
+    const params = new URLSearchParams({ name: query, count: '6', language: lang().code, format: 'json' });
     const json = await fetchJson(`${ENDPOINTS.geocode}?${params}`);
 
     return (json?.results || []).map(item => ({
@@ -246,10 +247,10 @@ export async function reverseGeocode(lat, lon) {
     const params = new URLSearchParams({
         latitude: lat.toFixed(3),
         longitude: lon.toFixed(3),
-        localityLanguage: 'en'
+        localityLanguage: lang().code
     });
 
-    const key = `rev_${lat.toFixed(2)}_${lon.toFixed(2)}`;
+    const key = `rev_${lang().code}_${lat.toFixed(2)}_${lon.toFixed(2)}`;
 
     return cachedJson(key, `${ENDPOINTS.reverse}?${params}`, 24 * 30, json => ({
         city: json?.city || json?.locality || json?.principalSubdivision || '',

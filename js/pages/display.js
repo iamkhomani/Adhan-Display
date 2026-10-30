@@ -11,6 +11,7 @@ import { prayerState } from '../services/prayer.js';
 import { location } from '../services/location.js';
 import { alerts } from '../services/alerts.js';
 import { hijriText, timeHTML } from './components.js';
+import { t, isRtl } from '../core/i18n.js';
 
 const PRAYER_WINDOW_MS = 10 * 60 * 1000;
 
@@ -45,22 +46,22 @@ function statusHTML(now) {
     const { next, current } = prayerState;
 
     if (!next) {
-        return prayerState.status === 'error' ? 'Prayer times are not available' : 'Loading prayer times';
+        return esc(prayerState.status === 'error' ? t('display.unavailable') : t('home.loading'));
     }
 
     if (current?.date && !current.fromYesterday && now - current.date < PRAYER_WINDOW_MS) {
-        return `<strong>It is time for ${esc(current.label)}</strong>`;
+        return `<strong>${esc(t('display.timeFor', { prayer: current.label }))}</strong>`;
     }
 
-    return `${esc(next.label)} in <strong data-display-remaining>${esc(formatDuration(next.date - now))}</strong>`;
+    return t('display.nextIn', { prayer: esc(next.label), duration: `<strong data-display-remaining>${esc(formatDuration(next.date - now))}</strong>` });
 }
 
 function tilesHTML() {
     const entries = prayerState.today?.entries || [];
     return entries.map(entry => `
         <div class="display-tile ${entry.isNext ? 'is-next' : ''} ${entry.isCurrent ? 'is-current' : ''} ${entry.passed && !entry.isNext ? 'is-passed' : ''}">
-            <span class="display-tile-name">${esc(entry.label)}${entry.isTomorrow ? ' tomorrow' : ''}</span>
-            <span class="display-tile-arabic" lang="ar" dir="rtl">${esc(entry.arabic)}</span>
+            <span class="display-tile-name">${esc(entry.isTomorrow ? t('display.tomorrow', { prayer: entry.label }) : entry.label)}</span>
+            ${isRtl() ? '' : `<span class="display-tile-arabic" lang="ar" dir="rtl">${esc(entry.arabic)}</span>`}
             <span class="display-tile-time">${timeHTML(entry.hm)}</span>
         </div>
     `).join('');
@@ -81,7 +82,7 @@ function isNight(now) {
 }
 
 export const displayPage = {
-    title: 'Display',
+    titleKey: 'display.title',
 
     render() {
         const now = new Date();
@@ -93,8 +94,8 @@ export const displayPage = {
                 <header class="display-top">
                     <span class="display-place">${icon('pin', { size: 18 })} ${esc(loc.city)}</span>
                     <span class="display-actions">
-                        <button type="button" class="icon-button" data-fullscreen aria-label="Full screen">${icon('expand')}</button>
-                        <a class="icon-button" href="#home" aria-label="Close display mode">${icon('close')}</a>
+                        <button type="button" class="icon-button" data-fullscreen aria-label="${esc(t('display.fullscreen'))}">${icon('expand')}</button>
+                        <a class="icon-button" href="#home" aria-label="${esc(t('display.close'))}">${icon('close')}</a>
                     </span>
                 </header>
 
@@ -105,7 +106,7 @@ export const displayPage = {
                 </div>
 
                 <div class="display-tiles" data-display-tiles>${tilesHTML()}</div>
-                <p class="display-hint" data-display-hint hidden>Tap anywhere to allow the adhan sound</p>
+                <p class="display-hint" data-display-hint hidden>${esc(t('display.tapHint'))}</p>
                 <div class="display-dim" aria-hidden="true"></div>
             </div>
         `;

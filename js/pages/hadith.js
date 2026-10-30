@@ -10,6 +10,7 @@ import { spinner, emptyState, shareText, toast } from '../core/ui.js';
 import { fetchJson, cachedJson, ENDPOINTS } from '../services/api.js';
 import { HADITH_COLLECTIONS } from '../data/content.js';
 import { pageHeader } from './components.js';
+import { t, lang } from '../core/i18n.js';
 
 const SITE = 'https://adhandisplay.com/';
 
@@ -109,7 +110,11 @@ function normalise(raw, fallbackCollection) {
 }
 
 function collectionName(key) {
-    return state.collections.find(item => item.key === key)?.name || key;
+    const item = state.collections.find(entry => entry.key === key);
+    if (item?.arabic && ['ar', 'ur'].includes(lang().code)) {
+        return item.arabic;
+    }
+    return item?.name || key;
 }
 
 async function loadCollections() {
@@ -162,7 +167,7 @@ async function load(kind, value, rerender) {
         const hadith = normalise(raw, collection);
 
         if (!hadith) {
-            throw new Error(kind === 'position' ? 'There are no more hadith in this collection.' : 'This hadith was not found.');
+            throw new Error(kind === 'position' ? t('hadith.noMore') : t('hadith.notFound'));
         }
 
         state.hadith = hadith;
@@ -175,7 +180,7 @@ async function load(kind, value, rerender) {
         }
     } catch (error) {
         if (id === requestId) {
-            state.error = error.status === 404 ? 'This hadith was not found. Try another number.' : error.message;
+            state.error = error.status === 404 ? t('hadith.notFoundTry') : error.message;
         }
     } finally {
         if (id === requestId) {
@@ -258,20 +263,20 @@ function toggleSaved(hadith) {
 
 function readerHTML() {
     if (state.loading) {
-        return `<article class="panel hadith-card">${spinner('Loading hadith')}</article>`;
+        return `<article class="panel hadith-card">${spinner()}</article>`;
     }
 
     if (state.error) {
         return `<article class="panel hadith-card">${emptyState({
             title: state.error,
-            action: `<button type="button" class="button button-primary" data-hadith="random">${icon('refresh')} Show a random hadith</button>`
+            action: `<button type="button" class="button button-primary" data-hadith="random">${icon('refresh')} ${esc(t('hadith.showRandom'))}</button>`
         })}</article>`;
     }
 
     const hadith = state.hadith;
 
     if (!hadith) {
-        return `<article class="panel hadith-card">${spinner('Loading hadith')}</article>`;
+        return `<article class="panel hadith-card">${spinner()}</article>`;
     }
 
     const saved = isSaved(hadith);
@@ -282,33 +287,33 @@ function readerHTML() {
             <header class="hadith-head">
                 <div>
                     <p class="hadith-collection">${esc(collectionName(hadith.collection))}</p>
-                    <h2 id="hadith-title" class="hadith-number">Hadith ${esc(hadith.number)}</h2>
+                    <h2 id="hadith-title" class="hadith-number">${esc(t('hadith.number', { n: hadith.number }))}</h2>
                 </div>
                 <div class="hadith-tools">
-                    <button type="button" class="icon-button ${saved ? 'is-on' : ''}" data-hadith="save" aria-pressed="${saved}" aria-label="${saved ? 'Remove from saved' : 'Save hadith'}">${icon(saved ? 'bookmarkFilled' : 'bookmark')}</button>
-                    <button type="button" class="icon-button" data-hadith="share" aria-label="Share hadith">${icon('share')}</button>
+                    <button type="button" class="icon-button ${saved ? 'is-on' : ''}" data-hadith="save" aria-pressed="${saved}" aria-label="${esc(t(saved ? 'hadith.unsave' : 'hadith.save'))}">${icon(saved ? 'bookmarkFilled' : 'bookmark')}</button>
+                    <button type="button" class="icon-button" data-hadith="share" aria-label="${esc(t('hadith.share'))}">${icon('share')}</button>
                 </div>
             </header>
 
-            ${hadith.narrator ? `<p class="hadith-narrator">${esc(hadith.narrator)}</p>` : ''}
+            ${hadith.narrator ? `<p class="hadith-narrator" lang="en">${esc(hadith.narrator)}</p>` : ''}
             ${hadith.arabic ? `<p class="hadith-arabic" lang="ar" dir="rtl">${esc(hadith.arabic)}</p>` : ''}
-            ${hadith.english ? `<div class="hadith-english">${esc(hadith.english).replace(/\n+/g, '<br>')}</div>` : ''}
+            ${hadith.english ? `<div class="hadith-english" lang="en">${esc(hadith.english).replace(/\n+/g, '<br>')}</div>` : ''}
 
             <footer class="hadith-foot">
-                ${meta.length ? `<p class="hadith-meta">${meta.map(esc).join('<br>')}</p>` : ''}
+                ${meta.length ? `<p class="hadith-meta" lang="en">${meta.map(esc).join('<br>')}</p>` : ''}
                 ${hadith.grade ? `<span class="badge">${esc(hadith.grade)}</span>` : ''}
             </footer>
 
-            <nav class="hadith-nav" aria-label="Browse hadith">
-                <button type="button" class="button button-ghost" data-hadith="prev" ${canGoBack() ? '' : 'disabled'}>${icon('left', { size: 18 })} Previous</button>
-                <button type="button" class="button button-ghost" data-hadith="random">${icon('refresh', { size: 18 })} Random</button>
-                <button type="button" class="button button-ghost" data-hadith="next">Next ${icon('right', { size: 18 })}</button>
+            <nav class="hadith-nav" aria-label="${esc(t('hadith.browse'))}">
+                <button type="button" class="button button-ghost" data-hadith="prev" ${canGoBack() ? '' : 'disabled'}>${icon('left', { size: 18 })} ${esc(t('common.previous'))}</button>
+                <button type="button" class="button button-ghost" data-hadith="random">${icon('refresh', { size: 18 })} ${esc(t('hadith.random'))}</button>
+                <button type="button" class="button button-ghost" data-hadith="next">${esc(t('common.next'))} ${icon('right', { size: 18 })}</button>
             </nav>
 
             <form class="goto" data-hadith-goto>
-                <label for="hadith-number">Go to number</label>
-                <input id="hadith-number" name="number" inputmode="decimal" autocomplete="off" placeholder="e.g. 52">
-                <button type="submit" class="button button-ghost">Go</button>
+                <label for="hadith-number">${esc(t('hadith.goto'))}</label>
+                <input id="hadith-number" name="number" inputmode="decimal" autocomplete="off" placeholder="52">
+                <button type="submit" class="button button-ghost">${esc(t('hadith.go'))}</button>
             </form>
         </article>
     `;
@@ -327,26 +332,26 @@ function resultsHTML() {
     }
 
     if (state.results === 'loading') {
-        return `<section class="panel">${spinner('Searching')}</section>`;
+        return `<section class="panel">${spinner(t('common.searching'))}</section>`;
     }
 
     if (state.results.error) {
-        return `<section class="panel">${emptyState({ title: 'Search failed', text: state.results.error })}</section>`;
+        return `<section class="panel">${emptyState({ title: t('common.searchFailed'), text: state.results.error })}</section>`;
     }
 
     return `
         <section class="panel search-results" aria-live="polite">
             <header class="panel-head">
-                <h2 class="panel-title">${state.results.length ? `${state.results.length} results in ${esc(collectionName(state.collection))}` : 'No results'}</h2>
-                <button type="button" class="link-button" data-hadith="clear-search">Clear</button>
+                <h2 class="panel-title">${esc(state.results.length ? t('hadith.resultsIn', { count: state.results.length, collection: collectionName(state.collection) }) : t('common.noResults'))}</h2>
+                <button type="button" class="link-button" data-hadith="clear-search">${esc(t('common.clear'))}</button>
             </header>
             ${state.results.length ? `<ol class="result-list">
                 ${state.results.map((item, index) => `
                     <li><button type="button" class="result" data-result="${index}">
                         <strong>${esc(collectionName(item.collection))} ${esc(item.number)}</strong>
-                        <span>${highlight(item.english.slice(0, 320) + (item.english.length > 320 ? '…' : ''), state.query)}</span>
+                        <span lang="en">${highlight(item.english.slice(0, 320) + (item.english.length > 320 ? '…' : ''), state.query)}</span>
                     </button></li>`).join('')}
-            </ol>` : '<p class="panel-note">Search works in English. Try a single key word such as "patience" or "prayer", or choose another collection.</p>'}
+            </ol>` : `<p class="panel-note">${esc(t('hadith.searchHint'))}</p>`}
         </section>
     `;
 }
@@ -361,8 +366,8 @@ function savedHTML() {
     return `
         <section class="panel saved" aria-labelledby="saved-title">
             <header class="panel-head">
-                <h2 id="saved-title" class="panel-title">Saved hadith</h2>
-                <button type="button" class="link-button" data-hadith="hide-saved">Close</button>
+                <h2 id="saved-title" class="panel-title">${esc(t('hadith.saved'))}</h2>
+                <button type="button" class="link-button" data-hadith="hide-saved">${esc(t('common.close'))}</button>
             </header>
             ${list.length ? `<ol class="result-list">
                 ${list.map((item, index) => `
@@ -370,7 +375,7 @@ function savedHTML() {
                         <strong>${esc(item.collectionName || collectionName(item.collection))} ${esc(item.number)}</strong>
                         <span>${esc((item.english || item.arabic || '').slice(0, 220))}${(item.english || '').length > 220 ? '…' : ''}</span>
                     </button></li>`).join('')}
-            </ol>` : '<p class="panel-note">Tap the bookmark icon on a hadith to save it here.</p>'}
+            </ol>` : `<p class="panel-note">${esc(t('hadith.savedEmpty'))}</p>`}
         </section>
     `;
 }
@@ -380,16 +385,16 @@ function bodyHTML() {
         ${savedHTML()}
         ${resultsHTML()}
         ${readerHTML()}
-        <p class="fine-print">Texts and gradings come from UmmahAPI. For detailed questions, consult a qualified scholar and the printed collections.</p>
+        <p class="fine-print">${esc(t('hadith.fineprint'))}</p>
     `;
 }
 
 function collectionsHTML() {
     return `
-        <div class="chips-scroll" role="list" aria-label="Collections">
+        <div class="chips-scroll" role="list" aria-label="${esc(t('hadith.collections'))}">
             ${state.collections.map(item => `
                 <button type="button" role="listitem" class="chip ${item.key === state.collection ? 'is-on' : ''}" data-collection="${esc(item.key)}" aria-pressed="${item.key === state.collection}">
-                    ${esc(item.name)}
+                    ${esc(collectionName(item.key))}
                 </button>
             `).join('')}
         </div>
@@ -397,17 +402,17 @@ function collectionsHTML() {
 }
 
 export const hadithPage = {
-    title: 'Hadith',
+    titleKey: 'nav.hadith',
 
     render() {
         return `
             <div class="page hadith-page">
-                ${pageHeader('Hadith', 'Read, search and save hadith from the major collections.',
-                    `<button type="button" class="button button-ghost" data-hadith="show-saved">${icon('bookmark', { size: 18 })} Saved <span class="count tnum" data-saved-count>${bookmarks().length}</span></button>`)}
+                ${pageHeader(t('nav.hadith'), t('hadith.lead'),
+                    `<button type="button" class="button button-ghost" data-hadith="show-saved">${icon('bookmark', { size: 18 })} ${esc(t('hadith.savedShort'))} <span class="count tnum" data-saved-count>${bookmarks().length}</span></button>`)}
                 <form class="search-bar" data-hadith-search role="search">
                     ${icon('search', { size: 18 })}
-                    <input type="search" name="q" placeholder="Search in English" value="${esc(state.query)}" aria-label="Search hadith">
-                    <button type="submit" class="button button-primary">Search</button>
+                    <input type="search" name="q" placeholder="${esc(t('hadith.search'))}" value="${esc(state.query)}" aria-label="${esc(t('hadith.search'))}">
+                    <button type="submit" class="button button-primary">${esc(t('common.search'))}</button>
                 </form>
                 <div data-collections>${collectionsHTML()}</div>
                 <div class="hadith-body" data-hadith-body>${bodyHTML()}</div>
@@ -456,7 +461,7 @@ export const hadithPage = {
                 if (/^\d+(\.\d+)?$/.test(value)) {
                     load('number', value, rerender);
                 } else {
-                    toast('Enter a hadith number, for example 52');
+                    toast(t('hadith.enterNumber'));
                 }
             }
         });
@@ -520,7 +525,7 @@ export const hadithPage = {
                     break;
                 case 'save': {
                     const added = toggleSaved(state.hadith);
-                    toast(added ? 'Hadith saved' : 'Removed from saved', { duration: 2000 });
+                    toast(t(added ? 'hadith.savedToast' : 'hadith.removedToast'), { duration: 2000 });
                     rerender();
                     break;
                 }

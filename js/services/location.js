@@ -9,6 +9,7 @@
 import { store, getSettings, setSetting } from '../core/storage.js';
 import { bus } from '../core/bus.js';
 import { isFiniteCoord } from '../core/util.js';
+import { t } from '../core/i18n.js';
 import { reverseGeocode, searchPlaces } from './api.js';
 
 export const DEFAULT_LOCATION = { lat: 52.0907, lon: 5.1214, city: 'Utrecht', country: 'Netherlands' };
@@ -25,8 +26,8 @@ export const location = {
         let city = store.raw('city', '') || '';
 
         /* Older versions stored placeholder names. */
-        if (!city || city === 'Current location' || city === 'Selected location') {
-            city = 'Your location';
+        if (!city || ['Current location', 'Selected location', 'Your location'].includes(city)) {
+            city = t('location.yours');
         }
 
         return {
@@ -57,7 +58,7 @@ export const location = {
 
         store.setRaw('lat', lat);
         store.setRaw('lon', lon);
-        store.setRaw('city', city || 'Your location');
+        store.setRaw('city', city || '');
         store.setRaw('country', country || '');
 
         if (!auto) {
@@ -74,7 +75,7 @@ export const location = {
     /* Asks the browser for the position. Resolves with the location or throws a readable error. */
     async detect() {
         if (!navigator.geolocation) {
-            throw new Error('This browser cannot share your location. Search for your city instead.');
+            throw new Error(t('location.unsupported'));
         }
 
         const position = await new Promise((resolve, reject) => {
@@ -85,11 +86,11 @@ export const location = {
             });
         }).catch(error => {
             const messages = {
-                1: 'Location access was blocked. Allow it in your browser settings or search for your city.',
-                2: 'Your position could not be determined. Search for your city instead.',
-                3: 'Finding your location took too long. Try again or search for your city.'
+                1: t('location.blocked'),
+                2: t('location.unavailable'),
+                3: t('location.timeout')
             };
-            throw new Error(messages[error?.code] || 'Your location could not be determined.');
+            throw new Error(messages[error?.code] || t('location.failed'));
         });
 
         const lat = Number(position.coords.latitude);
@@ -103,7 +104,7 @@ export const location = {
         }
 
         setSetting('autoLocation', 'true');
-        const result = { lat, lon, city: place.city || 'Your location', country: place.country || '' };
+        const result = { lat, lon, city: place.city || '', country: place.country || '' };
         this.set(result, { auto: true });
         return result;
     },

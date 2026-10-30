@@ -9,6 +9,7 @@ import { bus } from './core/bus.js';
 import { getSettings, setSetting } from './core/storage.js';
 import { toast } from './core/ui.js';
 import { APP_VERSION } from './app-info.js';
+import { t, loadLanguage } from './core/i18n.js';
 import { location } from './services/location.js';
 import { loadPrayerTimes, tickPrayer } from './services/prayer.js';
 import { alerts } from './services/alerts.js';
@@ -32,11 +33,11 @@ const PAGES = {
 };
 
 const NAV = [
-    ['home', 'Home', 'home'],
-    ['prayer', 'Prayer', 'clock'],
-    ['quran', 'Quran', 'book'],
-    ['hadith', 'Hadith', 'scroll'],
-    ['islamic', 'Islamic', 'crescent']
+    ['home', 'home'],
+    ['prayer', 'clock'],
+    ['quran', 'book'],
+    ['hadith', 'scroll'],
+    ['islamic', 'crescent']
 ];
 
 const ALIASES = { '': 'home', dashboard: 'home', discover: 'islamic' };
@@ -68,8 +69,9 @@ function applyAppearance() {
     if (button) {
         const next = theme === 'dark' ? 'light' : 'dark';
         button.innerHTML = icon(theme === 'dark' ? 'sun' : 'moon');
-        button.setAttribute('aria-label', `Switch to ${next} theme`);
-        button.title = `Switch to ${next} theme`;
+        const label = t(next === 'light' ? 'app.toLight' : 'app.toDark');
+        button.setAttribute('aria-label', label);
+        button.title = label;
     }
 }
 
@@ -84,10 +86,10 @@ darkQuery?.addEventListener?.('change', () => {
  * ------------------------------------------------------------- */
 
 function navLinks(className) {
-    return NAV.map(([id, label, iconName]) => `
+    return NAV.map(([id, iconName]) => `
         <a class="${className}" href="#${id}" data-nav="${id}">
             ${icon(iconName, { size: className === 'tab-link' ? 22 : 18 })}
-            <span>${label}</span>
+            <span>${esc(t(`nav.${id}`))}</span>
         </a>
     `).join('');
 }
@@ -96,19 +98,19 @@ function renderShell() {
     const app = document.getElementById('app');
 
     app.innerHTML = `
-        <button type="button" class="skip-link" data-skip>Skip to content</button>
+        <button type="button" class="skip-link" data-skip>${esc(t('app.skip'))}</button>
         <header class="topbar">
-            <a class="brand" href="#home" aria-label="Adhan Display home">
+            <a class="brand" href="#home" aria-label="${esc(t('app.brandHome'))}">
                 <img src="images/icons/logo-96.png" width="36" height="36" alt="">
                 <span class="brand-name">Adhan Display</span>
             </a>
-            <nav class="topnav" aria-label="Main">${navLinks('topnav-link')}</nav>
+            <nav class="topnav" aria-label="${esc(t('app.mainNav'))}">${navLinks('topnav-link')}</nav>
             <div class="topbar-actions">
-                <button type="button" class="place-button" data-action="location" aria-label="Change location">
+                <button type="button" class="place-button" data-action="location" aria-label="${esc(t('app.changeLocation'))}">
                     ${icon('pin', { size: 18 })}<span data-place-name></span>
                 </button>
                 <button type="button" class="icon-button" data-theme-toggle></button>
-                <a class="icon-button" href="#settings" data-nav="settings" aria-label="Settings" title="Settings">${icon('sliders')}</a>
+                <a class="icon-button" href="#settings" data-nav="settings" aria-label="${esc(t('nav.settings'))}" title="${esc(t('nav.settings'))}">${icon('sliders')}</a>
             </div>
         </header>
 
@@ -117,12 +119,12 @@ function renderShell() {
         <main id="view" class="view" tabindex="-1"></main>
 
         <footer class="site-footer">
-            <p>Adhan Display ${esc(APP_VERSION)}. Free and without ads. Your tracker, bookmarks and settings stay on this device.</p>
-            <p><a href="#settings/about">About</a> <a href="#settings/data">Your data</a> <a href="https://github.com/iamkhomani/Adhan-Display" target="_blank" rel="noopener noreferrer">Source code</a></p>
+            <p>${esc(t('app.footer', { version: APP_VERSION }))}</p>
+            <p><a href="#settings/about">${esc(t('settings.about'))}</a> <a href="#settings/data">${esc(t('settings.data'))}</a> <a href="https://github.com/iamkhomani/Adhan-Display" target="_blank" rel="noopener noreferrer">${esc(t('app.source'))}</a></p>
         </footer>
 
         <div id="player" class="player-slot"></div>
-        <nav class="tabbar" aria-label="Main">${navLinks('tab-link')}</nav>
+        <nav class="tabbar" aria-label="${esc(t('app.mainNav'))}">${navLinks('tab-link')}</nav>
         <div id="toast" class="toast-region" aria-live="polite"></div>
     `;
 
@@ -164,11 +166,11 @@ function updateBanner() {
             <div class="banner banner-adhan">
                 ${icon('volume', { size: 18 })}
                 <span>${esc(playing.label)}</span>
-                <button type="button" class="button button-small" data-stop-adhan>${icon('stop', { size: 14 })} Stop</button>
+                <button type="button" class="button button-small" data-stop-adhan>${icon('stop', { size: 14 })} ${esc(t('common.stop'))}</button>
             </div>
         `;
     } else if (navigator.onLine === false) {
-        slot.innerHTML = `<div class="banner">${icon('info', { size: 18 })}<span>You are offline. Saved prayer times are shown.</span></div>`;
+        slot.innerHTML = `<div class="banner">${icon('info', { size: 18 })}<span>${esc(t('app.offline'))}</span></div>`;
     } else {
         slot.innerHTML = '';
     }
@@ -252,7 +254,7 @@ function render() {
         page.mount?.(fresh, route.path, ctx);
     } catch (error) {
         console.error('[Adhan Display] Page error', error);
-        fresh.innerHTML = `<div class="page"><div class="empty"><p class="empty-title">Something went wrong on this page.</p><p class="empty-text">${esc(error.message)}</p><a class="button button-primary" href="#home">Go to Home</a></div></div>`;
+        fresh.innerHTML = `<div class="page"><div class="empty"><p class="empty-title">${esc(t('app.pageError'))}</p><p class="empty-text">${esc(error.message)}</p><a class="button button-primary" href="#home">${esc(t('app.goHome'))}</a></div></div>`;
     }
 
     document.body.dataset.page = route.name;
@@ -267,8 +269,8 @@ function render() {
     });
 
     document.title = route.name === 'home'
-        ? 'Adhan Display | Prayer times, Quran and Hadith'
-        : `${page.title} | Adhan Display`;
+        ? `Adhan Display | ${t('app.homeTitle')}`
+        : `${t(page.titleKey)} | Adhan Display`;
 
     if (!samePage || route.name !== 'prayer') {
         window.scrollTo(0, 0);
@@ -334,9 +336,9 @@ function registerServiceWorker() {
             window.location.reload();
             return;
         }
-        toast('Adhan Display has been updated.', {
+        toast(t('app.updated'), {
             duration: 0,
-            action: { label: 'Reload', run: () => window.location.reload() }
+            action: { label: t('app.reload'), run: () => window.location.reload() }
         });
     });
 }
@@ -345,7 +347,8 @@ function registerServiceWorker() {
  * Start
  * ------------------------------------------------------------- */
 
-function start() {
+async function start() {
+    await loadLanguage();
     applyAppearance();
     renderShell();
     applyAppearance();

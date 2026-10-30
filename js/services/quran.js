@@ -6,20 +6,26 @@
 import { store } from '../core/storage.js';
 import { bus } from '../core/bus.js';
 import { cachedJson, fetchJson, ENDPOINTS } from './api.js';
+import { t, lang } from '../core/i18n.js';
 
 const PREFS_KEY = 'ad2_quran_state';
 
 const LANGUAGE_DEFAULTS = {
     en: 'en.sahih', nl: 'nl.siregar', de: 'de.aburida', fr: 'fr.hamidullah', tr: 'tr.diyanet',
     id: 'id.indonesian', ur: 'ur.jalandhry', es: 'es.cortes', ru: 'ru.kuliev', bn: 'bn.bengali',
-    ms: 'ms.basmeih', it: 'it.piccardo', pt: 'pt.elhayek', sq: 'sq.ahmeti', bs: 'bs.korkut', fa: 'fa.makarem'
+    ms: 'ms.basmeih', it: 'it.piccardo', pt: 'pt.elhayek', sq: 'sq.ahmeti', bs: 'bs.korkut', fa: 'fa.makarem',
+    zh: 'zh.jian', hi: 'hi.hindi', ar: 'ar.muyassar'
 };
 
 const FALLBACK_TRANSLATION = 'en.sahih';
 
-function defaultTranslation() {
-    const language = (navigator.language || 'en').slice(0, 2).toLowerCase();
-    return LANGUAGE_DEFAULTS[language] || FALLBACK_TRANSLATION;
+/* The interface language first; for English, the browser language (German, Turkish, ...) still counts. */
+function defaultTranslation(language = lang().code) {
+    if (language !== 'en' && LANGUAGE_DEFAULTS[language]) {
+        return LANGUAGE_DEFAULTS[language];
+    }
+    const browser = (navigator.language || 'en').slice(0, 2).toLowerCase();
+    return LANGUAGE_DEFAULTS[browser] || FALLBACK_TRANSLATION;
 }
 
 export const quranPrefs = {
@@ -35,6 +41,14 @@ export const quranPrefs = {
             lastRead: saved.lastRead && saved.lastRead.surah ? saved.lastRead : null,
             bookmarks: Array.isArray(saved.bookmarks) ? saved.bookmarks : []
         };
+    },
+
+    /* After a language change: switch the translation too, unless the user picked a different one. */
+    followLanguage(previous, next) {
+        const current = this.get().selectedTranslation;
+        if (current === defaultTranslation(previous) || current === FALLBACK_TRANSLATION) {
+            this.update({ selectedTranslation: defaultTranslation(next) });
+        }
     },
 
     update(patch) {
@@ -100,7 +114,7 @@ async function quranApi(path) {
     const json = await fetchJson(`${ENDPOINTS.quran}${path}`);
 
     if (json?.code && json.code !== 200) {
-        throw new Error(typeof json.data === 'string' ? json.data : 'The Quran service returned an error');
+        throw new Error(typeof json.data === 'string' ? json.data : t('error.quranService'));
     }
 
     return json.data;
@@ -199,7 +213,7 @@ export function surah(number, translation) {
         const translated = editions.find(edition => edition.edition?.identifier === translation);
 
         if (!arabic) {
-            throw new Error('This surah could not be loaded');
+            throw new Error(t('quran.loadFailed'));
         }
 
         return {
@@ -259,7 +273,7 @@ export function ayahWithTranslation(globalNumber, translation) {
         const translated = list[1];
 
         if (!arabic) {
-            throw new Error('Ayah not found');
+            throw new Error(t('quran.ayahNotFound'));
         }
 
         let text = arabic.text || '';
@@ -293,7 +307,7 @@ export function audioUrl(reciter, globalNumber, attempt = 0) {
 export async function tafsir(surahNumber, ayahNumber) {
     const json = await fetchJson(`${ENDPOINTS.tafsir}/${surahNumber}:${ayahNumber}`);
     return {
-        name: json?.tafsir?.resource_name || json?.tafsir?.translated_name?.name || 'Tafsir Ibn Kathir (abridged)',
+        name: json?.tafsir?.resource_name || json?.tafsir?.translated_name?.name || t('quran.tafsirName'),
         html: json?.tafsir?.text || ''
     };
 }

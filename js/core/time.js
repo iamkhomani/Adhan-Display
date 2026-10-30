@@ -8,6 +8,7 @@
  */
 
 import { pad2 } from './util.js';
+import { t, locale } from './i18n.js';
 
 const formatterCache = new Map();
 
@@ -146,7 +147,7 @@ export function formatHM(raw, format = '24h') {
     }
 
     if (format === '12h') {
-        const suffix = value.h < 12 ? 'AM' : 'PM';
+        const suffix = value.h < 12 ? t('time.am') : t('time.pm');
         const hour = value.h % 12 || 12;
         return { time: `${hour}:${pad2(value.min)}`, suffix };
     }
@@ -182,23 +183,23 @@ export function formatDuration(ms) {
     const totalMinutes = Math.max(0, Math.ceil(ms / 60000));
 
     if (totalMinutes < 1) {
-        return 'less than a minute';
+        return t('time.lessThanMinute');
     }
 
     const h = Math.floor(totalMinutes / 60);
     const m = totalMinutes % 60;
 
     if (!h) {
-        return `${m} min`;
+        return t('time.m', { m });
     }
 
-    return m ? `${h} h ${m} min` : `${h} h`;
+    return m ? t('time.hm', { h, m }) : t('time.h', { h });
 }
 
 export function formatGregorian(key, options = { weekday: 'long', day: 'numeric', month: 'long' }) {
     const { y, m, d } = keyToParts(key);
-    const cacheKey = `greg:${JSON.stringify(options)}`;
-    const fmt = formatter(cacheKey, () => new Intl.DateTimeFormat('en-GB', { ...options, timeZone: 'UTC' }));
+    const cacheKey = `greg:${locale()}:${JSON.stringify(options)}`;
+    const fmt = formatter(cacheKey, () => new Intl.DateTimeFormat(locale(), { ...options, timeZone: 'UTC' }));
     return fmt.format(new Date(Date.UTC(y, m - 1, d, 12)));
 }
 
@@ -222,7 +223,13 @@ export const HIJRI_MONTHS = [
 ];
 
 export function hijriMonthName(month) {
-    return HIJRI_MONTHS[(Number(month) - 1 + 12) % 12]?.[0] || '';
+    const index = (Number(month) - 1 + 12) % 12;
+    return Number.isFinite(index) ? t(`hijri.${index + 1}`) : '';
+}
+
+export function monthYearLabel(year, month) {
+    return new Intl.DateTimeFormat(locale(), { month: 'long', year: 'numeric', timeZone: 'UTC' })
+        .format(new Date(Date.UTC(year, month - 1, 1)));
 }
 
 export function hijriMonthArabic(month) {
