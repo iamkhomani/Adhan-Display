@@ -120,7 +120,7 @@ function renderShell() {
 
         <footer class="site-footer">
             <p>${esc(t('app.footer', { version: APP_VERSION }))}</p>
-            <p><a href="#settings/about">${esc(t('settings.about'))}</a> <a href="#settings/data">${esc(t('settings.data'))}</a> <a href="https://github.com/iamkhomani/Adhan-Display" target="_blank" rel="noopener noreferrer">${esc(t('app.source'))}</a></p>
+            <p><a href="#settings/about">${esc(t('settings.about'))}</a> <a href="#settings/data">${esc(t('settings.data'))}</a></p>
         </footer>
 
         <div id="player" class="player-slot"></div>

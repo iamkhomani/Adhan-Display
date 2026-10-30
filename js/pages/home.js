@@ -18,7 +18,8 @@ import { quranPrefs, ayahOfTheDay, ayahWithTranslation } from '../services/quran
 import { DAILY_HADITHS, SHAHADA } from '../data/content.js';
 import {
     timeHTML, hijriText, prayerListHTML, bindAlertToggles, timelineHTML,
-    updateTimelineNow, openLocationDialog, upcomingEvents
+    updateTimelineNow, openLocationDialog, upcomingEvents,
+    prayChipsHTML, togglePrayer
 } from './components.js';
 
 function weekdayName(key) {
@@ -156,15 +157,7 @@ function trackerCard() {
                 <h2 id="tracker-title" class="panel-title">${esc(t('home.prayedToday'))}</h2>
                 <span class="panel-meta tnum">${esc(record.Exempt ? t('tracker.exempt') : t('tracker.countOf5', { count: done }))}</span>
             </header>
-            <div class="pray-chips" role="group" aria-label="${esc(t('tracker.markLabel'))}">
-                ${SALAH.map(name => `
-                    <button type="button" class="pray-chip ${record[name] ? 'is-done' : ''}" data-track="${name}"
-                        aria-pressed="${record[name]}" ${record.Exempt ? 'disabled' : ''}>
-                        <span class="pray-check">${icon('check', { size: 16 })}</span>
-                        <span>${esc(t(`prayer.${name}`))}</span>
-                    </button>
-                `).join('')}
-            </div>
+            ${prayChipsHTML(record)}
             <a class="panel-foot" href="#prayer/tracker">${esc(t('home.history'))}</a>
         </section>
     `;
@@ -385,10 +378,7 @@ export const homePage = {
             const heroAlert = event.target.closest('[data-hero-alert]');
 
             if (track && prayerState.todayKey) {
-                const record = tracker.toggle(prayerState.todayKey, track.dataset.track);
-                if (record[track.dataset.track] && tracker.count(record) === 5) {
-                    toast(t('tracker.allFive'));
-                }
+                togglePrayer(prayerState.todayKey, track.dataset.track);
             } else if (heroAlert) {
                 const name = heroAlert.dataset.heroAlert;
                 const alerts = { ...getSettings().alerts, [name]: !getSettings().alerts[name] };

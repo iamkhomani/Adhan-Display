@@ -1316,6 +1316,41 @@ input[type="range"] {
     font-weight: 800;
 }
 
+.toast-actions {
+    display: flex;
+    flex: none;
+    gap: 6px;
+}
+
+.toast .toast-actions {
+    flex: none;
+}
+
+/* Two choices (for example "On time" / "Late"): small pill buttons. */
+.toast-choice {
+    flex-wrap: wrap;
+    row-gap: 10px;
+}
+
+.toast-choice > span:first-child {
+    min-width: 55%;
+}
+
+.toast-choice .toast-action {
+    min-height: 36px;
+    padding: 0 12px;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    color: var(--text);
+    font-size: 0.875rem;
+}
+
+.toast-choice .toast-action.is-primary {
+    border-color: var(--gold-line);
+    background: var(--gold-soft);
+    color: var(--gold);
+}
+
 @keyframes toast-in {
     from { opacity: 0; transform: translateY(8px); }
 }
@@ -1760,6 +1795,17 @@ input[type="range"] {
     border-color: var(--sage);
     background: var(--sage);
     color: var(--panel);
+}
+
+/* Prayed, but late: gold instead of green, with a clock. */
+.pray-chip.is-late {
+    border-color: var(--gold-line);
+    background: var(--gold-soft);
+}
+
+.pray-chip.is-late .pray-check {
+    border-color: var(--gold);
+    background: var(--gold);
 }
 
 .pray-chip:disabled {
@@ -2388,6 +2434,60 @@ button.heat:hover,
     height: 100%;
     border-radius: 8px;
     background: var(--gold);
+}
+
+/* On time and late side by side in one bar. */
+.bar-split {
+    display: flex;
+}
+
+.bar-split > span {
+    flex: none;
+    border-radius: 0;
+}
+
+.bar-split > span:first-child {
+    border-start-start-radius: 8px;
+    border-end-start-radius: 8px;
+}
+
+.bar-split > span:last-child {
+    border-start-end-radius: 8px;
+    border-end-end-radius: 8px;
+}
+
+.bar-split > .bar-late {
+    background: var(--gold);
+    opacity: 0.35;
+}
+
+.ontime {
+    margin-top: 16px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: var(--panel-2);
+}
+
+.ontime-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+
+.ontime-head strong {
+    color: var(--gold);
+    font-size: 1.5rem;
+    font-weight: 300;
+}
+
+.ontime-note {
+    margin: 8px 0 0;
+    color: var(--muted);
+    font-size: 0.8125rem;
 }
 
 .qada {

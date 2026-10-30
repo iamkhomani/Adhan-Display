@@ -38,6 +38,7 @@ Live: [adhandisplay.com](https://adhandisplay.com)
 
 **Tracker**
 - Mark your five daily prayers, fasting and Surah Al-Kahf
+- After ticking off a prayer, optionally mark it as prayed late (the default is on time); the statistics show how many prayers were on time
 - Streaks, completion rates and a four-week overview
 - Make-up (qada) counter and an optional exemption mode
 

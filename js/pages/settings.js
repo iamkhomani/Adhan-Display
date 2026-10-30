@@ -216,7 +216,6 @@ function bodyHTML() {
                 <button type="button" class="button button-primary" data-install hidden>${icon('download', { size: 18 })} ${esc(t('settings.install'))}</button>
                 <a class="button button-ghost" href="${SUPPORT_URL}" target="_blank" rel="noopener noreferrer">${icon('heart', { size: 18 })} ${esc(t('settings.support'))}</a>
             </div>
-            <p class="fine-print">${esc(t('settings.credits'))}</p>
         `)
     ].join('');
 }

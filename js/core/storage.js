@@ -168,7 +168,8 @@ export function getSettings() {
         displayAwake: bool('display_awake', true),
         displaySeconds: bool('display_seconds', true),
 
-        exemptionMode: bool('tracker_exemption_mode', false)
+        exemptionMode: bool('tracker_exemption_mode', false),
+        askOnTime: bool('tracker_ask_on_time', true)
     };
 }
 
@@ -192,7 +193,8 @@ export function setSetting(key, value) {
         displayDim: ['display_dim', 'json'],
         displayAwake: ['display_awake', 'json'],
         displaySeconds: ['display_seconds', 'json'],
-        exemptionMode: ['tracker_exemption_mode', 'json']
+        exemptionMode: ['tracker_exemption_mode', 'json'],
+        askOnTime: ['tracker_ask_on_time', 'json']
     };
 
     const entry = map[key];

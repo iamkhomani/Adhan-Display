@@ -10,6 +10,8 @@ import { getSettings, setSetting } from '../core/storage.js';
 import { bus } from '../core/bus.js';
 import { openDialog, toast } from '../core/ui.js';
 import { location } from '../services/location.js';
+import { tracker } from '../services/tracker.js';
+import { SALAH } from '../core/storage.js';
 import { debounce } from '../core/util.js';
 import { t, isRtl } from '../core/i18n.js';
 
@@ -167,6 +169,62 @@ export function updateTimelineNow(root, now, tz) {
     if (marker) {
         marker.style.left = `${dayPercent(now, tz)}%`;
     }
+}
+
+/* ---------------------------------------------------------------
+ * Prayer tracker chips and the "on time?" question
+ * ------------------------------------------------------------- */
+
+/* `key` is set on the tracker page so a click knows which day it belongs to. */
+export function prayChipsHTML(record, { key = '', large = false, label = '' } = {}) {
+    return `
+        <div class="pray-chips ${large ? 'pray-chips-large' : ''}" role="group" aria-label="${esc(label || t('tracker.markLabel'))}">
+            ${SALAH.map(name => {
+                const late = tracker.isLate(record, name);
+                const prayer = t(`prayer.${name}`);
+                return `
+                    <button type="button" class="pray-chip ${record[name] ? 'is-done' : ''} ${late ? 'is-late' : ''}" ${key ? `data-track-key="${key}"` : ''} data-track="${name}"
+                        aria-pressed="${record[name]}" ${late ? `aria-label="${esc(t('tracker.lateLabel', { prayer }))}" title="${esc(t('tracker.lateLabel', { prayer }))}"` : ''} ${record.Exempt ? 'disabled' : ''}>
+                        <span class="pray-check">${icon(late ? 'clock' : 'check', { size: 16 })}</span>
+                        <span>${esc(prayer)}</span>
+                    </button>
+                `;
+            }).join('')}
+        </div>
+    `;
+}
+
+/*
+ * Ticks a prayer on or off. When it is ticked on, a short question asks whether
+ * it was on time. Not answering keeps the default: on time.
+ */
+export function togglePrayer(key, name) {
+    const record = tracker.toggle(key, name);
+
+    if (!record[name]) {
+        return record;
+    }
+
+    const allFive = tracker.count(record) === SALAH.length;
+
+    if (!getSettings().askOnTime) {
+        if (allFive) {
+            toast(t('tracker.allFive'));
+        }
+        return record;
+    }
+
+    const question = t('tracker.askOnTime', { prayer: t(`prayer.${name}`) });
+
+    toast(allFive ? `${t('tracker.allFive')} ${question}` : question, {
+        duration: 10000,
+        actions: [
+            { label: t('tracker.onTime'), primary: true, run: () => {} },
+            { label: t('tracker.late'), run: () => tracker.setLate(key, name, true) }
+        ]
+    });
+
+    return record;
 }
 
 export function pageHeader(title, text = '', actions = '') {

@@ -8,7 +8,8 @@ import { t } from './i18n.js';
 
 let toastTimer = null;
 
-export function toast(message, { action = null, duration = 4000 } = {}) {
+/* `actions`: [{ label, run }]. `action` (one button) is kept for older calls. */
+export function toast(message, { action = null, actions = null, duration = 4000 } = {}) {
     const region = document.getElementById('toast');
 
     if (!region) {
@@ -17,16 +18,22 @@ export function toast(message, { action = null, duration = 4000 } = {}) {
 
     clearTimeout(toastTimer);
 
+    const buttons = actions || (action ? [action] : []);
+
     region.innerHTML = `
-        <div class="toast" role="status">
+        <div class="toast ${buttons.length > 1 ? 'toast-choice' : ''}" role="status">
             <span>${esc(message)}</span>
-            ${action ? `<button type="button" class="toast-action">${esc(action.label)}</button>` : ''}
+            ${buttons.length ? `<span class="toast-actions">${buttons.map((item, index) =>
+                `<button type="button" class="toast-action ${item.primary ? 'is-primary' : ''}" data-toast-action="${index}">${esc(item.label)}</button>`).join('')}</span>` : ''}
         </div>
     `;
 
-    region.querySelector('.toast-action')?.addEventListener('click', () => {
-        region.innerHTML = '';
-        action.run();
+    region.querySelectorAll('[data-toast-action]').forEach(button => {
+        button.addEventListener('click', () => {
+            clearTimeout(toastTimer);
+            region.innerHTML = '';
+            buttons[Number(button.dataset.toastAction)]?.run?.();
+        });
     });
 
     if (duration) {

@@ -1,7 +1,9 @@
 /*
  * Prayer tracker and make-up (qada) counter.
- * Storage format is unchanged from earlier versions:
- *   adhan_tracker = { "YYYY-MM-DD": { Fajr, Dhuhr, Asr, Maghrib, Isha, Fast, Kahf, Exempt } }
+ * Storage format is unchanged from earlier versions, with one optional addition:
+ *   adhan_tracker = { "YYYY-MM-DD": { Fajr, Dhuhr, Asr, Maghrib, Isha, Fast, Kahf, Exempt, Late } }
+ *   Late = { Asr: true } lists prayers that were prayed late. A prayed prayer
+ *   without an entry in Late counts as on time.
  *   adhan_qada    = { Fajr: 0, ... }
  */
 
@@ -21,6 +23,20 @@ function saveAll(data) {
     bus.emit('tracker');
 }
 
+function lateOf(record) {
+    const late = record?.Late && typeof record.Late === 'object' && !Array.isArray(record.Late) ? record.Late : {};
+    return Object.fromEntries(SALAH.filter(name => late[name] && record[name]).map(name => [name, true]));
+}
+
+/* Leaves out an empty Late object so stored records stay as small as before. */
+function tidy(record) {
+    const copy = { ...record, Late: lateOf(record) };
+    if (!Object.keys(copy.Late).length) {
+        delete copy.Late;
+    }
+    return copy;
+}
+
 function isComplete(record) {
     return Boolean(record && (record.Exempt || SALAH.every(name => record[name])));
 }
@@ -28,7 +44,33 @@ function isComplete(record) {
 export const tracker = {
     record(key) {
         const value = all()[key];
-        return { ...EMPTY, ...(value && typeof value === 'object' ? value : {}) };
+        const record = { ...EMPTY, ...(value && typeof value === 'object' ? value : {}) };
+        record.Late = lateOf(record);
+        return record;
+    },
+
+    isLate(record, name) {
+        return Boolean(record?.[name] && record.Late?.[name]);
+    },
+
+    /* Marks a prayed prayer as late (true) or on time (false). */
+    setLate(key, name, late) {
+        const data = all();
+        const record = this.record(key);
+
+        if (!SALAH.includes(name) || !record[name]) {
+            return record;
+        }
+
+        if (late) {
+            record.Late[name] = true;
+        } else {
+            delete record.Late[name];
+        }
+
+        data[key] = tidy(record);
+        saveAll(data);
+        return record;
     },
 
     toggle(key, field) {
@@ -40,7 +82,12 @@ export const tracker = {
         }
 
         record[field] = !record[field];
-        data[key] = record;
+
+        if (!record[field] && record.Late[field]) {
+            delete record.Late[field];
+        }
+
+        data[key] = tidy(record);
         saveAll(data);
         return record;
     },
@@ -55,9 +102,10 @@ export const tracker = {
             SALAH.forEach(name => {
                 record[name] = false;
             });
+            record.Late = {};
         }
 
-        data[key] = record;
+        data[key] = tidy(record);
         saveAll(data);
     },
 
@@ -72,7 +120,7 @@ export const tracker = {
             .filter(key => /^\d{4}-\d{2}-\d{2}$/.test(key) && key <= todayKey)
             .sort();
 
-        const perPrayer = Object.fromEntries(SALAH.map(name => [name, { done: 0, total: 0 }]));
+        const perPrayer = Object.fromEntries(SALAH.map(name => [name, { done: 0, late: 0, total: 0 }]));
         let perfectDays = 0;
         let trackedDays = 0;
         let exemptDays = 0;
@@ -97,6 +145,9 @@ export const tracker = {
                     perPrayer[name].total += 1;
                     if (record[name]) {
                         perPrayer[name].done += 1;
+                        if (lateOf(record)[name]) {
+                            perPrayer[name].late += 1;
+                        }
                     }
                 });
                 if (done === SALAH.length) {
@@ -131,6 +182,7 @@ export const tracker = {
 
         const windowScore = length => {
             let done = 0;
+            let late = 0;
             let total = 0;
             for (let i = 0; i < length; i += 1) {
                 const key = addDaysToKey(todayKey, -i);
@@ -143,8 +195,9 @@ export const tracker = {
                 }
                 total += SALAH.length;
                 done += this.count(record);
+                late += Object.keys(lateOf(record)).length;
             }
-            return { done, total };
+            return { done, late, onTime: done - late, total };
         };
 
         const totalDone = SALAH.reduce((sum, name) => sum + perPrayer[name].done, 0);

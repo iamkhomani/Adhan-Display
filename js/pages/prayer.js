@@ -13,7 +13,7 @@ import { prayerState, loadPrayerTimes, monthTimetable, qibla } from '../services
 import { location } from '../services/location.js';
 import { tracker } from '../services/tracker.js';
 import { methodName, ASR_METHODS, HIGH_LATITUDE_RULES } from '../data/content.js';
-import { timeHTML, hijriText, prayerListHTML, bindAlertToggles, pageHeader, tabsHTML, openLocationDialog } from './components.js';
+import { timeHTML, hijriText, prayerListHTML, bindAlertToggles, pageHeader, tabsHTML, openLocationDialog, prayChipsHTML, togglePrayer } from './components.js';
 
 const TABS = [['', 'common.today'], ['month', 'prayer.tabMonth'], ['qibla', 'qibla.title'], ['tracker', 'prayer.tabTracker']];
 
@@ -317,15 +317,7 @@ function trackerView() {
                     <button type="button" class="icon-button" data-day="1" aria-label="${esc(t('tracker.nextDay'))}" ${isToday ? 'disabled' : ''}>${icon('right')}</button>
                 </header>
 
-                <div class="pray-chips pray-chips-large" role="group" aria-label="${esc(t('tracker.prayersOn', { day: dayLabel }))}">
-                    ${SALAH.map(name => `
-                        <button type="button" class="pray-chip ${record[name] ? 'is-done' : ''}" data-track-key="${key}" data-track="${name}"
-                            aria-pressed="${record[name]}" ${record.Exempt ? 'disabled' : ''}>
-                            <span class="pray-check">${icon('check', { size: 16 })}</span>
-                            <span>${esc(t(`prayer.${name}`))}</span>
-                        </button>
-                    `).join('')}
-                </div>
+                ${prayChipsHTML(record, { key, large: true, label: t('tracker.prayersOn', { day: dayLabel }) })}
 
                 <div class="extras">
                     <label class="switch-row"><span>${esc(t('tracker.fasted'))}</span>
@@ -346,6 +338,22 @@ function trackerView() {
                     <div class="stat"><span class="stat-value tnum">${percent(stats.month)}%</span><span class="stat-label">${esc(t('tracker.last30'))}</span></div>
                 </div>
 
+                ${stats.month.done ? (() => {
+                    const onTime = Math.round((stats.month.onTime / stats.month.done) * 100);
+                    return `
+                        <div class="ontime">
+                            <div class="ontime-head">
+                                <span>${esc(t('tracker.onTimeTitle'))}</span>
+                                <strong class="tnum">${onTime}%</strong>
+                            </div>
+                            <span class="bar bar-split" role="img" aria-label="${esc(t('tracker.onTimeCounts', { onTime: stats.month.onTime, late: stats.month.late }))}">
+                                <span style="width:${onTime}%"></span><span class="bar-late" style="width:${100 - onTime}%"></span>
+                            </span>
+                            <p class="ontime-note tnum">${esc(t('tracker.onTimeCounts', { onTime: stats.month.onTime, late: stats.month.late }))}</p>
+                        </div>
+                    `;
+                })() : ''}
+
                 <div class="heatmap" role="list" aria-label="${esc(t('tracker.fourWeeks'))}">
                     ${recent.map(day => `
                         <button type="button" role="listitem" class="heat heat-${day.exempt ? 'x' : day.done} ${day.key === key ? 'is-selected' : ''}"
@@ -359,7 +367,7 @@ function trackerView() {
                     ${stats.perPrayer.map(item => `
                         <div class="bar-row">
                             <span>${esc(t(`prayer.${item.name}`))}</span>
-                            <span class="bar" role="img" aria-label="${item.rate}%"><span style="width:${item.rate}%"></span></span>
+                            <span class="bar bar-split" role="img" aria-label="${item.rate}%${item.late ? `, ${esc(t('tracker.onTimeCounts', { onTime: item.done - item.late, late: item.late }))}` : ''}"><span style="width:${item.total ? ((item.done - item.late) / item.total) * 100 : 0}%"></span>${item.late ? `<span class="bar-late" style="width:${(item.late / item.total) * 100}%"></span>` : ''}</span>
                             <span class="tnum">${item.rate}%</span>
                         </div>
                     `).join('')}
@@ -387,6 +395,10 @@ function trackerView() {
                         </li>
                     `).join('')}
                 </ul>
+                <label class="switch-row">
+                    <span>${esc(t('tracker.askSetting'))}<small>${esc(t('tracker.askSettingHint'))}</small></span>
+                    <input type="checkbox" class="switch" data-setting-toggle="askOnTime" ${settings.askOnTime ? 'checked' : ''}>
+                </label>
                 <label class="switch-row">
                     <span>${esc(t('tracker.exemptionMode'))}<small>${esc(t('tracker.exemptionHint'))}</small></span>
                     <input type="checkbox" class="switch" data-setting-toggle="exemptionMode" ${settings.exemptionMode ? 'checked' : ''}>
@@ -500,7 +512,7 @@ export const prayerPage = {
                 trackerKey = goto.dataset.gotoDay;
                 rerender();
             } else if (track && track.dataset.trackKey) {
-                tracker.toggle(track.dataset.trackKey, track.dataset.track);
+                togglePrayer(track.dataset.trackKey, track.dataset.track);
             } else if (qada) {
                 tracker.adjustQada(qada.dataset.qada, Number(qada.dataset.delta));
             } else if (target.closest('[data-retry]')) {
