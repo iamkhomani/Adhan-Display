@@ -1,1216 +1,441 @@
-﻿import {
-    state,
-    toggleTheme,
-    saveQuranState,
-    applyDisplaySize
-} from '../state.js';
+/*
+ * Settings, grouped by what people look for.
+ */
 
-import { Storage } from '../storage.js';
-import { APP } from '../config.js';
-import { Api } from '../services/api.js';
+import { esc } from '../core/util.js';
+import { icon } from '../core/icons.js';
+import {
+    getSettings, setSetting, exportBackup, importBackup, resetAll, clearCache, PRAYER_KEYS, SALAH
+} from '../core/storage.js';
+import { bus } from '../core/bus.js';
+import { toast, confirmDialog } from '../core/ui.js';
+import { location } from '../services/location.js';
+import { alerts } from '../services/alerts.js';
+import { quranPrefs } from '../services/quran.js';
+import { CALCULATION_METHODS, ASR_METHODS, HIGH_LATITUDE_RULES, ADHAN_SOUNDS, SUPPORT_URL } from '../data/content.js';
+import { pageHeader, openLocationDialog } from './components.js';
+import { fillTranslationSelect, fillReciterSelect } from './quran.js';
+import { APP_VERSION, install } from '../app-info.js';
 
-function escapeHtml(value) {
-    return String(value ?? '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-}
+const SECTIONS = [
+    ['appearance', 'Appearance'],
+    ['location', 'Location'],
+    ['prayer', 'Prayer times'],
+    ['alerts', 'Adhan and reminders'],
+    ['display', 'Display mode'],
+    ['quran', 'Quran'],
+    ['data', 'Your data'],
+    ['about', 'About']
+];
 
-function currentSettings() {
-    return Storage.getSettings();
-}
-
-function optionList(options, selected) {
-    return options.map(([value, label]) => `
-        <option
-            value="${escapeHtml(value)}"
-            ${String(value) === String(selected) ? 'selected' : ''}
-        >
-            ${escapeHtml(label)}
-        </option>
-    `).join('');
-}
-
-function section(title, eyebrow, content) {
+function segmented(name, options, value) {
     return `
-
-
-        <section class="settings-section">
-            <div class="settings-section-heading">
-                <span class="ad2-eyebrow">${escapeHtml(eyebrow)}</span>
-                <h2>${escapeHtml(title)}</h2>
-            </div>
-
-            <div class="settings-section-body">
-                ${content}
-            </div>
-        </section>
-    `;
-}
-
-function row(label, description, control) {
-    return `
-        <div class="settings-row">
-            <div class="settings-row-copy">
-                <strong>${escapeHtml(label)}</strong>
-                <span>${escapeHtml(description)}</span>
-            </div>
-
-            <div class="settings-control">
-                ${control}
-            </div>
+        <div class="segmented" role="radiogroup" aria-label="${esc(name)}">
+            ${options.map(([optionValue, label]) => `
+                <button type="button" role="radio" class="segment ${String(optionValue) === String(value) ? 'is-active' : ''}"
+                    aria-checked="${String(optionValue) === String(value)}" data-set="${esc(name)}" data-value="${esc(optionValue)}">${esc(label)}</button>
+            `).join('')}
         </div>
     `;
 }
 
-function toggle(key, checked) {
+function select(name, options, value, label) {
     return `
-        <label class="settings-switch">
-            <input
-                type="checkbox"
-                data-setting-toggle="${escapeHtml(key)}"
-                ${checked ? 'checked' : ''}
-            >
-            <span class="settings-switch-track">
-                <span class="settings-switch-thumb"></span>
-            </span>
-        </label>
-    `;
-}
-
-function select(key, options, value) {
-    return `
-        <select
-            class="settings-select"
-            data-setting-select="${escapeHtml(key)}"
-        >
-            ${optionList(options, value)}
+        <select class="select" data-select="${esc(name)}" aria-label="${esc(label)}">
+            ${options.map(([optionValue, text]) => `<option value="${esc(optionValue)}" ${String(optionValue) === String(value) ? 'selected' : ''}>${esc(text)}</option>`).join('')}
         </select>
     `;
 }
 
-function numberInput(key, value, min, max, step = 1) {
+function toggle(name, checked, label, hint = '') {
     return `
-        <input
-            class="settings-number"
-            type="number"
-            data-setting-number="${escapeHtml(key)}"
-            value="${escapeHtml(value)}"
-            min="${escapeHtml(min)}"
-            max="${escapeHtml(max)}"
-            step="${escapeHtml(step)}"
-        >
+        <label class="switch-row">
+            <span>${esc(label)}${hint ? `<small>${esc(hint)}</small>` : ''}</span>
+            <input type="checkbox" class="switch" data-toggle="${esc(name)}" ${checked ? 'checked' : ''}>
+        </label>
     `;
 }
 
-function renderAppearance(settings) {
-    return section(
-        'Appearance',
-        'INTERFACE',
-        `
-            ${row(
-                'Theme',
-                'Choose the visual appearance of Adhan Display.',
-                `
-                    <div class="settings-theme-options">
-                        <button
-                            type="button"
-                            class="settings-theme-option ${
-                                !state.ui.darkMode ? 'is-active' : ''
-                            }"
-                            data-settings-theme="light"
-                        >
-                            <span class="settings-theme-preview light"></span>
-                            <span>Light</span>
-                        </button>
-
-                        <button
-                            type="button"
-                            class="settings-theme-option ${
-                                state.ui.darkMode ? 'is-active' : ''
-                            }"
-                            data-settings-theme="dark"
-                        >
-                            <span class="settings-theme-preview dark"></span>
-                            <span>Dark</span>
-                        </button>
-                    </div>
-                `
-            )}
-
-            ${row(
-                'Display size',
-                'Adjust the overall interface scale.',
-                select(
-                    'size',
-                    [
-                        ['compact', 'Compact'],
-                        ['normal', 'Normal'],
-                        ['large', 'Large']
-                    ],
-                    settings.size
-                )
-            )}
-        `
-    );
-}
-
-function renderPrayer(settings) {
-    return section(
-        'Prayer',
-        'PRAYER TIMES',
-        `
-            ${row(
-                'Calculation method',
-                'Choose how prayer times are calculated.',
-                select(
-                    'method',
-                    APP.methods.map(item => [
-                        String(item[0]),
-                        item[1]
-                    ]),
-                    settings.method
-                )
-            )}
-
-            ${row(
-                'Prayer time adjustment',
-                'Apply a manual adjustment to calculated prayer times.',
-                numberInput('offset', settings.offset, -60, 60)
-            )}
-
-            ${row(
-                'Hijri date adjustment',
-                'Adjust the displayed Hijri date when needed.',
-                numberInput(
-                    'hijriOffset',
-                    settings.hijriOffset,
-                    -2,
-                    2
-                )
-            )}
-
-            ${row(
-                'Automatic Qada tracking',
-                'Automatically account for missed prayers when using the tracker.',
-                toggle('autoQada', settings.autoQada)
-            )}
-        `
-    );
-}
-
-function renderLocation(settings) {
-    const location = state.location || {};
-    const manual = !settings.autoLocation;
-
-    return section(
-        'Location',
-        'LOCATION',
-        `
-            <div class="settings-location-card">
-                <div>
-                    <span class="ad2-eyebrow">CURRENT LOCATION</span>
-                    <strong>
-                        ${escapeHtml(location.city || 'Current location')}
-                    </strong>
-                    <small>
-                        ${
-                            location.lat != null && location.lon != null
-                                ? `${Number(location.lat).toFixed(4)}, ${Number(location.lon).toFixed(4)}`
-                                : 'Coordinates unavailable'
-                        }
-                    </small>
-                </div>
-
-                <span class="settings-location-status">
-                    ${settings.autoLocation ? 'Automatic' : 'Manual'}
-                </span>
-            </div>
-
-            ${row(
-                'Automatic location',
-                'Allow Adhan Display to determine your location automatically.',
-                toggle('autoLocation', settings.autoLocation)
-            )}
-
-            ${
-                manual
-                    ? `
-                        <div class="settings-manual-location">
-                            <label
-                                class="settings-field-label"
-                                for="manual-location-search"
-                            >
-                                City or location
-                            </label>
-
-                            <input
-                                id="manual-location-search"
-                                class="settings-text-input"
-                                type="text"
-                                value=""
-                                placeholder="Search for a city..."
-                                autocomplete="off"
-                                data-location-search
-                            >
-
-                            <div
-                                class="settings-location-results"
-                                data-location-results
-                            ></div>
-
-                            <small class="settings-field-help">
-                                Search for a city and select the location
-                                you want to use for prayer times.
-                            </small>
-                        </div>
-                    `
-                    : ''
-            }
-
-            <div class="settings-info">
-                Prayer times use your current coordinates and the selected
-                calculation method.
-            </div>
-        `
-    );
-}
-
-
-const QURAN_SETTINGS_API =
-    'https://api.alquran.cloud/v1';
-
-
-function quranSettingsLanguageName(code) {
-    const names = {
-        ar: 'Arabic',
-        en: 'English',
-        nl: 'Dutch',
-        fr: 'French',
-        de: 'German',
-        es: 'Spanish',
-        tr: 'Turkish',
-        ur: 'Urdu',
-        id: 'Indonesian',
-        ms: 'Malay',
-        bn: 'Bengali',
-        hi: 'Hindi',
-        fa: 'Persian',
-        it: 'Italian',
-        pt: 'Portuguese',
-        ru: 'Russian'
-    };
-
-    return names[code] || code;
-}
-
-
-function getQuranSettingsLanguages() {
-    const languages = new Map();
-
-    for (const edition of state.quran.editions) {
-        if (!edition.language) {
-            continue;
-        }
-
-        if (!languages.has(edition.language)) {
-            languages.set(
-                edition.language,
-                quranSettingsLanguageName(
-                    edition.language
-                )
-            );
-        }
-    }
-
-    return [...languages.entries()]
-        .sort((a, b) =>
-            a[1].localeCompare(b[1])
-        );
-}
-
-
-function getQuranSettingsTranslations(language) {
-    let editions =
-        state.quran.editions.slice();
-
-    if (language) {
-        editions =
-            editions.filter(
-                edition =>
-                    edition.language === language
-            );
-    }
-
-    return editions.sort((a, b) =>
-        (
-            a.englishName ||
-            a.name ||
-            a.identifier ||
-            ''
-        ).localeCompare(
-            b.englishName ||
-            b.name ||
-            b.identifier ||
-            ''
-        )
-    );
-}
-
-
-async function loadQuranSettingsEditions() {
-    if (state.quran.editions.length) {
-        return state.quran.editions;
-    }
-
-    try {
-        const response =
-            await fetch(
-                `${QURAN_SETTINGS_API}/edition?format=text&type=translation`,
-                {
-                    headers: {
-                        Accept:
-                            'application/json'
-                    }
-                }
-            );
-
-        if (!response.ok) {
-            throw new Error(
-                `Quran translation request failed: ${response.status}`
-            );
-        }
-
-        const result =
-            await response.json();
-
-        state.quran.editions =
-            (result.data || [])
-                .filter(
-                    edition =>
-                        edition.type ===
-                        'translation'
-                );
-
-        if (!state.quran.editions.length) {
-            throw new Error(
-                'No Quran translations were returned.'
-            );
-        }
-
-        const current =
-            state.quran.editions.find(
-                edition =>
-                    edition.identifier ===
-                    state.quran.selectedTranslation
-            );
-
-        if (current) {
-            state.quran.selectedLanguage =
-                current.language;
-        } else {
-            const preferred =
-                state.quran.editions.find(
-                    edition =>
-                        edition.language === 'nl'
-                ) ||
-                state.quran.editions.find(
-                    edition =>
-                        edition.language === 'en'
-                ) ||
-                state.quran.editions[0];
-
-            state.quran.selectedTranslation =
-                preferred?.identifier || '';
-
-            state.quran.selectedLanguage =
-                preferred?.language || '';
-        }
-
-        saveQuranState();
-
-        return state.quran.editions;
-
-    } catch (error) {
-        console.error(
-            '[Settings] Failed to load Quran translations.',
-            error
-        );
-
-        return [];
-    }
-}
-
-
-function refreshQuranSettings() {
-    window.dispatchEvent(
-        new CustomEvent(
-            'adhan:settings-render'
-        )
-    );
-}
-
-
-function renderQuran(settings) {
-    const quran = state.quran;
-
-    return section(
-        'Quran',
-        'QURAN',
-        `
-            ${row(
-                'Translation language',
-                'Choose the language of the Quran translation shown beneath the Arabic text.',
-                select(
-                    'quranLanguage',
-                    getQuranSettingsLanguages(),
-                    quran.selectedLanguage || settings.lang
-                )
-            )}
-
-            ${row(
-                'Translation',
-                'Choose the specific Quran translation used beneath the Arabic text.',
-                select(
-                    'quranTranslation',
-                    getQuranSettingsTranslations(
-                        quran.selectedLanguage
-                    ).map(
-                        edition => [
-                            edition.identifier,
-                            edition.englishName ||
-                                edition.name ||
-                                edition.identifier
-                        ]
-                    ),
-                    quran.selectedTranslation
-                )
-            )}
-
-            ${row(
-                'Reciter',
-                'Choose the Quran audio recitation.',
-                select(
-                    'quranReciter',
-                    [
-                        ['ar.alafasy', 'Mishary Alafasy'],
-                        ['ar.muhammadayyoub', 'Muhammad Ayyub'],
-                        ['ar.husary', 'Mahmoud Al-Husary'],
-                        ['ar.muhammadjibreel', 'Muhammad Jibreel']
-                    ],
-                    quran.selectedReciter
-                )
-            )}
-
-            ${row(
-                'Reader font size',
-                'Adjust the Quran reader text size.',
-                select(
-                    'quranFontSize',
-                    [
-                        ['85', 'Small'],
-                        ['100', 'Normal'],
-                        ['115', 'Large'],
-                        ['130', 'Extra large']
-                    ],
-                    String(quran.fontSize)
-                )
-            )}
-
-            ${row(
-                'Automatic audio playback',
-                'Continue automatically to the next ayah during playback.',
-                toggle('quranAutoPlay', quran.autoPlay)
-            )}
-        `
-    );
-}
-
-function renderAudio(settings) {
-    return section(
-        'Audio & notifications',
-        'AUDIO',
-        `
-            ${row(
-                'Adhan sound',
-                'Choose the sound used for prayer notifications.',
-                select(
-                    'audio',
-                    [
-                        ['default', 'Default Adhan'],
-                        ['alafasy', 'Alafasy'],
-                        ['madinah', 'Madinah'],
-                        ['makkah', 'Makkah']
-                    ],
-                    settings.audio
-                )
-            )}
-
-            ${row(
-                'Volume',
-                'Set the default audio volume.',
-                `
-                    <input
-                        class="settings-range"
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value="${escapeHtml(settings.volume)}"
-                        data-setting-range="volume"
-                    >
-                    <span class="settings-range-value" data-volume-value>
-                        ${Math.round(settings.volume * 100)}%
-                    </span>
-                `
-            )}
-
-            ${row(
-                'Daily reminder',
-                'Enable the daily reminder notification.',
-                toggle('dailyAlert', settings.dailyAlert)
-            )}
-
-            ${row(
-                'Tahajjud alarm',
-                'Enable the stored Tahajjud reminder preference.',
-                toggle('tahajjudAlarm', settings.tahajjudAlarm)
-            )}
-
-            ${row(
-                'Wudu reminder',
-                'Enable the stored Wudu reminder preference.',
-                toggle('wudu', settings.wudu)
-            )}
-        `
-    );
-}
-
-function renderDisplay(settings) {
-    return section(
-        'Display & focus',
-        'FOCUS DISPLAY',
-        `
-            ${row(
-                'Automatic dimming',
-                'Allow the display to use the stored auto-dim preference.',
-                toggle('autodim', settings.autodim)
-            )}
-
-            ${row(
-                'Screensaver',
-                'Enable the stored screensaver preference.',
-                toggle('screensaver', settings.screensaver)
-            )}
-        `
-    );
-}
-
-function renderData() {
-    return section(
-        'Data & privacy',
-        'DATA',
-        `
-            <div class="settings-data-grid">
-                <button
-                    type="button"
-                    class="settings-action"
-                    data-settings-action="clear-cache"
-                >
-                    <strong>Clear cache</strong>
-                    <span>Remove cached API and content data.</span>
-                </button>
-
-                <button
-                    type="button"
-                    class="settings-action"
-                    data-settings-action="export"
-                >
-                    <strong>Export backup</strong>
-                    <span>Save your Adhan Display preferences locally.</span>
-                </button>
-
-                <button
-                    type="button"
-                    class="settings-action"
-                    data-settings-action="import"
-                >
-                    <strong>Import backup</strong>
-                    <span>Restore a previously exported backup.</span>
-                </button>
-
-                <button
-                    type="button"
-                    class="settings-action settings-action-danger"
-                    data-settings-action="reset"
-                >
-                    <strong>Reset preferences</strong>
-                    <span>Return Adhan Display preferences to defaults.</span>
-                </button>
-            </div>
-
-            <input
-                type="file"
-                accept="application/json,.json"
-                data-settings-import-file
-                hidden
-            >
-        `
-    );
-}
-
-function renderAbout() {
-    return section(
-        'About',
-        'ADHAN DISPLAY',
-        `
-            <div class="settings-about">
-                <div>
-                    <span class="settings-about-mark">
-                    <img
-                        src="/images/adhan%20display%20muslim%20prayer%20times%20dashboard%20logo.png"
-                        alt="Adhan Display"
-                    >
-                </span>
-                    <div>
-                        <strong>Adhan Display</strong>
-                        <span>Modern prayer, Quran and Islamic life.</span>
-                    </div>
-                </div>
-
-                <span class="settings-version">
-                    Version ${escapeHtml(APP.version)}
-                </span>
-            </div>
-        `
-    );
-}
-
-
-
-
-
-
-
-/* AD2_BUY_ME_A_COFFEE_START */
-const BUY_ME_A_COFFEE_HTML = `
-  <div class="ad2-support-footer">
-    <span class="ad2-support-label">SADAQAH • SUPPORT</span>
-
-    <span class="ad2-support-text">
-      Help keep Adhan Display free and online.
-    </span>
-
-    <a
-      class="ad2-support-link"
-      href="https://buymeacoffee.com/kmni"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Support Adhan Display via Buy Me a Coffee"
-    >
-      Support the project ↗
-    </a>
-  </div>
-`;
-/* AD2_BUY_ME_A_COFFEE_END */
-
-export function renderSettingsPage() {
-    const settings = currentSettings();
-
+function stepper(name, value, min, max, label) {
     return `
+        <div class="stepper" data-stepper="${esc(name)}" data-min="${min}" data-max="${max}">
+            <span class="stepper-label">${esc(label)}</span>
+            <button type="button" class="icon-button" data-step="-1" aria-label="${esc(label)} minus one">${icon('minus', { size: 16 })}</button>
+            <output class="stepper-value tnum" aria-live="polite">${value > 0 ? '+' : ''}${value}</output>
+            <button type="button" class="icon-button" data-step="1" aria-label="${esc(label)} plus one">${icon('plus', { size: 16 })}</button>
+        </div>
+    `;
+}
 
+function field(label, control, hint = '') {
+    return `
+        <div class="field">
+            <span class="field-label">${esc(label)}</span>
+            ${control}
+            ${hint ? `<p class="field-hint">${esc(hint)}</p>` : ''}
+        </div>
+    `;
+}
 
-        <main class="ad2-page settings-page">
+function sectionHTML(id, title, body) {
+    return `
+        <section class="panel settings-section" id="set-${id}" aria-labelledby="set-${id}-title">
+            <h2 class="panel-title" id="set-${id}-title">${esc(title)}</h2>
+            ${body}
+        </section>
+    `;
+}
 
-            <section class="settings-hero">
+function notificationControl() {
+    const state = alerts.notificationState();
+    const settings = getSettings();
+
+    if (state === 'unsupported') {
+        return '<p class="field-hint">This browser does not support notifications.</p>';
+    }
+
+    if (state === 'denied') {
+        return '<p class="field-hint">Notifications are blocked for this site. Allow them in your browser settings to use this option.</p>';
+    }
+
+    return toggle('notify', settings.notify && state === 'granted', 'System notifications',
+        'Shows a notification at prayer time when this tab is in the background.');
+}
+
+function bodyHTML() {
+    const settings = getSettings();
+    const loc = location.get();
+    const prefs = quranPrefs.get();
+
+    return [
+        sectionHTML('appearance', 'Appearance', `
+            ${field('Theme', segmented('theme', [['dark', 'Dark'], ['light', 'Light'], ['system', 'Match device']], settings.theme))}
+            ${field('Text size', segmented('size', [['compact', 'Small'], ['normal', 'Normal'], ['large', 'Large']], settings.size))}
+            ${field('Time format', segmented('timeFormat', [['24h', '24-hour'], ['12h', '12-hour']], settings.timeFormat))}
+        `),
+
+        sectionHTML('location', 'Location', `
+            <div class="location-card">
+                ${icon('pin')}
+                <span><strong>${esc(loc.city)}${loc.country ? `, ${esc(loc.country)}` : ''}</strong>
+                <small class="tnum">${loc.lat.toFixed(4)}, ${loc.lon.toFixed(4)}${loc.isDefault ? ' (default)' : ''}</small></span>
+                <button type="button" class="button button-ghost" data-action="location">Change</button>
+            </div>
+            ${toggle('autoLocation', settings.autoLocation, 'Update automatically',
+                'When location access is allowed, your position is refreshed each time you open the app.')}
+        `),
+
+        sectionHTML('prayer', 'Prayer times', `
+            ${field('Calculation method', select('method', CALCULATION_METHODS, settings.method, 'Calculation method'),
+                'Choose the method used by your local mosque.')}
+            ${field('Asr time', select('school', ASR_METHODS, settings.school, 'Asr time'))}
+            ${field('High latitude rule', select('latAdjust', HIGH_LATITUDE_RULES, settings.latAdjust, 'High latitude rule'),
+                'Used where Fajr and Isha are hard to determine, such as summer in northern Europe.')}
+            <div class="field">
+                <span class="field-label">Adjust times (minutes)</span>
+                <div class="steppers">
+                    ${PRAYER_KEYS.map(name => stepper(`tune:${name}`, settings.tune[name], -60, 60, name)).join('')}
+                </div>
+                <p class="field-hint">Match the times of your local mosque. Adjustments are applied to every day.</p>
+            </div>
+            <div class="field">
+                <span class="field-label">Hijri date (days)</span>
+                <div class="steppers">${stepper('hijriOffset', settings.hijriOffset, -2, 2, 'Hijri date')}</div>
+                <p class="field-hint">Shift the Hijri date when your community follows a local moon sighting.</p>
+            </div>
+        `),
+
+        sectionHTML('alerts', 'Adhan and reminders', `
+            <div class="field">
+                <span class="field-label">Adhan sound</span>
+                <div class="inline-controls">
+                    ${select('sound', ADHAN_SOUNDS.map(([key, label]) => [key, label]), settings.sound, 'Adhan sound')}
+                    <button type="button" class="button button-ghost" data-preview>${icon(alerts.playing ? 'stop' : 'play', { size: 16 })} ${alerts.playing ? 'Stop' : 'Preview'}</button>
+                </div>
+            </div>
+            ${field('Volume', `<input type="range" class="range" min="0" max="1" step="0.05" value="${settings.volume}" data-range="volume" aria-label="Volume">`)}
+            <div class="field">
+                <span class="field-label">Play the adhan for</span>
+                <div class="check-grid">
+                    ${SALAH.map(name => `
+                        <label class="check"><input type="checkbox" data-alert="${name}" ${settings.alerts[name] ? 'checked' : ''}><span>${name}</span></label>
+                    `).join('')}
+                </div>
+            </div>
+            ${field('Reminder before the adhan', select('reminder', [[0, 'Off'], [5, '5 minutes before'], [10, '10 minutes before'], [15, '15 minutes before'], [20, '20 minutes before'], [30, '30 minutes before']], settings.reminder, 'Reminder before the adhan'),
+                'Plays a soft chime, for example as a reminder to make wudu.')}
+            ${toggle('tahajjud', settings.tahajjud, 'Remind me at the last third of the night', 'A soft chime for tahajjud.')}
+            <div data-notify>${notificationControl()}</div>
+            <p class="note">${icon('info', { size: 16 })} Sounds and notifications work while Adhan Display is open, also in a background tab or as an installed app. A sleeping device cannot play them. Browsers only allow sound after you have tapped the page once.</p>
+        `),
+
+        sectionHTML('display', 'Display mode', `
+            <p class="field-hint">A full-screen clock for a tablet or screen at home or in the mosque.</p>
+            ${toggle('displayAwake', settings.displayAwake, 'Keep the screen on', 'Prevents the screen from turning off while display mode is open.')}
+            ${toggle('displayDim', settings.displayDim, 'Dim at night', 'Lowers the brightness between Isha and Fajr.')}
+            ${toggle('displaySeconds', settings.displaySeconds, 'Show seconds')}
+            <a class="button button-primary" href="#display">${icon('monitor', { size: 18 })} Open display mode</a>
+        `),
+
+        sectionHTML('quran', 'Quran', `
+            ${field('Translation', '<select class="select" data-quran="translation" aria-label="Translation"><option>Loading</option></select>')}
+            ${field('Reciter', '<select class="select" data-quran="reciter" aria-label="Reciter"><option>Loading</option></select>')}
+            ${field('Arabic text size', `<input type="range" class="range" min="80" max="160" step="10" value="${prefs.fontSize}" data-quran="size" aria-label="Arabic text size">`)}
+            <label class="switch-row"><span>Show translation</span><input type="checkbox" class="switch" data-quran="showTranslation" ${prefs.showTranslation ? 'checked' : ''}></label>
+            <label class="switch-row"><span>Play the next ayah automatically</span><input type="checkbox" class="switch" data-quran="autoPlay" ${prefs.autoPlay ? 'checked' : ''}></label>
+        `),
+
+        sectionHTML('data', 'Your data', `
+            <p class="field-hint">Everything is stored only in this browser. Make a backup to move your tracker, bookmarks and settings to another device.</p>
+            <div class="button-row">
+                <button type="button" class="button button-ghost" data-data="export">${icon('download', { size: 18 })} Download backup</button>
+                <button type="button" class="button button-ghost" data-data="import">${icon('upload', { size: 18 })} Restore backup</button>
+                <input type="file" accept="application/json,.json" data-import-file hidden>
+            </div>
+            <div class="button-row">
+                <button type="button" class="button button-ghost" data-data="cache">${icon('refresh', { size: 18 })} Clear cached data</button>
+                <button type="button" class="button button-danger-ghost" data-data="reset">${icon('trash', { size: 18 })} Reset everything</button>
+            </div>
+        `),
+
+        sectionHTML('about', 'About', `
+            <div class="about">
+                <img src="images/icons/icon-192.png" width="56" height="56" alt="" loading="lazy">
                 <div>
-                    <span class="ad2-eyebrow">SETTINGS</span>
-
-                    <h1>
-                        Your Adhan Display.
-                        <span>Your preferences.</span>
-                    </h1>
-
-                    <p>
-                        Shape the experience around your prayer,
-                        Quran reading and daily worship.
-                    </p>
+                    <strong>Adhan Display</strong>
+                    <span class="muted">Version ${esc(APP_VERSION)}</span>
                 </div>
+            </div>
+            <p>Free prayer times, Quran and hadith, made as sadaqah jariyah. No account and no ads.</p>
+            <div class="button-row">
+                <button type="button" class="button button-primary" data-install hidden>${icon('download', { size: 18 })} Install app</button>
+                <a class="button button-ghost" href="${SUPPORT_URL}" target="_blank" rel="noopener noreferrer">${icon('heart', { size: 18 })} Support the project</a>
+            </div>
+            <p class="fine-print">Prayer times by AlAdhan. Quran text and audio by Al Quran Cloud and Islamic Network. Tafsir by Quran.com. Hadith by UmmahAPI. Place search by Open-Meteo and BigDataCloud.</p>
+        `)
+    ].join('');
+}
 
-                <div class="settings-hero-meta">
-                    <span>ADHAN DISPLAY 2.0</span>
-                    <strong>${escapeHtml(APP.version)}</strong>
+export const settingsPage = {
+    title: 'Settings',
+
+    render() {
+        return `
+            <div class="page settings-page">
+                ${pageHeader('Settings')}
+                <div class="settings-layout">
+                    <nav class="settings-nav" aria-label="Settings sections">
+                        ${SECTIONS.map(([id, label]) => `<a href="#settings/${id}" data-section-link="${id}">${esc(label)}</a>`).join('')}
+                    </nav>
+                    <div class="settings-body" data-settings-body>${bodyHTML()}</div>
                 </div>
-            </section>
+            </div>
+        `;
+    },
 
-            ${renderAppearance(settings)}
-            ${renderPrayer(settings)}
-            ${renderLocation(settings)}
-            ${renderQuran(settings)}
-            ${renderAudio(settings)}
-            ${renderDisplay(settings)}
-            ${renderData()}
-            ${renderAbout()}
+    mount(root, path, ctx) {
+        const body = root.querySelector('[data-settings-body]');
 
-        </main>
-    
-${BUY_ME_A_COFFEE_HTML}
-`;
-}
+        const changed = key => {
+            bus.emit('settings', { key });
+        };
 
-function saveSetting(key, value) {
-    Storage.setRaw(key, String(value));
-}
+        const loadQuranSelects = () => {
+            const prefs = quranPrefs.get();
+            fillTranslationSelect(root.querySelector('[data-quran="translation"]'), prefs.selectedTranslation);
+            fillReciterSelect(root.querySelector('[data-quran="reciter"]'), prefs.selectedReciter);
+        };
 
-function refreshPrayer() {
-    window.dispatchEvent(
-        new CustomEvent('adhan:settings-changed')
-    );
-}
+        const rerender = () => {
+            const scroll = window.scrollY;
+            body.innerHTML = bodyHTML();
+            loadQuranSelects();
+            showInstall();
+            window.scrollTo(0, scroll);
+        };
 
-function saveQuranPreference(key, value) {
-    if (key === 'language') {
-        state.quran.selectedLanguage = value;
-    }
-
-    if (key === 'translation') {
-        state.quran.selectedTranslation = value;
-    }
-
-    if (key === 'reciter') {
-        state.quran.selectedReciter = value;
-    }
-
-    if (key === 'fontSize') {
-        state.quran.fontSize = Number(value);
-    }
-
-    if (key === 'autoPlay') {
-        state.quran.autoPlay = Boolean(value);
-    }
-
-    saveQuranState();
-}
-
-function downloadBackup() {
-    const backup = Storage.exportBackup();
-
-    const blob = new Blob(
-        [JSON.stringify(backup, null, 2)],
-        { type: 'application/json' }
-    );
-
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
-
-    anchor.href = url;
-    anchor.download =
-        `adhan-display-backup-${new Date()
-            .toISOString()
-            .slice(0, 10)}.json`;
-
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-
-    URL.revokeObjectURL(url);
-}
-
-function resetPreferences() {
-    const confirmed = window.confirm(
-        'Reset Adhan Display preferences to their defaults? Your Quran bookmarks and tracker data will also be cleared.'
-    );
-
-    if (!confirmed) {
-        return;
-    }
-
-    Object.keys(localStorage)
-        .filter(key => key.startsWith('adhan_'))
-        .forEach(key => localStorage.removeItem(key));
-
-    window.location.reload();
-}
-
-export function bindSettingsPage() {
-    const page = document.querySelector('.settings-page');
-
-    if (!page) {
-        return;
-    }
-
-    if (!state.quran.editions.length) {
-        loadQuranSettingsEditions()
-            .then(() => {
-                refreshQuranSettings();
-            });
-    }
-
-    page.querySelectorAll('[data-settings-theme]').forEach(button => {
-        button.addEventListener('click', () => {
-            const theme = button.dataset.settingsTheme;
-
-            if (
-                (theme === 'dark' && !state.ui.darkMode) ||
-                (theme === 'light' && state.ui.darkMode)
-            ) {
-                toggleTheme();
+        const showInstall = () => {
+            const button = root.querySelector('[data-install]');
+            if (button) {
+                button.hidden = !install.available();
             }
+        };
 
-            renderSettingsPage();
-            window.dispatchEvent(
-                new CustomEvent('adhan:settings-render')
-            );
-        });
-    });
-
-    page.querySelectorAll('[data-setting-select]').forEach(selectElement => {
-        selectElement.addEventListener('change', () => {
-            const key = selectElement.dataset.settingSelect;
-            const value = selectElement.value;
-
-            const mapping = {
-                size: 'size',
-                method: 'method',
-                audio: 'audio'
-            };
-
-            if (mapping[key]) {
-                saveSetting(mapping[key], value);
-
-                if (key === 'size') {
-                    applyDisplaySize(value);
-                }
-            }
-
-            if (key === 'quranLanguage') {
-                state.quran.selectedLanguage =
-                    value;
-
-                const translations =
-                    getQuranSettingsTranslations(
-                        value
-                    );
-
-                if (translations.length) {
-                    const currentStillValid =
-                        translations.some(
-                            edition =>
-                                edition.identifier ===
-                                state.quran.selectedTranslation
-                        );
-
-                    if (!currentStillValid) {
-                        state.quran.selectedTranslation =
-                            translations[0].identifier;
-                    }
-                }
-
-                saveQuranState();
-
-                refreshQuranSettings();
-
-                return;
-            }
-
-
-            if (key === 'quranTranslation') {
-                state.quran.selectedTranslation =
-                    value;
-
-                const edition =
-                    state.quran.editions.find(
-                        item =>
-                            item.identifier ===
-                            value
-                    );
-
-                if (edition?.language) {
-                    state.quran.selectedLanguage =
-                        edition.language;
-                }
-
-                saveQuranState();
-
-                refreshQuranSettings();
-
-                return;
-            }
-
-            if (key === 'quranReciter') {
-                saveQuranPreference('reciter', value);
-            }
-
-            if (key === 'quranFontSize') {
-                saveQuranPreference('fontSize', value);
-            }
-
-            if (key === 'method') {
-                refreshPrayer();
-            }
-
-            window.dispatchEvent(
-                new CustomEvent('adhan:settings-render')
-            );
-        });
-    });
-
-    page.querySelectorAll('[data-setting-number]').forEach(input => {
-        input.addEventListener('change', () => {
-            const key = input.dataset.settingNumber;
-            const value = Number(input.value);
-
-            if (key === 'offset') {
-                saveSetting('offset', value);
-                refreshPrayer();
-            }
-
-            if (key === 'hijriOffset') {
-                saveSetting('hijri_offset', value);
-                refreshPrayer();
+        loadQuranSelects();
+        showInstall();
+        ctx.on('installable', showInstall);
+        ctx.on('location', rerender);
+        ctx.on('alert-audio', () => {
+            const button = root.querySelector('[data-preview]');
+            if (button) {
+                button.innerHTML = `${icon(alerts.playing ? 'stop' : 'play', { size: 16 })} ${alerts.playing ? 'Stop' : 'Preview'}`;
             }
         });
-    });
 
-    page.querySelectorAll('[data-setting-toggle]').forEach(input => {
-        input.addEventListener('change', () => {
-            const key = input.dataset.settingToggle;
-            const value = input.checked;
-
-            const mapping = {
-                autoQada: 'auto_qada',
-                autoLocation: 'auto_loc',
-                dailyAlert: 'daily_alert',
-                tahajjudAlarm: 'tahajjud_alarm',
-                wudu: 'wudu',
-                autodim: 'autodim',
-                screensaver: 'screensaver'
-            };
-
-            if (mapping[key]) {
-                Storage.set(mapping[key], value);
-            }
-
-            if (key === 'quranAutoPlay') {
-                saveQuranPreference(
-                    'autoPlay',
-                    value
-                );
-            }
-
-            if (key === 'autoLocation') {
-                refreshPrayer();
-            }
-
-            window.dispatchEvent(
-                new CustomEvent('adhan:settings-render')
-            );
-        });
-    });
-
-    const locationSearch =
-        page.querySelector('[data-location-search]');
-
-    const locationResults =
-        page.querySelector('[data-location-results]');
-
-    let locationSearchTimer = null;
-
-    locationSearch?.addEventListener(
-        'input',
-        event => {
-            const query =
-                event.target.value.trim();
-
-            clearTimeout(locationSearchTimer);
-
-            if (!locationResults) {
-                return;
-            }
-
-            if (query.length < 2) {
-                locationResults.innerHTML = '';
-                return;
-            }
-
-            locationResults.innerHTML =
-                '<div class="settings-location-loading">Searching...</div>';
-
-            locationSearchTimer = setTimeout(
-                async () => {
-                    try {
-                        const result =
-                            await Api.geocode(query);
-
-                        const results =
-                            Array.isArray(result.results)
-                                ? result.results.slice(0, 5)
-                                : [];
-
-                        if (!results.length) {
-                            locationResults.innerHTML =
-                                '<div class="settings-location-empty">No locations found.</div>';
-                            return;
-                        }
-
-                        locationResults.innerHTML =
-                            results.map((item, index) => `
-                                <button
-                                    type="button"
-                                    class="settings-location-result"
-                                    data-location-result="${index}"
-                                >
-                                    <strong>
-                                        ${escapeHtml(
-                                            item.name || 'Unknown location'
-                                        )}
-                                    </strong>
-                                    <span>
-                                        ${escapeHtml(
-                                            [
-                                                item.admin1,
-                                                item.country
-                                            ]
-                                                .filter(Boolean)
-                                                .join(', ')
-                                        )}
-                                    </span>
-                                </button>
-                            `).join('');
-
-                        locationResults
-                            .querySelectorAll('[data-location-result]')
-                            .forEach(button => {
-                                button.addEventListener(
-                                    'click',
-                                    () => {
-                                        const item =
-                                            results[
-                                                Number(
-                                                    button.dataset.locationResult
-                                                )
-                                            ];
-
-                                        if (!item) {
-                                            return;
-                                        }
-
-                                        const location = {
-                                            lat: Number(item.latitude),
-                                            lon: Number(item.longitude),
-                                            city:
-                                                item.name ||
-                                                query
-                                        };
-
-                                        Storage.setRaw(
-                                            'auto_loc',
-                                            'false'
-                                        );
-
-                                        window.dispatchEvent(
-                                            new CustomEvent(
-                                                'adhan:manual-location',
-                                                {
-                                                    detail: location
-                                                }
-                                            )
-                                        );
-                                    }
-                                );
-                            });
-                    } catch (error) {
-                        console.error(
-                            '[Settings] Location search failed',
-                            error
-                        );
-
-                        locationResults.innerHTML =
-                            '<div class="settings-location-empty">Location search failed.</div>';
-                    }
-                },
-                350
-            );
+        if (path[0]) {
+            requestAnimationFrame(() => root.querySelector(`#set-${path[0]}`)?.scrollIntoView({ block: 'start' }));
         }
-    );
 
-    page.querySelector('[data-setting-range="volume"]')
-        ?.addEventListener('input', event => {
-            const value = Number(event.target.value);
+        root.addEventListener('click', async event => {
+            const target = event.target;
+            const segment = target.closest('[data-set]');
+            const step = target.closest('[data-step]');
+            const dataAction = target.closest('[data-data]')?.dataset.data;
+            const sectionLink = target.closest('[data-section-link]');
 
-            saveSetting('volume', value);
-
-            const label =
-                page.querySelector('[data-volume-value]');
-
-            if (label) {
-                label.textContent =
-                    `${Math.round(value * 100)}%`;
-            }
-        });
-
-    page.querySelectorAll('[data-settings-action]').forEach(button => {
-        button.addEventListener('click', () => {
-            const action = button.dataset.settingsAction;
-
-            if (action === 'clear-cache') {
-                Storage.clearCache();
-
-                window.alert(
-                    'Cached data has been cleared.'
-                );
-
-                window.dispatchEvent(
-                    new CustomEvent('adhan:settings-render')
-                );
-            }
-
-            if (action === 'export') {
-                downloadBackup();
-            }
-
-            if (action === 'import') {
-                page.querySelector(
-                    '[data-settings-import-file]'
-                )?.click();
-            }
-
-            if (action === 'reset') {
-                resetPreferences();
-            }
-        });
-    });
-
-    page.querySelector('[data-settings-import-file]')
-        ?.addEventListener('change', async event => {
-            const file = event.target.files?.[0];
-
-            if (!file) {
+            if (sectionLink) {
+                event.preventDefault();
+                root.querySelector(`#set-${sectionLink.dataset.sectionLink}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                history.replaceState(null, '', `#settings/${sectionLink.dataset.sectionLink}`);
                 return;
             }
 
-            try {
-                const text = await file.text();
-                const backup = JSON.parse(text);
+            if (segment) {
+                setSetting(segment.dataset.set, segment.dataset.value);
+                segment.parentElement.querySelectorAll('[data-set]').forEach(button => {
+                    const active = button === segment;
+                    button.classList.toggle('is-active', active);
+                    button.setAttribute('aria-checked', String(active));
+                });
+                changed(segment.dataset.set);
+                return;
+            }
 
-                Storage.importBackup(backup);
+            if (step) {
+                const wrapper = step.closest('[data-stepper]');
+                const name = wrapper.dataset.stepper;
+                const settings = getSettings();
+                const current = name.startsWith('tune:') ? settings.tune[name.slice(5)] : settings[name];
+                const next = Math.min(Number(wrapper.dataset.max), Math.max(Number(wrapper.dataset.min), current + Number(step.dataset.step)));
 
-                window.alert(
-                    'Backup imported successfully. The page will reload.'
+                if (next === current) {
+                    return;
+                }
+
+                if (name.startsWith('tune:')) {
+                    setSetting('tune', { ...settings.tune, [name.slice(5)]: next });
+                    changed('tune');
+                } else {
+                    setSetting(name, next);
+                    changed(name);
+                }
+
+                wrapper.querySelector('output').textContent = `${next > 0 ? '+' : ''}${next}`;
+                return;
+            }
+
+            if (target.closest('[data-action="location"]')) {
+                openLocationDialog();
+            } else if (target.closest('[data-preview]')) {
+                if (alerts.playing) {
+                    alerts.stop();
+                } else {
+                    alerts.preview(getSettings().sound);
+                }
+            } else if (target.closest('[data-install]')) {
+                install.prompt();
+            } else if (dataAction === 'export') {
+                const blob = new Blob([JSON.stringify(exportBackup(APP_VERSION), null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `adhan-display-backup-${new Date().toISOString().slice(0, 10)}.json`;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+                toast('Backup downloaded');
+            } else if (dataAction === 'import') {
+                root.querySelector('[data-import-file]').click();
+            } else if (dataAction === 'cache') {
+                const removed = clearCache();
+                toast(`Cleared ${removed} cached ${removed === 1 ? 'item' : 'items'}. Fresh data will load when needed.`);
+                changed('cache');
+            } else if (dataAction === 'reset') {
+                const confirmed = await confirmDialog(
+                    'This deletes your settings, prayer tracker, bookmarks and saved places from this browser. Download a backup first if you want to keep them.',
+                    { confirm: 'Delete everything', danger: true }
                 );
-
-                window.location.reload();
-            } catch (error) {
-                console.error(
-                    '[Adhan Display 2.0] Backup import failed',
-                    error
-                );
-
-                window.alert(
-                    'The selected backup could not be imported.'
-                );
+                if (confirmed) {
+                    resetAll();
+                    window.location.reload();
+                }
             }
         });
-}
+
+        root.addEventListener('change', async event => {
+            const target = event.target;
+
+            if (target.matches('[data-select]')) {
+                const name = target.dataset.select;
+                const numeric = ['method', 'school', 'latAdjust', 'reminder'].includes(name);
+                setSetting(name, numeric ? Number(target.value) : target.value);
+                changed(name);
+                if (name === 'sound' && alerts.playing) {
+                    alerts.preview(target.value);
+                }
+            } else if (target.matches('[data-toggle]')) {
+                const name = target.dataset.toggle;
+
+                if (name === 'notify' && target.checked) {
+                    try {
+                        await alerts.requestNotifications();
+                    } catch (error) {
+                        target.checked = false;
+                        toast(error.message);
+                        root.querySelector('[data-notify]').innerHTML = notificationControl();
+                        return;
+                    }
+                }
+
+                if (name === 'autoLocation') {
+                    setSetting('autoLocation', target.checked ? 'true' : 'false');
+                    if (target.checked) {
+                        location.detect().catch(error => toast(error.message));
+                    }
+                } else {
+                    setSetting(name, target.checked);
+                }
+                changed(name);
+            } else if (target.matches('[data-alert]')) {
+                setSetting('alerts', { ...getSettings().alerts, [target.dataset.alert]: target.checked });
+                changed('alerts');
+            } else if (target.matches('[data-quran]')) {
+                const key = target.dataset.quran;
+                const patch = {
+                    translation: { selectedTranslation: target.value },
+                    reciter: { selectedReciter: target.value },
+                    showTranslation: { showTranslation: target.checked },
+                    autoPlay: { autoPlay: target.checked }
+                }[key];
+                if (patch) {
+                    quranPrefs.update(patch);
+                    toast('Saved', { duration: 1500 });
+                }
+            } else if (target.matches('[data-import-file]')) {
+                const file = target.files?.[0];
+                if (!file) {
+                    return;
+                }
+                try {
+                    const count = importBackup(JSON.parse(await file.text()));
+                    toast(`Restored ${count} items. Reloading`);
+                    setTimeout(() => window.location.reload(), 1200);
+                } catch (error) {
+                    toast(error instanceof SyntaxError ? 'This file is not a valid backup.' : error.message);
+                }
+                target.value = '';
+            }
+        });
+
+        root.addEventListener('input', event => {
+            const target = event.target;
+
+            if (target.matches('[data-range="volume"]')) {
+                setSetting('volume', Number(target.value));
+            } else if (target.matches('[data-quran="size"]')) {
+                quranPrefs.update({ fontSize: Number(target.value) });
+            }
+        });
+    }
+};

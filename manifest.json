@@ -2,31 +2,24 @@
     "id": "/",
     "name": "Adhan Display",
     "short_name": "Adhan Display",
-    "description": "A modern Islamic platform for prayer, Quran, remembrance and Islamic life.",
+    "description": "Prayer times with adhan, Qibla, the Quran, hadith and a display mode for your home or mosque.",
     "lang": "en",
     "dir": "ltr",
-    "start_url": "/",
-    "scope": "/",
+    "start_url": "./",
+    "scope": "./",
     "display": "standalone",
-    "display_override": [
-        "window-controls-overlay",
-        "standalone",
-        "minimal-ui"
-    ],
-    "background_color": "#08090a",
-    "theme_color": "#0b0b0c",
     "orientation": "any",
-    "categories": [
-        "lifestyle",
-        "education",
-        "utilities"
-    ],
+    "background_color": "#14110d",
+    "theme_color": "#14110d",
+    "categories": ["lifestyle", "education", "utilities"],
     "icons": [
-        {
-            "src": "images/adhan%20display%20muslim%20prayer%20times%20dashboard%20logo.png",
-            "sizes": "1024x1024",
-            "type": "image/png",
-            "purpose": "any"
-        }
+        { "src": "images/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+        { "src": "images/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+        { "src": "images/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    ],
+    "shortcuts": [
+        { "name": "Prayer times", "url": "./#prayer", "icons": [{ "src": "images/icons/icon-192.png", "sizes": "192x192" }] },
+        { "name": "Quran", "url": "./#quran", "icons": [{ "src": "images/icons/icon-192.png", "sizes": "192x192" }] },
+        { "name": "Display mode", "url": "./#display", "icons": [{ "src": "images/icons/icon-192.png", "sizes": "192x192" }] }
     ]
 }

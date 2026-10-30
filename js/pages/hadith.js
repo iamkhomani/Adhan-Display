@@ -1,1824 +1,555 @@
-const API_BASE = 'https://ummahapi.com/api/hadith';
+/*
+ * Hadith: browse collections, read one hadith at a time, search, bookmark
+ * and share. Data from ummahapi.com.
+ */
 
-const STORAGE_KEY = 'adhan_hadith_bookmarks';
+import { esc, highlight } from '../core/util.js';
+import { icon } from '../core/icons.js';
+import { store } from '../core/storage.js';
+import { spinner, emptyState, shareText, toast } from '../core/ui.js';
+import { fetchJson, cachedJson, ENDPOINTS } from '../services/api.js';
+import { HADITH_COLLECTIONS } from '../data/content.js';
+import { pageHeader } from './components.js';
 
-const DEFAULT_COLLECTION = 'bukhari';
+const SITE = 'https://adhandisplay.com/';
 
-const FALLBACK_COLLECTIONS = [
-    {
-        key: 'bukhari',
-        name: 'Sahih al-Bukhari',
-        arabic_name: 'صحيح البخاري',
-        author: 'Imam Bukhari',
-        reliability: 'Sahih',
-        total_hadiths: 7580
-    },
-    {
-        key: 'muslim',
-        name: 'Sahih Muslim',
-        arabic_name: 'صحيح مسلم',
-        author: 'Imam Muslim',
-        reliability: 'Sahih',
-        total_hadiths: 7360
-    },
-    {
-        key: 'abudawud',
-        name: 'Sunan Abu Dawud',
-        arabic_name: 'سنن أبي داود',
-        author: 'Abu Dawud',
-        reliability: 'Hasan/Sahih',
-        total_hadiths: 5272
-    },
-    {
-        key: 'tirmidhi',
-        name: 'Jami at-Tirmidhi',
-        arabic_name: 'جامع الترمذي',
-        author: 'Imam Tirmidhi',
-        reliability: 'Hasan/Sahih',
-        total_hadiths: 3926
-    },
-    {
-        key: 'ibnmajah',
-        name: 'Sunan Ibn Majah',
-        arabic_name: 'سنن ابن ماجه',
-        author: 'Ibn Majah',
-        reliability: 'Hasan/Sahih',
-        total_hadiths: 4340
-    },
-    {
-        key: 'nasai',
-        name: "Sunan an-Nasa'i",
-        arabic_name: 'سنن النسائي',
-        author: "Imam an-Nasa'i",
-        reliability: 'Sahih',
-        total_hadiths: 5679
-    },
-    {
-        key: 'malik',
-        name: 'Muwatta Malik',
-        arabic_name: 'موطأ مالك',
-        author: 'Imam Malik',
-        reliability: 'Sahih',
-        total_hadiths: 1829
+const state = {
+    collections: HADITH_COLLECTIONS,
+    collection: 'bukhari',
+    hadith: null,
+    position: null,
+    loading: false,
+    error: '',
+    query: '',
+    results: null,
+    showSaved: false
+};
+
+let requestId = 0;
+
+/* ---------------------------------------------------------------
+ * API normalisation (tolerant of small differences in the response)
+ * ------------------------------------------------------------- */
+
+function text(...values) {
+    for (const value of values) {
+        if (typeof value === 'string' && value.trim()) {
+            return value.trim();
+        }
     }
-];
-
-let collections = [...FALLBACK_COLLECTIONS];
-let selectedCollection = DEFAULT_COLLECTION;
-let currentHadith = null;
-let searchResults = [];
-let loading = false;
-let errorMessage = '';
-let searchQuery = '';
-let showBookmarks = false;
-let goToNumber = '';
-
-function escapeHtml(value = '') {
-    return String(value)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+    return '';
 }
 
-function getBookmarks() {
-    try {
-        const data = JSON.parse(
-            localStorage.getItem(STORAGE_KEY) || '[]'
-        );
-
-        return Array.isArray(data) ? data : [];
-    } catch {
-        return [];
+function deepText(object, pattern) {
+    if (!object || typeof object !== 'object') {
+        return '';
     }
+    for (const [key, value] of Object.entries(object)) {
+        if (pattern.test(key) && typeof value === 'string' && value.trim().length > 20) {
+            return value.trim();
+        }
+    }
+    return '';
 }
 
-function saveBookmarks(items) {
-    localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(items)
-    );
+function unwrap(payload) {
+    let data = payload?.data !== undefined ? payload.data : payload;
+    if (data?.hadith && typeof data.hadith === 'object' && !Array.isArray(data.hadith)) {
+        data = data.hadith;
+    }
+    return data;
 }
 
-function hadithId(hadith) {
-    if (!hadith) return '';
+function listFrom(payload) {
+    const data = payload?.data !== undefined ? payload.data : payload;
+    const list = data?.hadiths || data?.results || data?.items || data?.data || (Array.isArray(data) ? data : []);
+    return Array.isArray(list) ? list : [];
+}
 
-    const collection =
-        hadith.collection ||
-        hadith.collectionKey ||
-        selectedCollection;
+function normalise(raw, fallbackCollection) {
+    const source = raw?.hadith && typeof raw.hadith === 'object' ? raw.hadith : raw;
 
-    let number =
-        hadith.hadithNumber ??
-        hadith.number ??
-        '';
-
-    if (!number) {
-        const match =
-            String(hadith.id || '').match(/(\\d+)$/);
-
-        number =
-            match ? match[1] : (hadith.id || '');
+    if (!source || typeof source !== 'object') {
+        return null;
     }
 
-    return `${collection}:${number}`;
-}
+    const english = text(
+        source.hadith_english, source.english?.text, source.english, source.text_en, source.englishText,
+        source.english_text, source.translation, source.text?.en, typeof source.text === 'string' ? source.text : ''
+    ) || deepText(source, /english|_en$/i);
 
-function isBookmarked(hadith) {
-    const id = hadithId(hadith);
+    const arabic = text(
+        source.hadith_arabic, source.arabic?.text, source.arabic, source.text_ar, source.arabicText,
+        source.arabic_text, source.text?.ar
+    ) || deepText(source, /arabic|_ar$/i);
 
-    return getBookmarks().some(
-        item => item.id === id
-    );
-}
+    let number = source.hadith_number ?? source.hadithNumber ?? source.number ?? source.hadith_no ?? '';
 
-function toggleBookmark(hadith) {
-    if (!hadith) return;
-
-    const id = hadithId(hadith);
-    const bookmarks = getBookmarks();
-
-    const existing = bookmarks.findIndex(
-        item => item.id === id
-    );
-
-    if (existing >= 0) {
-        bookmarks.splice(existing, 1);
-    } else {
-        bookmarks.unshift({
-            id,
-            collection:
-                hadith.collection ||
-                hadith.collectionKey ||
-                selectedCollection,
-            collectionName:
-                hadith.collectionName ||
-                getCollectionName(
-                    hadith.collection ||
-                    hadith.collectionKey ||
-                    selectedCollection
-                ),
-            number:
-                hadith.hadithNumber ??
-                hadith.number ??
-                hadith.id ??
-                '',
-            arabic:
-                hadith.arabic ||
-                hadith.arabicText ||
-                hadith.textArabic ||
-                '',
-            english:
-                hadith.english ||
-                hadith.translation ||
-                hadith.text ||
-                '',
-            narrator:
-                hadith.narrator ||
-                '',
-            savedAt:
-                new Date().toISOString()
-        });
+    if (number === '' && source.id !== undefined) {
+        number = String(source.id).match(/(\d+(?:\.\d+)?)$/)?.[1] || '';
     }
 
-    saveBookmarks(bookmarks);
-}
+    const collection = text(source.collection_key, typeof source.collection === 'string' ? source.collection : '',
+        source.collection?.key, source.book_key) || fallbackCollection;
 
-function getCollectionName(key) {
-    return (
-        collections.find(
-            item => item.key === key
-        )?.name ||
-        key
-    );
-}
-
-function getCollection(key) {
-    return (
-        collections.find(
-            item => item.key === key
-        ) ||
-        FALLBACK_COLLECTIONS.find(
-            item => item.key === key
-        )
-    );
-}
-
-function extractData(payload) {
-    if (!payload) return null;
-
-    if (payload.data !== undefined) {
-        return payload.data;
+    if (!english && !arabic) {
+        return null;
     }
-
-    return payload;
-}
-
-function normalizeHadith(raw, collectionKey = selectedCollection) {
-    if (!raw) return null;
-
-    let source = raw;
-
-    if (raw.hadith) {
-        source = raw.hadith;
-    }
-
-    if (raw.data && raw.data.hadith) {
-        source = raw.data.hadith;
-    }
-
-    const collection =
-        source.collection ||
-        source.collectionKey ||
-        raw.collection ||
-        collectionKey;
-
-    let number =
-        source.hadithNumber ??
-        source.hadith_number ??
-        source.number ??
-        raw.hadithNumber ??
-        raw.hadith_number ??
-        raw.number ??
-        '';
-
-    if (!number) {
-        const possibleId =
-            source.id ??
-            raw.id ??
-            '';
-
-        const match =
-            String(possibleId).match(/(\\d+)$/);
-
-        number =
-            match ? match[1] : possibleId;
-    }
-
-    const arabic =
-        source.arabic ||
-        source.arabicText ||
-        source.textArabic ||
-        source.text_ar ||
-        source.arabic_text ||
-        '';
-
-    const english =
-        source.english ||
-        source.translation ||
-        source.englishText ||
-        source.textEnglish ||
-        source.text_en ||
-        source.text ||
-        '';
-
-    const narrator =
-        source.narrator ||
-        source.narratorName ||
-        source.rawi ||
-        '';
-
-    const book =
-        source.book ||
-        source.bookName ||
-        source.book_name ||
-        '';
-
-    const chapter =
-        source.chapter ||
-        source.chapterName ||
-        source.chapter_name ||
-        '';
-
-    const sourceName =
-        source.source ||
-        source.reference ||
-        source.grade ||
-        '';
 
     return {
-        ...source,
         collection,
-        collectionName:
-            source.collectionName ||
-            getCollectionName(collection),
-        hadithNumber: number,
-        arabic,
+        number: String(number),
         english,
-        narrator,
-        book,
-        chapter,
-        sourceName,
-        id:
-            source.id ||
-            `${collection}:${number}`
+        arabic,
+        narrator: text(source.narrator, source.english?.narrator, source.narrator_english, source.narrated_by),
+        book: text(source.book_name, typeof source.book === 'string' ? source.book : '', source.book?.name, source.bookName),
+        chapter: text(source.chapter_english, source.chapter_name, typeof source.chapter === 'string' ? source.chapter : '', source.chapter?.name, source.chapterName),
+        grade: text(source.grade, source.grades?.[0]?.grade, source.status)
     };
 }
 
-async function fetchJson(url) {
-    const response = await fetch(url, {
-        headers: {
-            Accept: 'application/json'
-        }
-    });
-
-    if (!response.ok) {
-        throw new Error(
-            `${response.status} ${response.statusText}`
-        );
-    }
-
-    return response.json();
+function collectionName(key) {
+    return state.collections.find(item => item.key === key)?.name || key;
 }
 
 async function loadCollections() {
     try {
-        const payload = await fetchJson(
-            `${API_BASE}/collections`
-        );
+        const payload = await cachedJson('hadith_collections2', `${ENDPOINTS.hadith}/collections`, 24 * 7, json => json);
+        const data = payload?.data !== undefined ? payload.data : payload;
+        const list = data?.collections || (Array.isArray(data) ? data : []);
 
-        const data = extractData(payload);
-
-        if (Array.isArray(data?.collections)) {
-            collections = data.collections;
+        if (list.length) {
+            state.collections = list.map(item => {
+                const fallback = HADITH_COLLECTIONS.find(entry => entry.key === (item.key || item.slug || item.id));
+                return {
+                    key: item.key || item.slug || item.id,
+                    name: fallback?.name || item.name || item.english_name || item.key,
+                    arabic: item.arabic_name || fallback?.arabic || '',
+                    total: Number(item.total_hadiths || item.total || item.count) || null
+                };
+            }).filter(item => item.key);
         }
-    } catch (error) {
-        console.warn(
-            '[Hadith] Could not load collections',
-            error
-        );
+    } catch {
+        /* Keep the built-in list. */
     }
 }
 
-async function loadSpecificHadithNumber(
-    collection,
-    number
-) {
-    if (
-        !collection ||
-        !Number.isInteger(Number(number)) ||
-        Number(number) < 1
-    ) {
+async function load(kind, value, rerender) {
+    const id = ++requestId;
+    state.loading = true;
+    state.error = '';
+    rerender();
+
+    const collection = state.collection;
+    let url;
+
+    if (kind === 'random') {
+        url = `${ENDPOINTS.hadith}/random?collection=${encodeURIComponent(collection)}`;
+    } else if (kind === 'position') {
+        url = `${ENDPOINTS.hadith}/${encodeURIComponent(collection)}?page=${value}&limit=1`;
+    } else {
+        url = `${ENDPOINTS.hadith}/${encodeURIComponent(collection)}/${encodeURIComponent(value)}`;
+    }
+
+    try {
+        const payload = await fetchJson(url);
+
+        if (id !== requestId) {
+            return;
+        }
+
+        const raw = kind === 'position' ? listFrom(payload)[0] : unwrap(payload);
+        const hadith = normalise(raw, collection);
+
+        if (!hadith) {
+            throw new Error(kind === 'position' ? 'There are no more hadith in this collection.' : 'This hadith was not found.');
+        }
+
+        state.hadith = hadith;
+        state.collection = hadith.collection || collection;
+        state.position = kind === 'position' ? Number(value) : null;
+
+        const hash = `#hadith/${state.collection}/${hadith.number}`;
+        if (hadith.number && location.hash !== hash) {
+            history.replaceState(null, '', hash);
+        }
+    } catch (error) {
+        if (id === requestId) {
+            state.error = error.status === 404 ? 'This hadith was not found. Try another number.' : error.message;
+        }
+    } finally {
+        if (id === requestId) {
+            state.loading = false;
+            rerender();
+        }
+    }
+}
+
+async function search(query, rerender) {
+    state.query = query;
+
+    if (!query) {
+        state.results = null;
+        rerender();
         return;
     }
 
-    const numericNumber =
-        Number(number);
-
-    loading = true;
-    errorMessage = '';
-
-    renderUpdate();
+    state.results = 'loading';
+    rerender();
 
     try {
-
-        const url =
-            `${API_BASE}/${encodeURIComponent(collection)}` +
-            `/${encodeURIComponent(numericNumber)}`;
-
-        const payload =
-            await fetchJson(url);
-
-        const data =
-            extractData(payload);
-
-        const normalized =
-            normalizeHadith(
-                data,
-                collection
-            );
-
-        if (!normalized) {
-            throw new Error(
-                `Hadith ${numericNumber} could not be normalized.`
-            );
+        const params = new URLSearchParams({ q: query, limit: '25' });
+        if (state.collection) {
+            params.set('collection', state.collection);
         }
-
-        currentHadith =
-            normalized;
-
-        selectedCollection =
-            collection;
-
-        /*
-         * We know the actual Hadith number here.
-         * It is NOT necessarily the same thing as
-         * the pagination position.
-         */
-
-        currentHadith._readerHadithNumber =
-            numericNumber;
-
-        /*
-         * Do not invent a pagination position.
-         * Previous/Next will use the known position
-         * only when available.
-         */
-
-        errorMessage = '';
-
+        const payload = await fetchJson(`${ENDPOINTS.hadith}/search?${params}`);
+        state.results = listFrom(payload).map(item => normalise(item, state.collection)).filter(Boolean);
     } catch (error) {
+        state.results = { error: error.message };
+    }
 
-        console.error(
-            '[Hadith] Specific number load failed',
-            {
-                collection,
-                number: numericNumber,
-                error
+    rerender();
+}
+
+/* ---------------------------------------------------------------
+ * Bookmarks (same key as before: adhan_hadith_bookmarks)
+ * ------------------------------------------------------------- */
+
+function bookmarks() {
+    const list = store.get('hadith_bookmarks', []);
+    return Array.isArray(list) ? list : [];
+}
+
+function bookmarkId(hadith) {
+    return `${hadith.collection}:${hadith.number}`;
+}
+
+function isSaved(hadith) {
+    return bookmarks().some(item => item.id === bookmarkId(hadith));
+}
+
+function toggleSaved(hadith) {
+    const list = bookmarks();
+    const id = bookmarkId(hadith);
+    const index = list.findIndex(item => item.id === id);
+
+    if (index >= 0) {
+        list.splice(index, 1);
+    } else {
+        list.unshift({
+            id,
+            collection: hadith.collection,
+            collectionName: collectionName(hadith.collection),
+            number: hadith.number,
+            arabic: hadith.arabic,
+            english: hadith.english,
+            narrator: hadith.narrator,
+            savedAt: new Date().toISOString()
+        });
+    }
+
+    store.set('hadith_bookmarks', list);
+    return index < 0;
+}
+
+/* ---------------------------------------------------------------
+ * Rendering
+ * ------------------------------------------------------------- */
+
+function readerHTML() {
+    if (state.loading) {
+        return `<article class="panel hadith-card">${spinner('Loading hadith')}</article>`;
+    }
+
+    if (state.error) {
+        return `<article class="panel hadith-card">${emptyState({
+            title: state.error,
+            action: `<button type="button" class="button button-primary" data-hadith="random">${icon('refresh')} Show a random hadith</button>`
+        })}</article>`;
+    }
+
+    const hadith = state.hadith;
+
+    if (!hadith) {
+        return `<article class="panel hadith-card">${spinner('Loading hadith')}</article>`;
+    }
+
+    const saved = isSaved(hadith);
+    const meta = [hadith.book, hadith.chapter].filter(Boolean);
+
+    return `
+        <article class="panel hadith-card" aria-labelledby="hadith-title">
+            <header class="hadith-head">
+                <div>
+                    <p class="hadith-collection">${esc(collectionName(hadith.collection))}</p>
+                    <h2 id="hadith-title" class="hadith-number">Hadith ${esc(hadith.number)}</h2>
+                </div>
+                <div class="hadith-tools">
+                    <button type="button" class="icon-button ${saved ? 'is-on' : ''}" data-hadith="save" aria-pressed="${saved}" aria-label="${saved ? 'Remove from saved' : 'Save hadith'}">${icon(saved ? 'bookmarkFilled' : 'bookmark')}</button>
+                    <button type="button" class="icon-button" data-hadith="share" aria-label="Share hadith">${icon('share')}</button>
+                </div>
+            </header>
+
+            ${hadith.narrator ? `<p class="hadith-narrator">${esc(hadith.narrator)}</p>` : ''}
+            ${hadith.arabic ? `<p class="hadith-arabic" lang="ar" dir="rtl">${esc(hadith.arabic)}</p>` : ''}
+            ${hadith.english ? `<div class="hadith-english">${esc(hadith.english).replace(/\n+/g, '<br>')}</div>` : ''}
+
+            <footer class="hadith-foot">
+                ${meta.length ? `<p class="hadith-meta">${meta.map(esc).join('<br>')}</p>` : ''}
+                ${hadith.grade ? `<span class="badge">${esc(hadith.grade)}</span>` : ''}
+            </footer>
+
+            <nav class="hadith-nav" aria-label="Browse hadith">
+                <button type="button" class="button button-ghost" data-hadith="prev" ${canGoBack() ? '' : 'disabled'}>${icon('left', { size: 18 })} Previous</button>
+                <button type="button" class="button button-ghost" data-hadith="random">${icon('refresh', { size: 18 })} Random</button>
+                <button type="button" class="button button-ghost" data-hadith="next">Next ${icon('right', { size: 18 })}</button>
+            </nav>
+
+            <form class="goto" data-hadith-goto>
+                <label for="hadith-number">Go to number</label>
+                <input id="hadith-number" name="number" inputmode="decimal" autocomplete="off" placeholder="e.g. 52">
+                <button type="submit" class="button button-ghost">Go</button>
+            </form>
+        </article>
+    `;
+}
+
+function canGoBack() {
+    if (state.position) {
+        return state.position > 1;
+    }
+    return Number(state.hadith?.number) > 1;
+}
+
+function resultsHTML() {
+    if (!state.query || state.results === null) {
+        return '';
+    }
+
+    if (state.results === 'loading') {
+        return `<section class="panel">${spinner('Searching')}</section>`;
+    }
+
+    if (state.results.error) {
+        return `<section class="panel">${emptyState({ title: 'Search failed', text: state.results.error })}</section>`;
+    }
+
+    return `
+        <section class="panel search-results" aria-live="polite">
+            <header class="panel-head">
+                <h2 class="panel-title">${state.results.length ? `${state.results.length} results in ${esc(collectionName(state.collection))}` : 'No results'}</h2>
+                <button type="button" class="link-button" data-hadith="clear-search">Clear</button>
+            </header>
+            ${state.results.length ? `<ol class="result-list">
+                ${state.results.map((item, index) => `
+                    <li><button type="button" class="result" data-result="${index}">
+                        <strong>${esc(collectionName(item.collection))} ${esc(item.number)}</strong>
+                        <span>${highlight(item.english.slice(0, 320) + (item.english.length > 320 ? '…' : ''), state.query)}</span>
+                    </button></li>`).join('')}
+            </ol>` : '<p class="panel-note">Search works in English. Try a single key word such as "patience" or "prayer", or choose another collection.</p>'}
+        </section>
+    `;
+}
+
+function savedHTML() {
+    if (!state.showSaved) {
+        return '';
+    }
+
+    const list = bookmarks();
+
+    return `
+        <section class="panel saved" aria-labelledby="saved-title">
+            <header class="panel-head">
+                <h2 id="saved-title" class="panel-title">Saved hadith</h2>
+                <button type="button" class="link-button" data-hadith="hide-saved">Close</button>
+            </header>
+            ${list.length ? `<ol class="result-list">
+                ${list.map((item, index) => `
+                    <li><button type="button" class="result" data-saved="${index}">
+                        <strong>${esc(item.collectionName || collectionName(item.collection))} ${esc(item.number)}</strong>
+                        <span>${esc((item.english || item.arabic || '').slice(0, 220))}${(item.english || '').length > 220 ? '…' : ''}</span>
+                    </button></li>`).join('')}
+            </ol>` : '<p class="panel-note">Tap the bookmark icon on a hadith to save it here.</p>'}
+        </section>
+    `;
+}
+
+function bodyHTML() {
+    return `
+        ${savedHTML()}
+        ${resultsHTML()}
+        ${readerHTML()}
+        <p class="fine-print">Texts and gradings come from UmmahAPI. For detailed questions, consult a qualified scholar and the printed collections.</p>
+    `;
+}
+
+function collectionsHTML() {
+    return `
+        <div class="chips-scroll" role="list" aria-label="Collections">
+            ${state.collections.map(item => `
+                <button type="button" role="listitem" class="chip ${item.key === state.collection ? 'is-on' : ''}" data-collection="${esc(item.key)}" aria-pressed="${item.key === state.collection}">
+                    ${esc(item.name)}
+                </button>
+            `).join('')}
+        </div>
+    `;
+}
+
+export const hadithPage = {
+    title: 'Hadith',
+
+    render() {
+        return `
+            <div class="page hadith-page">
+                ${pageHeader('Hadith', 'Read, search and save hadith from the major collections.',
+                    `<button type="button" class="button button-ghost" data-hadith="show-saved">${icon('bookmark', { size: 18 })} Saved <span class="count tnum" data-saved-count>${bookmarks().length}</span></button>`)}
+                <form class="search-bar" data-hadith-search role="search">
+                    ${icon('search', { size: 18 })}
+                    <input type="search" name="q" placeholder="Search in English" value="${esc(state.query)}" aria-label="Search hadith">
+                    <button type="submit" class="button button-primary">Search</button>
+                </form>
+                <div data-collections>${collectionsHTML()}</div>
+                <div class="hadith-body" data-hadith-body>${bodyHTML()}</div>
+            </div>
+        `;
+    },
+
+    mount(root, path) {
+        const body = root.querySelector('[data-hadith-body]');
+        const rerender = () => {
+            if (!body.isConnected) {
+                return;
             }
-        );
-
-        errorMessage =
-            'Deze hadith kon niet worden geladen. Probeer opnieuw.';
-
-    } finally {
-
-        loading = false;
-
-        renderUpdate();
-    }
-}
-
-
-async function loadFirst(collection = selectedCollection) {
-    await loadByPosition(collection, 1);
-}
-
-async function loadRandom(collection = selectedCollection) {
-    loading = true;
-    errorMessage = '';
-    renderUpdate();
-
-    try {
-        const payload = await fetchJson(
-            `${API_BASE}/random?collection=${encodeURIComponent(collection)}`
-        );
-
-        const data = extractData(payload);
-
-        currentHadith = normalizeHadith(
-            data,
-            collection
-        );
-
-        if (!currentHadith) {
-            throw new Error(
-                'The Hadith API returned no hadith.'
-            );
-        }
-
-        selectedCollection =
-            currentHadith.collection ||
-            collection;
-
-    } catch (error) {
-        console.error(
-            '[Hadith] Random load failed',
-            error
-        );
-
-        errorMessage =
-            'De hadith kon niet worden geladen. Probeer opnieuw.';
-    } finally {
-        loading = false;
-        renderUpdate();
-    }
-}
-
-async function loadByPosition(
-    collection,
-    position
-) {
-    if (!collection || !position || position < 1) {
-        return;
-    }
-
-    loading = true;
-    errorMessage = '';
-    renderUpdate();
-
-    try {
-        const url =
-            `${API_BASE}/${encodeURIComponent(collection)}` +
-            `?page=${encodeURIComponent(position)}` +
-            `&limit=1`;
-
-        const payload =
-            await fetchJson(url);
-
-        const data =
-            extractData(payload);
-
-        const items =
-            data?.hadiths ||
-            data?.results ||
-            data?.items ||
-            data?.data ||
-            (Array.isArray(data) ? data : []);
-
-        const item =
-            Array.isArray(items)
-                ? items[0]
-                : null;
-
-        if (!item) {
-            throw new Error(
-                `No hadith found at position ${position}`
-            );
-        }
-
-        currentHadith =
-            normalizeHadith(
-                item,
-                collection
-            );
-
-        currentHadith._readerPosition =
-            position;
-
-        selectedCollection =
-            collection;
-
-        if (!currentHadith) {
-            throw new Error(
-                'Could not normalize hadith.'
-            );
-        }
-
-    } catch (error) {
-
-        console.error(
-            '[Hadith] Paginated load failed',
-            {
-                collection,
-                position,
-                error
+            body.innerHTML = bodyHTML();
+            const count = root.querySelector('[data-saved-count]');
+            if (count) {
+                count.textContent = bookmarks().length;
             }
-        );
+        };
 
-        errorMessage =
-            'Deze hadith kon niet worden geladen.';
+        const [collection, number] = path;
 
-    } finally {
-
-        loading = false;
-        renderUpdate();
-    }
-}
-
-async function loadSpecific(
-    collection,
-    number
-) {
-    if (!number || Number(number) < 1) {
-        return;
-    }
-
-    loading = true;
-    errorMessage = '';
-    renderUpdate();
-
-    try {
-        const payload = await fetchJson(
-            `${API_BASE}/${encodeURIComponent(collection)}/${encodeURIComponent(number)}`
-        );
-
-        const data = extractData(payload);
-
-        currentHadith = normalizeHadith(
-            data,
-            collection
-        );
-
-        selectedCollection = collection;
-
-        if (!currentHadith) {
-            throw new Error(
-                'The Hadith API returned no hadith.'
-            );
-        }
-    } catch (error) {
-        console.error(
-            '[Hadith] Specific hadith failed',
-            error
-        );
-
-        errorMessage =
-            'Deze hadith kon niet worden geladen.';
-    } finally {
-        loading = false;
-        renderUpdate();
-    }
-}
-
-async function searchHadith(query) {
-    const clean = String(query || '').trim();
-
-    if (!clean) {
-        searchResults = [];
-        searchQuery = '';
-        renderUpdate();
-        return;
-    }
-
-    loading = true;
-    errorMessage = '';
-    searchQuery = clean;
-    renderUpdate();
-
-    try {
-        const params = new URLSearchParams({
-            q: clean,
-            limit: '12'
+        loadCollections().then(() => {
+            const box = root.querySelector('[data-collections]');
+            if (box) {
+                box.innerHTML = collectionsHTML();
+            }
         });
 
-        if (selectedCollection) {
-            params.set(
-                'collection',
-                selectedCollection
-            );
+        if (collection && number && state.collections.some(item => item.key === collection)) {
+            state.collection = collection;
+            if (state.hadith?.collection !== collection || state.hadith?.number !== number) {
+                load('number', number, rerender);
+            }
+        } else if (!state.hadith && !state.loading) {
+            load('position', 1, rerender);
         }
 
-        const payload = await fetchJson(
-            `${API_BASE}/search?${params.toString()}`
-        );
-
-        const data = extractData(payload);
-
-        const results =
-            data?.results ||
-            data?.hadiths ||
-            data?.items ||
-            (Array.isArray(data) ? data : []);
-
-        searchResults = Array.isArray(results)
-            ? results
-                .map(item =>
-                    normalizeHadith(
-                        item,
-                        selectedCollection
-                    )
-                )
-                .filter(Boolean)
-            : [];
-    } catch (error) {
-        console.error(
-            '[Hadith] Search failed',
-            error
-        );
-
-        errorMessage =
-            'Zoeken naar hadiths is mislukt.';
-        searchResults = [];
-    } finally {
-        loading = false;
-        renderUpdate();
-    }
-}
-
-function renderCollections() {
-    return collections
-        .map(collection => {
-            const active =
-                collection.key === selectedCollection
-                    ? 'is-active'
-                    : '';
-
-            const count =
-                Number(
-                    collection.total_hadiths ||
-                    collection.total ||
-                    0
-                ).toLocaleString();
-
-            return `
-                <button
-                    class="hadith-collection-chip ${active}"
-                    type="button"
-                    data-hadith-collection="${escapeHtml(collection.key)}"
-                >
-                    <span>
-                        ${escapeHtml(collection.name)}
-                    </span>
-                    <small>${count}</small>
-                </button>
-            `;
-        })
-        .join('');
-}
-
-function renderHadithCard() {
-    if (loading) {
-        return `
-            <section class="hadith-reader-card is-loading">
-                <div class="hadith-loading">
-                    <span class="hadith-spinner"></span>
-                    <strong>Hadith wordt geladen...</strong>
-                    <span>Even geduld.</span>
-                </div>
-            </section>
-        `;
-    }
-
-    if (errorMessage) {
-        return `
-            <section class="hadith-reader-card">
-                <div class="hadith-empty">
-                    <strong>${escapeHtml(errorMessage)}</strong>
-                    <button
-                        class="hadith-button primary"
-                        type="button"
-                        data-hadith-random
-                    >
-                        Probeer opnieuw
-                    </button>
-                </div>
-            </section>
-        `;
-    }
-
-    if (!currentHadith) {
-        return `
-            <section class="hadith-reader-card">
-                <div class="hadith-empty">
-                    <strong>Kies een collectie</strong>
-                    <span>
-                        Kies hierboven een collectie of laad een willekeurige hadith.
-                    </span>
-                    <button
-                        class="hadith-button primary"
-                        type="button"
-                        data-hadith-random
-                    >
-                        Random Hadith
-                    </button>
-                </div>
-            </section>
-        `;
-    }
-
-    let number =
-        currentHadith.hadithNumber ||
-        currentHadith.number ||
-        '';
-
-    if (!number) {
-        const match =
-            String(currentHadith.id || '').match(/(\\d+)$/);
-
-        number =
-            match
-                ? match[1]
-                : (currentHadith.id || '');
-    }
-
-    const bookmarked =
-        isBookmarked(currentHadith);
-
-    const collectionName =
-        currentHadith.collectionName ||
-        getCollectionName(
-            currentHadith.collection
-        );
-
-    return `
-        <section class="hadith-reader-card">
-
-            <div class="hadith-reader-top">
-                <div>
-                    <span class="hadith-eyebrow">
-                        ${escapeHtml(collectionName)}
-                    </span>
-
-                    <h2>
-                        Hadith ${escapeHtml(number)}
-                    </h2>
-                </div>
-
-                <button
-                    class="hadith-icon-button ${bookmarked ? 'is-active' : ''}"
-                    type="button"
-                    title="${bookmarked ? 'Verwijder bookmark' : 'Bewaar hadith'}"
-                    aria-label="${bookmarked ? 'Verwijder bookmark' : 'Bewaar hadith'}"
-                    data-hadith-bookmark
-                >
-                    ${bookmarked ? '★' : '☆'}
-                </button>
-            </div>
-
-            ${
-                currentHadith.arabic
-                    ? `
-                        <div
-                            class="hadith-arabic"
-                            dir="rtl"
-                            lang="ar"
-                        >
-                            ${escapeHtml(
-                                currentHadith.arabic
-                            )}
-                        </div>
-                    `
-                    : ''
-            }
-
-            ${
-                currentHadith.english
-                    ? `
-                        <div class="hadith-translation">
-                            ${escapeHtml(
-                                currentHadith.english
-                            )}
-                        </div>
-                    `
-                    : ''
-            }
-
-            ${
-                currentHadith.narrator
-                    ? `
-                        <div class="hadith-narrator">
-                            <span>Narrated by</span>
-                            <strong>
-                                ${escapeHtml(
-                                    currentHadith.narrator
-                                )}
-                            </strong>
-                        </div>
-                    `
-                    : ''
-            }
-
-            ${
-                currentHadith.book ||
-                currentHadith.chapter ||
-                currentHadith.sourceName
-                    ? `
-                        <div class="hadith-reference">
-                            ${
-                                currentHadith.book
-                                    ? `
-                                        <span>
-                                            Book:
-                                            ${escapeHtml(
-                                                currentHadith.book
-                                            )}
-                                        </span>
-                                    `
-                                    : ''
-                            }
-
-                            ${
-                                currentHadith.chapter
-                                    ? `
-                                        <span>
-                                            Chapter:
-                                            ${escapeHtml(
-                                                currentHadith.chapter
-                                            )}
-                                        </span>
-                                    `
-                                    : ''
-                            }
-
-                            ${
-                                currentHadith.sourceName
-                                    ? `
-                                        <span>
-                                            ${escapeHtml(
-                                                currentHadith.sourceName
-                                            )}
-                                        </span>
-                                    `
-                                    : ''
-                            }
-                        </div>
-                    `
-                    : ''
-            }
-
-            <div class="hadith-reader-actions">
-
-                <button
-                    class="hadith-button"
-                    type="button"
-                    data-hadith-previous
-                    ${
-                        (
-                            Number(
-                                currentHadith._readerPosition ||
-                                0
-                            ) > 1
-                            ||
-                            Number(
-                                currentHadith._readerHadithNumber ||
-                                currentHadith.hadithNumber ||
-                                currentHadith.number ||
-                                0
-                            ) > 1
-                        )
-                            ? ''
-                            : 'disabled'
-                    }
-                >
-                    ← Previous
-                </button>
-
-                <button
-                    class="hadith-button"
-                    type="button"
-                    data-hadith-share
-                >
-                    Share
-                </button>
-
-                <button
-                    class="hadith-button"
-                    type="button"
-                    data-hadith-random
-                >
-                    Random
-                </button>
-
-                <button
-                    class="hadith-button"
-                    type="button"
-                    data-hadith-next
-                >
-                    Next →
-                </button>
-
-            </div>
-
-            <div class="hadith-go-to">
-                <span>Go to Hadith</span>
-
-                <div class="hadith-go-to-controls">
-                    <input
-                        type="number"
-                        min="1"
-                        inputmode="numeric"
-                        placeholder="Hadith number"
-                        value="${escapeHtml(goToNumber)}"
-                        data-hadith-go-input
-                    />
-
-                    <button
-                        class="hadith-button"
-                        type="button"
-                        data-hadith-go
-                    >
-                        Go
-                    </button>
-                </div>
-            </div>
-
-        </section>
-    `;
-}
-
-
-
-/* ============================================================
- * Search Result Highlighting
- * ============================================================ */
-
-function escapeSearchRegex(value) {
-    return String(value || '').replace(
-        /[.*+?^${}()|[\]\\]/g,
-        '\\$&'
-    );
-}
-
-function highlightSearchText(text, query) {
-    const source = String(text || '');
-    const cleanQuery = String(query || '').trim();
-
-    if (!source) {
-        return '';
-    }
-
-    if (!cleanQuery) {
-        return escapeHtml(source);
-    }
-
-    const regex = new RegExp(
-        `(${escapeSearchRegex(cleanQuery)})`,
-        'gi'
-    );
-
-    let output = '';
-    let lastIndex = 0;
-    let match;
-
-    while ((match = regex.exec(source)) !== null) {
-        const start = match.index;
-        const end = start + match[0].length;
-
-        output += escapeHtml(
-            source.slice(lastIndex, start)
-        );
-
-        output += `
-            <mark class="adhan-search-highlight">
-                ${escapeHtml(match[0])}
-            </mark>
-        `;
-
-        lastIndex = end;
-
-        if (match[0].length === 0) {
-            regex.lastIndex++;
-        }
-    }
-
-    output += escapeHtml(
-        source.slice(lastIndex)
-    );
-
-    return output;
-}
-
-function renderSearchResults() {
-    if (!searchQuery) {
-        return '';
-    }
-
-    if (loading) {
-        return '';
-    }
-
-    if (!searchResults.length) {
-        return `
-            <section class="hadith-search-results">
-                <div class="hadith-search-empty">
-                    Geen resultaten gevonden voor
-                    <strong>
-                        "${escapeHtml(searchQuery)}"
-                    </strong>
-                </div>
-            </section>
-        `;
-    }
-
-    return `
-        <section class="hadith-search-results">
-
-            <div class="hadith-section-heading">
-                <div>
-                    <span>SEARCH RESULTS</span>
-                    <h2>
-                        ${searchResults.length}
-                        resultaten
-                    </h2>
-                </div>
-            </div>
-
-            <div class="hadith-result-list">
-
-                ${searchResults.map((hadith, index) => {
-                    let number =
-                        hadith.hadithNumber ||
-                        hadith.number ||
-                        '';
-
-                    if (!number) {
-                        const match =
-                            String(hadith.id || '').match(/(\\d+)$/);
-
-                        number =
-                            match
-                                ? match[1]
-                                : (hadith.id || '');
-                    }
-
-                    return `
-                        <button
-                            class="hadith-result"
-                            type="button"
-                            data-hadith-result="${index}"
-                        >
-                            <div class="hadith-result-top">
-                                <strong>
-                                    ${escapeHtml(
-                                        hadith.collectionName ||
-                                        getCollectionName(
-                                            hadith.collection
-                                        )
-                                    )}
-                                </strong>
-
-                                <span>
-                                    Hadith
-                                    ${escapeHtml(number)}
-                                </span>
-                            </div>
-
-                            ${
-                                hadith.english
-                                    ? `
-                                        <p>
-                                            ${escapeHtml(
-                                                hadith.english
-                                            )}
-                                        </p>
-                                    `
-                                    : ''
-                            }
-                        </button>
-                    `;
-                }).join('')}
-
-            </div>
-        </section>
-    `;
-}
-
-function renderBookmarks() {
-    const bookmarks = getBookmarks();
-
-    if (!showBookmarks) {
-        return '';
-    }
-
-    return `
-        <section class="hadith-bookmarks">
-
-            <div class="hadith-section-heading">
-                <div>
-                    <span>SAVED</span>
-                    <h2>
-                        Mijn bookmarks
-                    </h2>
-                </div>
-
-                <button
-                    class="hadith-button"
-                    type="button"
-                    data-hadith-close-bookmarks
-                >
-                    Sluiten
-                </button>
-            </div>
-
-            ${
-                bookmarks.length
-                    ? `
-                        <div class="hadith-bookmark-list">
-                            ${bookmarks.map((item, index) => `
-                                <button
-                                    class="hadith-bookmark-item"
-                                    type="button"
-                                    data-hadith-bookmark-result="${index}"
-                                >
-                                    <strong>
-                                        ${escapeHtml(
-                                            item.collectionName ||
-                                            getCollectionName(
-                                                item.collection
-                                            )
-                                        )}
-                                        · ${escapeHtml(
-                                            item.number
-                                        )}
-                                    </strong>
-
-                                    <span>
-                                        ${escapeHtml(
-                                            item.english ||
-                                            item.arabic ||
-                                            ''
-                                        )}
-                                    </span>
-                                </button>
-                            `).join('')}
-                        </div>
-                    `
-                    : `
-                        <div class="hadith-search-empty">
-                            Je hebt nog geen hadiths opgeslagen.
-                        </div>
-                    `
-            }
-
-        </section>
-    `;
-}
-
-export function renderHadithPage() {
-    return `
-        <main class="page-shell hadith-page">
-
-            <section class="hadith-hero">
-
-                <div class="hadith-hero-copy">
-
-                    <span class="hadith-eyebrow">
-                        HADITH COLLECTIONS
-                    </span>
-
-                    <h1>
-                        Learn from the Sunnah.
-                    </h1>
-
-                    <p>
-                        Lees, zoek en bewaar hadiths uit
-                        bekende islamitische collecties.
-                    </p>
-
-                </div>
-
-                <div class="hadith-hero-actions">
-
-                    <button
-                        class="hadith-button primary"
-                        type="button"
-                        data-hadith-random
-                    >
-                        Random Hadith
-                    </button>
-
-                    <button
-                        class="hadith-button"
-                        type="button"
-                        data-hadith-show-bookmarks
-                    >
-                        ★ Bookmarks
-                        <span class="hadith-button-count">
-                            ${getBookmarks().length}
-                        </span>
-                    </button>
-
-                </div>
-
-            </section>
-
-            <section class="hadith-controls">
-
-                <div class="hadith-search">
-
-                    <input
-                        type="search"
-                        class="hadith-search-input"
-                        placeholder="Search hadith..."
-                        value="${escapeHtml(searchQuery)}"
-                        data-hadith-search
-                        autocomplete="off"
-                    />
-
-                    <button
-                        class="hadith-button primary"
-                        type="button"
-                        data-hadith-search-submit
-                    >
-                        Search
-                    </button>
-
-                </div>
-
-                <div class="hadith-collections">
-
-                    <div class="hadith-section-heading">
-                        <div>
-                            <span>COLLECTIONS</span>
-                            <h2>
-                                Browse Hadith
-                            </h2>
-                        </div>
-                    </div>
-
-                    <div class="hadith-collection-list">
-                        ${renderCollections()}
-                    </div>
-
-                </div>
-
-            </section>
-
-            ${renderHadithCard()}
-
-            ${renderSearchResults()}
-
-            ${renderBookmarks()}
-
-            <section class="hadith-note">
-                <strong>About the collections</strong>
-                <span>
-                    Hadith collection names and metadata are
-                    provided by the selected API source.
-                    Always verify detailed scholarly questions
-                    against established hadith references.
-                </span>
-            </section>
-
-        </main>
-    `;
-}
-
-function renderUpdate() {
-    window.dispatchEvent(
-        new CustomEvent(
-            'adhan:hadith-update'
-        )
-    );
-}
-
-async function selectCollection(collection) {
-    selectedCollection = collection;
-    searchResults = [];
-    searchQuery = '';
-    goToNumber = '';
-
-    await loadByPosition(
-        collection,
-        1
-    );
-}
-
-async function goToHadith() {
-    const number = Number(goToNumber);
-
-    if (!Number.isInteger(number) || number < 1) {
-        return;
-    }
-
-    await loadSpecificHadithNumber(
-        selectedCollection,
-        number
-    );
-
-    goToNumber = '';
-}
-
-async function goPrevious() {
-    if (!currentHadith) {
-        return;
-    }
-
-    const collection =
-        currentHadith.collection ||
-        selectedCollection;
-
-    /*
-     * Normal sequential browsing uses the pagination
-     * position supplied by loadByPosition().
-     */
-
-    const readerPosition =
-        Number(
-            currentHadith._readerPosition || 0
-        );
-
-    if (
-        Number.isInteger(readerPosition) &&
-        readerPosition > 1
-    ) {
-        await loadByPosition(
-            collection,
-            readerPosition - 1
-        );
-
-        return;
-    }
-
-    /*
-     * Hadiths loaded through Go To Hadith or search
-     * may not have a pagination position.
-     *
-     * In that case use the actual Hadith number.
-     */
-
-    const hadithNumber =
-        Number(
-            currentHadith._readerHadithNumber ||
-            currentHadith.hadithNumber ||
-            currentHadith.number ||
-            0
-        );
-
-    if (
-        Number.isInteger(hadithNumber) &&
-        hadithNumber > 1
-    ) {
-        await loadSpecificHadithNumber(
-            collection,
-            hadithNumber - 1
-        );
-    }
-}
-
-
-async function goNext() {
-    if (!currentHadith) {
-        return;
-    }
-
-    const collection =
-        currentHadith.collection ||
-        selectedCollection;
-
-    /*
-     * Normal sequential browsing uses the pagination
-     * position supplied by loadByPosition().
-     */
-
-    const readerPosition =
-        Number(
-            currentHadith._readerPosition || 0
-        );
-
-    if (
-        Number.isInteger(readerPosition) &&
-        readerPosition >= 1
-    ) {
-        await loadByPosition(
-            collection,
-            readerPosition + 1
-        );
-
-        return;
-    }
-
-    /*
-     * Hadiths loaded through Go To Hadith or search
-     * do not necessarily have a pagination position.
-     *
-     * Use the actual Hadith number instead.
-     */
-
-    const hadithNumber =
-        Number(
-            currentHadith._readerHadithNumber ||
-            currentHadith.hadithNumber ||
-            currentHadith.number ||
-            0
-        );
-
-    if (
-        Number.isInteger(hadithNumber) &&
-        hadithNumber >= 1
-    ) {
-        await loadSpecificHadithNumber(
-            collection,
-            hadithNumber + 1
-        );
-    }
-}
-
-
-async function shareCurrentHadith() {
-    if (!currentHadith) return;
-
-    const collectionName =
-        currentHadith.collectionName ||
-        getCollectionName(
-            currentHadith.collection
-        );
-
-    const number =
-        currentHadith.hadithNumber ||
-        currentHadith.number ||
-        currentHadith.id ||
-        '';
-
-    const text = [
-        collectionName,
-        `Hadith ${number}`,
-        '',
-        currentHadith.arabic || '',
-        '',
-        currentHadith.english || ''
-    ]
-        .filter(Boolean)
-        .join('\n');
-
-    try {
-        if (navigator.share) {
-            await navigator.share({
-                title:
-                    `${collectionName} · Hadith ${number}`,
-                text
-            });
-
-            return;
-        }
-
-        if (navigator.clipboard) {
-            await navigator.clipboard.writeText(text);
-
-            window.alert(
-                'Hadith gekopieerd naar je klembord.'
-            );
-
-            return;
-        }
-
-        window.alert(text);
-    } catch (error) {
-        if (error?.name !== 'AbortError') {
-            console.warn(
-                '[Hadith] Share failed',
-                error
-            );
-        }
-    }
-}
-
-export function bindHadithPage() {
-    const root =
-        document.querySelector(
-            '.hadith-page'
-        );
-
-    if (!root || root.dataset.bound === 'true') {
-        return;
-    }
-
-    root.dataset.bound = 'true';
-
-    root.addEventListener(
-        'click',
-        async event => {
-            const collectionButton =
-                event.target.closest(
-                    '[data-hadith-collection]'
-                );
-
-            if (collectionButton) {
-                await selectCollection(
-                    collectionButton.dataset
-                        .hadithCollection
-                );
-                return;
-            }
-
-            if (
-                event.target.closest(
-                    '[data-hadith-random]'
-                )
-            ) {
-                await loadRandom(
-                    selectedCollection
-                );
-                return;
-            }
-
-            if (
-                event.target.closest(
-                    '[data-hadith-search-submit]'
-                )
-            ) {
-                const input =
-                    root.querySelector(
-                        '[data-hadith-search]'
-                    );
-
-                await searchHadith(
-                    input?.value || ''
-                );
-
-                return;
-            }
-
-            if (
-                event.target.closest(
-                    '[data-hadith-previous]'
-                )
-            ) {
-                await goPrevious();
-                return;
-            }
-
-            if (
-                event.target.closest(
-                    '[data-hadith-next]'
-                )
-            ) {
-                await goNext();
-                return;
-            }
-
-            if (
-                event.target.closest(
-                    '[data-hadith-go]'
-                )
-            ) {
-                const input =
-                    root.querySelector(
-                        '[data-hadith-go-input]'
-                    );
-
-                goToNumber =
-                    input?.value || '';
-
-                await goToHadith();
-                return;
-            }
-
-            if (
-                event.target.closest(
-                    '[data-hadith-bookmark]'
-                )
-            ) {
-                toggleBookmark(
-                    currentHadith
-                );
-
-                renderUpdate();
-                return;
-            }
-
-            if (
-                event.target.closest(
-                    '[data-hadith-share]'
-                )
-            ) {
-                await shareCurrentHadith();
-                return;
-            }
-
-            if (
-                event.target.closest(
-                    '[data-hadith-show-bookmarks]'
-                )
-            ) {
-                showBookmarks = true;
-                renderUpdate();
-                return;
-            }
-
-            if (
-                event.target.closest(
-                    '[data-hadith-close-bookmarks]'
-                )
-            ) {
-                showBookmarks = false;
-                renderUpdate();
-                return;
-            }
-
-            const resultButton =
-                event.target.closest(
-                    '[data-hadith-result]'
-                );
-
-            if (resultButton) {
-                const index = Number(
-                    resultButton.dataset
-                        .hadithResult
-                );
-
-                const selected =
-                    searchResults[index];
-
-                if (selected) {
-
-                    currentHadith =
-                        selected;
-
-                    selectedCollection =
-                        selected.collection ||
-                        selectedCollection;
-
-                    /*
-                     * Search results contain the actual
-                     * Hadith number. Preserve it separately.
-                     */
-
-                    const searchNumber =
-                        Number(
-                            selected.hadithNumber ||
-                            selected.number ||
-                            (
-                                String(
-                                    selected.id || ''
-                                ).match(
-                                    /(\d+)$/
-                                )?.[1]
-                            ) ||
-                            0
-                        );
-
-                    if (
-                        Number.isInteger(
-                            searchNumber
-                        ) &&
-                        searchNumber > 0
-                    ) {
-                        currentHadith
-                            ._readerHadithNumber =
-                            searchNumber;
-                    }
-
-                    /*
-                     * A search result does not necessarily
-                     * contain its pagination position.
-                     * Therefore we intentionally do not
-                     * invent _readerPosition here.
-                     */
-
-                    window.scrollTo({
-                        top: 0,
-                        behavior: 'smooth'
-                    });
-
-                    renderUpdate();
-                }
-
-                return;
-            }
-
-            const bookmarkButton =
-                event.target.closest(
-                    '[data-hadith-bookmark-result]'
-                );
-
-            if (bookmarkButton) {
-                const index = Number(
-                    bookmarkButton.dataset
-                        .hadithBookmarkResult
-                );
-
-                const bookmark =
-                    getBookmarks()[index];
-
-                if (bookmark) {
-                    currentHadith =
-                        normalizeHadith(
-                            bookmark,
-                            bookmark.collection
-                        );
-
-                    selectedCollection =
-                        bookmark.collection ||
-                        selectedCollection;
-
-                    showBookmarks = false;
-
-                    window.scrollTo({
-                        top: 0,
-                        behavior: 'smooth'
-                    });
-
-                    renderUpdate();
+        root.addEventListener('submit', event => {
+            event.preventDefault();
+
+            if (event.target.matches('[data-hadith-search]')) {
+                search(new FormData(event.target).get('q').toString().trim(), rerender);
+            } else if (event.target.matches('[data-hadith-goto]')) {
+                const value = new FormData(event.target).get('number').toString().trim();
+                if (/^\d+(\.\d+)?$/.test(value)) {
+                    load('number', value, rerender);
+                } else {
+                    toast('Enter a hadith number, for example 52');
                 }
             }
-        }
-    );
+        });
 
-    const searchInput =
-        root.querySelector(
-            '[data-hadith-search]'
-        );
+        root.addEventListener('click', event => {
+            const chip = event.target.closest('[data-collection]');
+            const action = event.target.closest('[data-hadith]')?.dataset.hadith;
+            const result = event.target.closest('[data-result]');
+            const saved = event.target.closest('[data-saved]');
 
-    searchInput?.addEventListener(
-        'keydown',
-        async event => {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-
-                await searchHadith(
-                    searchInput.value
-                );
+            if (chip) {
+                state.collection = chip.dataset.collection;
+                root.querySelector('[data-collections]').innerHTML = collectionsHTML();
+                if (state.query) {
+                    search(state.query, rerender);
+                }
+                load('position', 1, rerender);
+                return;
             }
-        }
-    );
 
-    const goInput =
-        root.querySelector(
-            '[data-hadith-go-input]'
-        );
-
-    goInput?.addEventListener(
-        'input',
-        event => {
-            goToNumber =
-                event.target.value;
-        }
-    );
-
-    goInput?.addEventListener(
-        'keydown',
-        async event => {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-
-                goToNumber =
-                    goInput.value;
-
-                await goToHadith();
+            if (result && Array.isArray(state.results)) {
+                state.hadith = state.results[Number(result.dataset.result)];
+                state.position = null;
+                state.error = '';
+                rerender();
+                body.querySelector('.hadith-card')?.scrollIntoView({ block: 'start' });
+                return;
             }
-        }
-    );
 
-    if (!currentHadith && !loading) {
-        loadCollections()
-            .then(() =>
-                loadByPosition(
-                    selectedCollection,
-                    1
-                )
-            );
+            if (saved) {
+                const item = bookmarks()[Number(saved.dataset.saved)];
+                if (item) {
+                    state.collection = item.collection;
+                    state.hadith = { ...item, number: String(item.number), book: '', chapter: '', grade: '' };
+                    state.position = null;
+                    state.error = '';
+                    state.showSaved = false;
+                    root.querySelector('[data-collections]').innerHTML = collectionsHTML();
+                    rerender();
+                }
+                return;
+            }
+
+            switch (action) {
+                case 'random':
+                    load('random', null, rerender);
+                    break;
+                case 'next':
+                    if (state.position) {
+                        load('position', state.position + 1, rerender);
+                    } else if (state.hadith) {
+                        load('number', Math.floor(Number(state.hadith.number)) + 1, rerender);
+                    }
+                    break;
+                case 'prev':
+                    if (state.position > 1) {
+                        load('position', state.position - 1, rerender);
+                    } else if (Number(state.hadith?.number) > 1) {
+                        load('number', Math.ceil(Number(state.hadith.number)) - 1, rerender);
+                    }
+                    break;
+                case 'save': {
+                    const added = toggleSaved(state.hadith);
+                    toast(added ? 'Hadith saved' : 'Removed from saved', { duration: 2000 });
+                    rerender();
+                    break;
+                }
+                case 'share': {
+                    const hadith = state.hadith;
+                    shareText({
+                        title: `${collectionName(hadith.collection)} ${hadith.number}`,
+                        text: [hadith.arabic, hadith.english, `${collectionName(hadith.collection)} ${hadith.number}`].filter(Boolean).join('\n\n'),
+                        url: `${SITE}#hadith/${hadith.collection}/${hadith.number}`
+                    });
+                    break;
+                }
+                case 'show-saved':
+                    state.showSaved = !state.showSaved;
+                    rerender();
+                    break;
+                case 'hide-saved':
+                    state.showSaved = false;
+                    rerender();
+                    break;
+                case 'clear-search':
+                    state.query = '';
+                    state.results = null;
+                    root.querySelector('[data-hadith-search] input').value = '';
+                    rerender();
+                    break;
+                default:
+                    break;
+            }
+        });
     }
-}
+};

@@ -2,6 +2,7 @@
 .env
 .env.*
 *.local
+node_modules/
 
 # OS files
 .DS_Store
@@ -11,22 +12,18 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Temporary files
+# Temporary and backup files
 *.tmp
 *.temp
 *.log
-
-# Backup files
 *.bak
 *.bak-*
 .backups/
-
-# Local test artifacts
-github-v2.previous-*/
-
-.development
-dev/
 backup-*
+dev/
 
+# Local test artifacts from the test server
+github-v2.previous-*/
+.development
 css/development.css
 js/development.js

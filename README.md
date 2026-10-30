@@ -1,86 +1,102 @@
-# Adhan Display: Live Prayer Times & Qibla Dashboard
+# Adhan Display
 
-![Adhan Display Logo](images/adhan%20display%20muslim%20prayer%20times%20dashboard%20logo.png)
+![Adhan Display](images/og-image.jpg)
 
-**Adhan Display** is a free, luxury Islamic dashboard designed to provide a comprehensive spiritual experience on any device. It features live prayer times, Qibla direction, daily inspirations (Quran/Hadith), and Makkah/Madinah live streaming, all wrapped in a beautiful, responsive interface.
+**Adhan Display** is a free prayer time dashboard for your phone, computer, tablet or a screen on the wall. It shows accurate prayer times with the adhan, a Qibla compass, the Quran with translation and recitation, hadith, a prayer tracker and Islamic tools. It runs entirely in the browser and keeps your data on your own device.
 
----
+Live: [adhandisplay.com](https://adhandisplay.com)
 
-## ✨ Features
+## Features
 
-### 🕋 Core Functionality
-- **Live Prayer Times**: Automatically detects your location to provide accurate Adhan times.
-- **Qibla Finder**: Integrated Qibla direction with a quick link to Google's AR Qibla Finder.
-- **Focus Mode**: A minimalist view for distraction-free monitoring of the next prayer.
-- **Prayer Tracker**: Log your daily prayers and view your performance over the last 7 days.
+**Prayer**
+- Prayer times for your location with 23 calculation methods, Hanafi or standard Asr, a high latitude rule and per-prayer adjustments
+- Countdown to the next prayer, a timeline of the day and the night times (middle of the night, last third)
+- Adhan at prayer time with a choice of recitations, per prayer on or off, plus an optional reminder before the adhan and a tahajjud reminder
+- Monthly timetable with print layout
+- Qibla compass with live device heading
+- Correct times and countdowns when the chosen city is in another time zone
 
-### 📖 Spiritual Inspiration
-- **99 Names of Allah**: Rotating display with Arabic text, transliteration, and English meanings.
-- **Daily Ayah/Hadith**: Choose between a daily Verse from the Quran or a Hadith for daily reflection.
-- **Night Prayers (Qiyam)**: Automatically calculates Midnight and Tahajjud (last third of the night) times.
+**Display mode**
+- Full-screen clock for a tablet, TV or mosque screen
+- Keeps the screen awake, dims at night and highlights the next prayer
 
-### 🌙 Special Occasions
-- **Ramadan Mode**: Features a countdown to Ramadan and an active fasting timer with Ashra progress tracking.
-- **Sunnah Fasting Alerts**: Reminders for Sunnah fasting days (Mondays, Thursdays, and White Days).
+**Quran**
+- All surahs and juz in Uthmani script with translations in dozens of languages
+- Ayah-by-ayah recitation with a player that keeps playing while you browse
+- Bookmarks, continue reading, search in translation or Arabic and tafsir Ibn Kathir
 
-### ⚙️ Customization & Accessibility
-- **Multi-Language Support**: Available in English, Dutch (NL), Turkish, French, German, Spanish, and Arabic.
-- **Dynamic Themes**: Choose between **Dark**, **Light**, and **Green** (Islamic) themes.
-- **Audio Alerts**: High-quality Adhan audio options from Makkah, Madinah, or Alafasy, plus a 10-minute Wudu alert.
-- **Responsive Design**: Optimized for Desktop, Tablet, and Mobile.
+**Hadith**
+- Sahih al-Bukhari, Sahih Muslim and eight other collections
+- Browse, search, jump to a number, save and share
 
----
+**Islamic tools**
+- Morning and evening adhkar with counters
+- Tasbih counter with targets
+- 99 Names of Allah
+- Ramadan countdown with suhoor and iftar times
+- Islamic calendar with upcoming occasions and the white days
 
-## 📱 Progressive Web App (PWA)
+**Tracker**
+- Mark your five daily prayers, fasting and Surah Al-Kahf
+- Streaks, completion rates and a four-week overview
+- Make-up (qada) counter and an optional exemption mode
 
-Adhan Display is a fully functional PWA. You can install it on your device for an app-like experience without using an App Store.
+## Install as an app
 
-### How to Install:
-- **Android / Chrome**: Tap the browser menu (⋮) and select **"Install"** or **"Add to Home Screen"**.
-- **iOS (Safari)**: Tap the **'Share'** icon, scroll down, and select **'Add to Home Screen'**.
+Adhan Display is a Progressive Web App.
 
----
+- **Android and desktop Chrome or Edge:** open the menu and choose *Install app*, or use the button in Settings, About.
+- **iPhone and iPad (Safari):** tap *Share*, then *Add to Home Screen*.
 
-## 🛠️ Built With
-
-- **HTML5 & CSS3**: Custom-coded "Glassmorphism" UI with responsive CSS Grid layouts.
-- **Vanilla JavaScript**: Lightweight and fast, no heavy frameworks required.
-- **Google Fonts**: Using the 'Cinzel' and 'Segoe UI' font families for a premium look.
-- **APIs**: Integrated with global prayer time services and weather updates.
-
----
-
-## 🚀 Getting Started
-
-1. **Clone the repository**:
-   ```bash
-   git clone [https://github.com/iamkhomani/adhan-display.git](https://github.com/iamkhomani/adhan-display.git)
+## Project structure
 
 ```
-
-2. **Open the project**:
-Simply open `index.html` in any modern web browser.
-3. **Deployment**:
-This project can be hosted for free on **GitHub Pages**, Vercel, or Netlify.
-
----
-
-## 📄 License
-
-This project is free to use for personal and communal Islamic purposes.
-
----
-
-## 🤲 Credits & Support
-
-* Prayer times provided by Aladhan API.
-* Live streams via YouTube (Makkah/Madinah Live).
-* **Adhan Display** - Created with the intention of Sadaqah Jariyah.
-
----
-
-*La ilaha illa Allah, Muhammadur Rasul Allah*
-
+index.html            Page shell, SEO and theme boot script
+sw.js                 Service worker (offline support)
+manifest.json         Web app manifest
+css/app.css           All styles (dark theme by default, light theme, print)
+js/app.js             App shell, router and the one-second ticker
+js/app-info.js        Version and install prompt
+js/core/              Storage, time zones and Hijri dates, icons, UI helpers
+js/services/          Prayer times, location, adhan alerts, tracker, Quran and API access
+js/pages/             Home, Prayer, Quran, Hadith, Islamic, Settings and Display mode
+js/data/content.js    Daily hadith, du'as, adhkar and other static content
+fonts/                Self-hosted Manrope, Marcellus and Amiri Quran (SIL Open Font License)
+images/icons/         App icons
+audio/                Adhan recordings and the reminder chime
+nginx.conf            Optional config for self-hosting with nginx
 ```
 
-***
+There is no build step. The site is plain HTML, CSS and JavaScript modules.
+
+## Run locally
+
+```bash
+git clone https://github.com/iamkhomani/Adhan-Display.git
+cd Adhan-Display
+python3 -m http.server 8080
+```
+
+Then open <http://localhost:8080>. A local web server is needed because browsers do not load JavaScript modules from `file://`.
+
+## Deployment
+
+The site is hosted on GitHub Pages with the custom domain in `CNAME`. Any static host works. When you add or remove files that should work offline, update the list and the `VERSION` in `sw.js`.
+
+## Data sources
+
+- Prayer times and the 99 Names: [AlAdhan](https://aladhan.com)
+- Quran text, translations and recitation: [Al Quran Cloud](https://alquran.cloud) and [Islamic Network](https://islamic.network)
+- Tafsir: [Quran.com](https://quran.com)
+- Hadith: [UmmahAPI](https://ummahapi.com)
+- Place search: [Open-Meteo](https://open-meteo.com) and [BigDataCloud](https://www.bigdatacloud.com)
+
+## Privacy
+
+Settings, the prayer tracker and bookmarks are stored only in your browser (localStorage). Use *Settings, Your data* to make a backup or move it to another device. The site uses Google Analytics for anonymous page views.
+
+## License
+
+Free to use for personal and community Islamic purposes. Fonts are licensed under the SIL Open Font License (see `fonts/`).
+
+Made with the intention of sadaqah jariyah.

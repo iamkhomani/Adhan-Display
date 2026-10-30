@@ -1,216 +1,161 @@
-import { APP } from '../config.js';
-import { Storage } from '../storage.js';
-import { Api } from './api.js';
+/*
+ * Location: stored coordinates, browser geolocation and saved places.
+ *
+ * Browser geolocation is only requested automatically when permission was
+ * already granted; otherwise the user starts it with a button. IP lookup is
+ * deliberately not used (wrong results behind VPNs).
+ */
 
-export class LocationService {
-    constructor(onChange) {
-        this.onChange = onChange;
-        this.interval = null;
-        this.lastLocation = null;
-    }
+import { store, getSettings, setSetting } from '../core/storage.js';
+import { bus } from '../core/bus.js';
+import { isFiniteCoord } from '../core/util.js';
+import { reverseGeocode, searchPlaces } from './api.js';
 
-    current() {
+export const DEFAULT_LOCATION = { lat: 52.0907, lon: 5.1214, city: 'Utrecht', country: 'Netherlands' };
+
+export const location = {
+    get() {
+        const lat = Number(store.raw('lat'));
+        const lon = Number(store.raw('lon'));
+
+        if (store.raw('lat') === null || !isFiniteCoord(lat, lon)) {
+            return { ...DEFAULT_LOCATION, isDefault: true };
+        }
+
+        let city = store.raw('city', '') || '';
+
+        /* Older versions stored placeholder names. */
+        if (!city || city === 'Current location' || city === 'Selected location') {
+            city = 'Your location';
+        }
+
         return {
-            lat: Number(Storage.getRaw('lat', APP.coordinates.lat)),
-            lon: Number(Storage.getRaw('lon', APP.coordinates.lon)),
-            city: Storage.getRaw('city', APP.coordinates.city)
+            lat,
+            lon,
+            city,
+            country: store.raw('country', '') || '',
+            isDefault: false
         };
-    }
+    },
 
-    async init() {
-        const settings = Storage.getSettings();
+    hasChosen() {
+        return store.raw('lat') !== null;
+    },
 
-        /*
-         * Keep the existing location immediately.
-         * Automatic location is attempted in the background.
-         */
-        if (settings.autoLocation) {
-            await this.auto();
+    set({ lat, lon, city = '', country = '' }, { auto = false } = {}) {
+        lat = Number(lat);
+        lon = Number(lon);
 
-            this.interval = setInterval(() => {
-                this.auto().catch(error => {
-                    console.warn(
-                        '[Adhan Display 2.0] Automatic location update failed',
-                        error
-                    );
-                });
-            }, 2 * 60 * 60 * 1000);
-        } else if (Storage.getLocations().length) {
-            const loc = Storage.getLocations()[0];
-            this.set(loc);
+        if (!isFiniteCoord(lat, lon)) {
+            return false;
         }
-    }
 
-    async auto() {
-        /*
-         * IMPORTANT:
-         * Do not use IP geolocation here.
-         *
-         * IP location is especially unreliable when the user uses:
-         * - a VPN
-         * - mobile networks
-         * - corporate networks
-         * - privacy relays
-         *
-         * Browser geolocation is independent of the public IP address.
-         */
+        const previous = this.get();
+        const moved = previous.isDefault ||
+            Math.abs(previous.lat - lat) > 0.01 ||
+            Math.abs(previous.lon - lon) > 0.01;
 
+        store.setRaw('lat', lat);
+        store.setRaw('lon', lon);
+        store.setRaw('city', city || 'Your location');
+        store.setRaw('country', country || '');
+
+        if (!auto) {
+            setSetting('autoLocation', 'false');
+        }
+
+        if (moved || previous.city !== city) {
+            bus.emit('location', { moved });
+        }
+
+        return true;
+    },
+
+    /* Asks the browser for the position. Resolves with the location or throws a readable error. */
+    async detect() {
         if (!navigator.geolocation) {
-            console.warn(
-                '[Adhan Display 2.0] Browser geolocation is not available. Keeping current location.'
-            );
-            return this.current();
+            throw new Error('This browser cannot share your location. Search for your city instead.');
         }
+
+        const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+                enableHighAccuracy: false,
+                timeout: 15000,
+                maximumAge: 10 * 60 * 1000
+            });
+        }).catch(error => {
+            const messages = {
+                1: 'Location access was blocked. Allow it in your browser settings or search for your city.',
+                2: 'Your position could not be determined. Search for your city instead.',
+                3: 'Finding your location took too long. Try again or search for your city.'
+            };
+            throw new Error(messages[error?.code] || 'Your location could not be determined.');
+        });
+
+        const lat = Number(position.coords.latitude);
+        const lon = Number(position.coords.longitude);
+        let place = { city: '', country: '' };
 
         try {
-            const position = await new Promise((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(
-                    resolve,
-                    reject,
-                    {
-                        enableHighAccuracy: true,
-                        timeout: 5000,
-                        maximumAge: 15 * 60 * 1000
-                    }
-                );
-            });
-
-            const lat = Number(position.coords.latitude);
-            const lon = Number(position.coords.longitude);
-
-            if (
-                !Number.isFinite(lat) ||
-                !Number.isFinite(lon) ||
-                Math.abs(lat) > 90 ||
-                Math.abs(lon) > 180
-            ) {
-                throw new Error('Invalid browser geolocation coordinates');
-            }
-
-            const location = {
-                lat,
-                lon,
-                city: 'Current location'
-            };
-
-            this.lastLocation = location;
-            this.set(location);
-
-            console.log(
-                '[Adhan Display 2.0] Browser location detected:',
-                lat,
-                lon
-            );
-
-            return location;
-        } catch (error) {
-            /*
-             * Do NOT fall back to IP location.
-             *
-             * The current stored/default location remains active.
-             * This prevents VPN users from suddenly being moved to
-             * Amsterdam, Rotterdam or another IP-based location.
-             */
-            console.warn(
-                '[Adhan Display 2.0] Browser geolocation unavailable or denied. Keeping current location.',
-                error?.message || error
-            );
-
-            return this.current();
+            place = await reverseGeocode(lat, lon);
+        } catch {
+            /* The name is optional. */
         }
-    }
 
-    set(loc) {
-        if (!loc) return;
+        setSetting('autoLocation', 'true');
+        const result = { lat, lon, city: place.city || 'Your location', country: place.country || '' };
+        this.set(result, { auto: true });
+        return result;
+    },
 
-        const lat = Number(loc.lat);
-        const lon = Number(loc.lon);
-
-        if (
-            !Number.isFinite(lat) ||
-            !Number.isFinite(lon)
-        ) {
-            console.warn(
-                '[Adhan Display 2.0] Ignoring invalid location:',
-                loc
-            );
+    /* On start-up: refresh the position silently when the user chose automatic location. */
+    async refreshIfAllowed() {
+        if (!getSettings().autoLocation || !this.hasChosen() || !navigator.geolocation) {
             return;
         }
 
-        const city = loc.city || loc.name || 'Current location';
-
-        Storage.setRaw('lat', lat);
-        Storage.setRaw('lon', lon);
-        Storage.setRaw('city', city);
-
-        this.lastLocation = {
-            lat,
-            lon,
-            city
-        };
-
-        this.onChange(this.lastLocation);
-    }
-
-    async add(name) {
-        const data = await Api.geocode(name);
-        const result = data.results?.[0];
-
-        if (!result) {
-            throw new Error('Location not found');
+        try {
+            const status = await navigator.permissions?.query({ name: 'geolocation' });
+            if (status && status.state !== 'granted') {
+                return;
+            }
+        } catch {
+            return;
         }
 
-        const loc = {
-            name: result.name,
-            lat: Number(result.latitude),
-            lon: Number(result.longitude)
-        };
+        try {
+            await this.detect();
+        } catch (error) {
+            console.info('[Adhan Display] Keeping saved location:', error.message);
+        }
+    },
 
-        const locations = Storage.getLocations();
+    search(query) {
+        return searchPlaces(query);
+    },
 
-        locations.push(loc);
-        Storage.setLocations(locations);
+    saved() {
+        const list = store.get('saved_locs', []);
+        return Array.isArray(list)
+            ? list.filter(item => isFiniteCoord(Number(item.lat), Number(item.lon)))
+            : [];
+    },
 
-        this.set({
-            lat: loc.lat,
-            lon: loc.lon,
-            city: loc.name
-        });
+    save(place) {
+        const list = this.saved().filter(item =>
+            Math.abs(Number(item.lat) - place.lat) > 0.01 || Math.abs(Number(item.lon) - place.lon) > 0.01
+        );
+        list.unshift({ name: place.city || place.name, country: place.country || '', lat: place.lat, lon: place.lon });
+        store.set('saved_locs', list.slice(0, 8));
+    },
 
-        return loc;
+    removeSaved(place) {
+        if (!place) {
+            return;
+        }
+        store.set('saved_locs', this.saved().filter(item =>
+            Math.abs(Number(item.lat) - Number(place.lat)) > 0.0001 ||
+            Math.abs(Number(item.lon) - Number(place.lon)) > 0.0001
+        ));
     }
-
-    select(index) {
-        const locations = Storage.getLocations();
-        const loc = locations[index];
-
-        if (!loc) return;
-
-        Storage.setRaw('auto_loc', 'false');
-
-        this.set({
-            lat: loc.lat,
-            lon: loc.lon,
-            city: loc.name
-        });
-    }
-
-    remove(index) {
-        const locations = Storage.getLocations();
-
-        locations.splice(index, 1);
-
-        Storage.setLocations(locations);
-    }
-
-    useAuto() {
-        Storage.setRaw('auto_loc', 'true');
-
-        this.auto().catch(error => {
-            console.warn(
-                '[Adhan Display 2.0] Automatic location failed',
-                error
-            );
-        });
-    }
-}
+};

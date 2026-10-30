@@ -1,4606 +1,855 @@
+/*
+ * Quran: browse surahs and juz, read with translation, listen ayah by ayah,
+ * bookmarks, search and tafsir. The audio player keeps playing while you
+ * move around the app.
+ */
+
+import { esc, highlight, debounce, reducedMotion } from '../core/util.js';
+import { icon } from '../core/icons.js';
+import { bus } from '../core/bus.js';
+import { spinner, emptyState, openDialog, shareText, toast } from '../core/ui.js';
 import {
-    state,
-    saveQuranState
-} from '../state.js';
-import { Api } from '../services/api.js';
+    quranPrefs, surahList, translations, reciters, surah as loadSurahData, juz as loadJuzData,
+    searchQuran, audioUrl, tafsir, sanitizeHtml
+} from '../services/quran.js';
+import { pageHeader } from './components.js';
 
-let pendingQuranTarget = null;
+const SITE = 'https://adhandisplay.com/';
 
-export function openQuranAtAyah(surahNumber, ayahNumber) {
-    if (!surahNumber || !ayahNumber) {
-        return;
+/* Browse state survives navigation. */
+const browse = { tab: 'surahs', filter: '', query: '', results: null, searching: false };
+
+/* Currently open reading section. */
+let reading = null; // { kind: 'surah'|'juz', number, info, ayahs }
+
+/* ---------------------------------------------------------------
+ * Audio player (module level, so it survives page changes)
+ * ------------------------------------------------------------- */
+
+const player = {
+    audio: null,
+    queue: [],
+    index: -1,
+    title: '',
+    repeat: false,
+    attempt: 0,
+    visible: false
+};
+
+function audioElement() {
+    if (player.audio) {
+        return player.audio;
     }
 
-    pendingQuranTarget = {
-        surahNumber: Number(surahNumber),
-        ayahNumber: Number(ayahNumber)
-    };
-}
-
-
-const API_BASE =
-    'https://api.alquran.cloud/v1';
-
-const CDN_BASE =
-    'https://cdn.islamic.network/quran';
-
-
-let audio = null;
-
-let currentAudioIndex = -1;
-
-let currentAudioMode = 'ayah';
-
-let currentResults = [];
-
-let playerVisible = false;
-let playerMinimized = false;
-let playerClosed = false;
-
-let playerDuration = 0;
-
-let playerCurrentTime = 0;
-
-let playerPlaying = false;
-
-let playerRepeat = false;
-
-
-function escapeHtml(value = '') {
-
-    return String(value)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-}
-
-
-function languageName(code) {
-
-    try {
-
-        const names =
-            new Intl.DisplayNames(
-                ['en'],
-                { type: 'language' }
-            );
-
-        return names.of(code) || code;
-
-    } catch {
-
-        return code;
-    }
-}
-
-
-function saveLastRead(surah, ayah) {
-
-    state.quran.lastRead = {
-        surah,
-        ayah
-    };
-
-    saveQuranState();
-}
-
-
-function isBookmarked(globalAyahNumber) {
-
-    return state.quran.bookmarks
-        .some(
-            item =>
-                Number(item.number) ===
-                Number(globalAyahNumber)
-        );
-}
-
-
-function toggleBookmark(ayah) {
-
-    const existing =
-        state.quran.bookmarks.findIndex(
-            item =>
-                Number(item.number) ===
-                Number(ayah.number)
-        );
-
-
-    if (existing >= 0) {
-
-        state.quran.bookmarks.splice(
-            existing,
-            1
-        );
-
-    } else {
-
-        state.quran.bookmarks.push({
-
-            number:
-                ayah.number,
-
-            surah:
-                ayah.surah?.number ||
-                state.quran.selectedSurah,
-
-            ayah:
-                ayah.numberInSurah,
-
-            /*
-             * Keep both Arabic and the selected
-             * translation so bookmarks remain useful
-             * regardless of the reading language.
-             */
-
-            text:
-                ayah.text,
-
-            translationText:
-                ayah.translation?.text || '',
-
-            translationIdentifier:
-                state.quran.selectedTranslation || '',
-
-            translationLanguage:
-                ayah.translation?.edition?.language ||
-                ''
-        });
-    }
-
-
-    saveQuranState();
-
-    renderBookmarks();
-}
-
-
-async function fetchJson(url) {
-
-    const response =
-        await fetch(url);
-
-    if (!response.ok) {
-
-        throw new Error(
-            `Request failed: ${response.status}`
-        );
-    }
-
-    const result =
-        await response.json();
-
-    if (result.code &&
-        result.code !== 200) {
-
-        throw new Error(
-            result.status ||
-            'API request failed.'
-        );
-    }
-
-    return result;
-}
-
-
-async function loadSurahList() {
-
-    if (state.quran.surahs.length) {
-        return state.quran.surahs;
-    }
-
-
-    const result =
-        await fetchJson(
-            `${API_BASE}/surah`
-        );
-
-
-    state.quran.surahs =
-        result.data || [];
-
-
-    return state.quran.surahs;
-}
-
-
-
-export async function getDailyAyah() {
-    const start = new Date(
-        new Date().getFullYear(),
-        0,
-        0
-    );
-
-    const diff = new Date() - start;
-    const day = Math.floor(diff / 86400000);
-
-    const ayahNumber =
-        ((day - 1) % 6236) + 1;
-
-    await loadEditions();
-
-    const translation =
-        state.quran.selectedTranslation;
-
-    if (!translation) {
-        throw new Error(
-            'No Quran translation has been selected.'
-        );
-    }
-
-    const [arabicResult, translationResult] =
-        await Promise.all([
-            Api.quranAyah(
-                ayahNumber,
-                'quran-uthmani'
-            ),
-            Api.quranAyah(
-                ayahNumber,
-                translation
-            )
-        ]);
-
-    const arabic =
-        arabicResult?.data;
-
-    const translated =
-        translationResult?.data;
-
-    if (!arabic) {
-        throw new Error(
-            'Arabic Quran ayah was not returned by the API.'
-        );
-    }
-
-    return {
-        number: ayahNumber,
-        arabic: arabic.text || '',
-        translation: translated?.text || '',
-        surah:
-            arabic.surah?.englishName ||
-            arabic.surah?.name ||
-            '',
-        surahNumber:
-            arabic.surah?.number || null,
-        ayahNumber:
-            arabic.numberInSurah || null
-    };
-}
-
-async function loadEditions() {
-
-    if (state.quran.editions.length) {
-        return state.quran.editions;
-    }
-
-
-    const result =
-        await fetchJson(
-            `${API_BASE}/edition?format=text&type=translation`
-        );
-
-
-    state.quran.editions =
-        (result.data || [])
-            .filter(
-                edition =>
-                    edition.type === 'translation'
-            );
-
-
-    if (!state.quran.editions.length) {
-
-        throw new Error(
-            'No Quran translations were returned.'
-        );
-    }
-
-
-    if (
-        !state.quran.selectedTranslation ||
-        !state.quran.editions.some(
-            edition =>
-                edition.identifier ===
-                state.quran.selectedTranslation
-        )
-    ) {
-
-        const dutch =
-            state.quran.editions.find(
-                edition =>
-                    edition.language === 'nl'
-            );
-
-
-        const english =
-            state.quran.editions.find(
-                edition =>
-                    edition.language === 'en'
-            );
-
-
-        state.quran.selectedTranslation =
-            dutch?.identifier ||
-            english?.identifier ||
-            state.quran.editions[0].identifier;
-    }
-
-
-    state.quran.selectedLanguage =
-        state.quran.editions.find(
-            edition =>
-                edition.identifier ===
-                state.quran.selectedTranslation
-        )?.language || 'en';
-
-
-    saveQuranState();
-
-
-    return state.quran.editions;
-}
-
-
-async function loadAudioEditions() {
-
-    if (state.quran.audioEditions.length) {
-        return state.quran.audioEditions;
-    }
-
-
-    try {
-
-        const result =
-            await fetchJson(
-                `${API_BASE}/edition?format=audio`
-            );
-
-
-        state.quran.audioEditions =
-            (result.data || [])
-                .filter(
-                    edition =>
-                        edition.type ===
-                            'versebyverse' ||
-                        edition.identifier?.startsWith(
-                            'ar.'
-                        )
-                )
-                .filter(
-                    edition =>
-                        edition.identifier?.startsWith(
-                            'ar.'
-                        )
-                );
-
-
-    } catch (error) {
-
-        console.warn(
-            '[Quran] Audio editions unavailable',
-            error
-        );
-
-        state.quran.audioEditions = [];
-    }
-
-
-    if (
-        state.quran.audioEditions.length &&
-        !state.quran.audioEditions.some(
-            edition =>
-                edition.identifier ===
-                state.quran.selectedReciter
-        )
-    ) {
-
-        const alafasy =
-            state.quran.audioEditions.find(
-                edition =>
-                    edition.identifier ===
-                    'ar.alafasy'
-            );
-
-
-        state.quran.selectedReciter =
-            alafasy?.identifier ||
-            state.quran.audioEditions[0].identifier;
-
-
-        saveQuranState();
-    }
-
-
-    return state.quran.audioEditions;
-}
-
-
-function getLanguages() {
-
-    const languages =
-        new Map();
-
-
-    for (
-        const edition of
-        state.quran.editions
-    ) {
-
-        if (!edition.language) {
-            continue;
+    const audio = new Audio();
+    audio.preload = 'auto';
+
+    audio.addEventListener('ended', () => {
+        if (player.repeat) {
+            audio.currentTime = 0;
+            audio.play().catch(() => {});
+        } else if (quranPrefs.get().autoPlay && player.index < player.queue.length - 1) {
+            playIndex(player.index + 1);
+        } else {
+            updatePlayer();
         }
-
-        if (!languages.has(edition.language)) {
-
-            languages.set(
-                edition.language,
-                languageName(
-                    edition.language
-                )
-            );
-        }
-    }
-
-
-    return [...languages.entries()]
-        .sort(
-            (a, b) =>
-                a[1].localeCompare(b[1])
-        );
-}
-
-
-function getTranslationsForLanguage(
-    language
-) {
-
-    return state.quran.editions
-        .filter(
-            edition =>
-                edition.language === language
-        )
-        .sort(
-            (a, b) =>
-                (a.englishName || '')
-                    .localeCompare(
-                        b.englishName || ''
-                    )
-        );
-}
-
-
-function renderLanguageOptions() {
-
-    const select =
-        document.querySelector(
-            '[data-q2-language]'
-        );
-
-    if (!select) {
-        return;
-    }
-
-
-    const languages =
-        getLanguages();
-
-
-    select.innerHTML = `
-        <option value="">
-            All languages
-        </option>
-
-        ${languages.map(
-            ([code, name]) => `
-                <option
-                    value="${escapeHtml(code)}"
-                    ${
-                        code ===
-                        state.quran.selectedLanguage
-                            ? 'selected'
-                            : ''
-                    }
-                >
-                    ${escapeHtml(name)}
-                </option>
-            `
-        ).join('')}
-    `;
-}
-
-
-function renderTranslationOptions() {
-
-    const select =
-        document.querySelector(
-            '[data-q2-translation]'
-        );
-
-    if (!select) {
-        return;
-    }
-
-
-    const language =
-        state.quran.selectedLanguage;
-
-
-    const editions =
-        language
-            ? getTranslationsForLanguage(
-                language
-            )
-            : state.quran.editions;
-
-
-    select.innerHTML =
-        editions.map(
-            edition => `
-                <option
-                    value="${escapeHtml(
-                        edition.identifier
-                    )}"
-                    ${
-                        edition.identifier ===
-                        state.quran.selectedTranslation
-                            ? 'selected'
-                            : ''
-                    }
-                >
-                    ${escapeHtml(
-                        edition.englishName ||
-                        edition.name ||
-                        edition.identifier
-                    )}
-                </option>
-            `
-        ).join('');
-}
-
-
-function renderReciterOptions() {
-
-    const select =
-        document.querySelector(
-            '[data-q2-reciter]'
-        );
-
-    if (!select) {
-        return;
-    }
-
-
-    select.innerHTML =
-        state.quran.audioEditions
-            .map(
-                edition => `
-                    <option
-                        value="${escapeHtml(
-                            edition.identifier
-                        )}"
-                        ${
-                            edition.identifier ===
-                            state.quran.selectedReciter
-                                ? 'selected'
-                                : ''
-                        }
-                    >
-                        ${escapeHtml(
-                            edition.englishName ||
-                            edition.name ||
-                            edition.identifier
-                        )}
-                    </option>
-                `
-            )
-            .join('');
-}
-
-
-function renderSurahList() {
-
-    const container =
-        document.querySelector(
-            '[data-q2-content]'
-        );
-
-    if (!container) {
-        return;
-    }
-
-
-    const query =
-        document.querySelector(
-            '[data-q2-surah-filter]'
-        )?.value
-        ?.trim()
-        .toLowerCase() || '';
-
-
-    const surahs =
-        state.quran.surahs.filter(
-            surah =>
-                !query ||
-                String(
-                    surah.number
-                ).includes(query) ||
-                surah.name
-                    ?.toLowerCase()
-                    .includes(query) ||
-                surah.englishName
-                    ?.toLowerCase()
-                    .includes(query) ||
-                surah.englishNameTranslation
-                    ?.toLowerCase()
-                    .includes(query)
-        );
-
-
-    container.innerHTML = `
-
-        <div class="q2-surah-grid">
-
-            ${surahs.map(
-                surah => `
-                    <button
-                        class="q2-surah-card"
-                        data-q2-surah="${surah.number}"
-                    >
-
-                        <span
-                            class="q2-surah-number"
-                        >
-                            ${surah.number}
-                        </span>
-
-                        <span
-                            class="q2-surah-info"
-                        >
-
-                            <strong>
-                                ${escapeHtml(
-                                    surah.englishName
-                                )}
-                            </strong>
-
-                            <small>
-                                ${escapeHtml(
-                                    surah.englishNameTranslation
-                                )}
-                                ·
-                                ${surah.numberOfAyahs}
-                                verses
-                                ·
-                                ${escapeHtml(
-                                    surah.revelationType
-                                )}
-                            </small>
-
-                        </span>
-
-                        <span
-                            class="q2-surah-arabic"
-                            dir="rtl"
-                        >
-                            ${escapeHtml(
-                                surah.name
-                            )}
-                        </span>
-
-                    </button>
-                `
-            ).join('')}
-
-        </div>
-    `;
-
-
-    bindSurahCards();
-}
-
-
-function renderJuzList() {
-
-    const container =
-        document.querySelector(
-            '[data-q2-content]'
-        );
-
-    if (!container) {
-        return;
-    }
-
-
-    container.innerHTML = `
-
-        <div class="q2-juz-grid">
-
-            ${Array.from(
-                { length: 30 },
-                (_, index) => {
-
-                    const number =
-                        index + 1;
-
-                    return `
-                        <button
-                            class="q2-juz-card"
-                            data-q2-juz="${number}"
-                        >
-
-                            <span>
-                                Juz
-                                ${number}
-                            </span>
-
-                            <strong>
-                                ${number}
-                            </strong>
-
-                        </button>
-                    `;
-                }
-            ).join('')}
-
-        </div>
-    `;
-
-
-    container
-        .querySelectorAll(
-            '[data-q2-juz]'
-        )
-        .forEach(button => {
-
-            button.addEventListener(
-                'click',
-                () => {
-
-                    loadJuz(
-                        Number(
-                            button.dataset.q2Juz
-                        )
-                    );
-                }
-            );
-        });
-}
-
-
-function renderBookmarks() {
-
-    const container =
-        document.querySelector(
-            '[data-q2-content]'
-        );
-
-    if (!container) {
-        return;
-    }
-
-
-    if (!state.quran.bookmarks.length) {
-
-        container.innerHTML = `
-
-            <div class="q2-empty">
-
-                <div class="q2-empty-icon">
-                    ☆
-                </div>
-
-                <h3>
-                    No bookmarks yet
-                </h3>
-
-                <p>
-                    Save an ayah while reading
-                    and it will appear here.
-                </p>
-
-            </div>
-        `;
-
-        return;
-    }
-
-
-    container.innerHTML = `
-
-        <div class="q2-bookmark-list">
-
-            ${state.quran.bookmarks
-                .map(
-                    bookmark => `
-                        <button
-                            class="q2-bookmark"
-                            data-q2-bookmark-surah="${bookmark.surah}"
-                            data-q2-bookmark-ayah="${bookmark.ayah}"
-                        >
-
-                            <span>
-                                ${bookmark.surah}:${bookmark.ayah}
-                            </span>
-
-                            <small>
-                                ${escapeHtml(
-                                    bookmark.translationText ||
-                                    bookmark.text ||
-                                    ''
-                                )}
-                            </small>
-
-                        </button>
-                    `
-                )
-                .join('')}
-
-        </div>
-    `;
-
-
-    container
-        .querySelectorAll(
-            '[data-q2-bookmark-surah]'
-        )
-        .forEach(button => {
-
-            button.addEventListener(
-                'click',
-                () => {
-
-                    loadSurah(
-                        Number(
-                            button.dataset.q2BookmarkSurah
-                        ),
-                        Number(
-                            button.dataset.q2BookmarkAyah
-                        )
-                    );
-                }
-            );
-        });
-}
-
-
-function renderReaderLoading() {
-
-    const reader =
-        document.querySelector(
-            '[data-q2-reader]'
-        );
-
-    if (!reader) {
-        return;
-    }
-
-
-    reader.innerHTML = `
-
-        <div class="q2-loading">
-
-            <div class="q2-spinner"></div>
-
-            <p>
-                Loading Quran...
-            </p>
-
-        </div>
-    `;
-}
-
-
-function mergeAyahs(
-    arabic,
-    translation
-) {
-
-    const translations =
-        new Map(
-            (translation?.ayahs || [])
-                .map(
-                    ayah => [
-                        ayah.number,
-                        ayah
-                    ]
-                )
-        );
-
-
-    return (arabic?.ayahs || [])
-        .map(
-            ayah => ({
-                ...ayah,
-
-                translation:
-                    translations.get(
-                        ayah.number
-                    ) || null
-            })
-        );
-}
-
-
-async function loadSurah(
-    surahNumber,
-    focusAyah = null
-) {
-
-    state.quran.loading = true;
-
-    const browser =
-        document.querySelector(
-            '[data-q2-browser]'
-        );
-
-    const reader =
-        document.querySelector(
-            '[data-q2-reader]'
-        );
-
-    if (browser) {
-        browser.classList.add('is-hidden');
-    }
-
-    if (reader) {
-        reader.classList.remove('is-hidden');
-    }
-
-    renderReaderLoading();
-
-    if (reader) {
-        reader.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-        });
-    }
-
-    try {
-
-        await loadEditions();
-
-        const translation =
-            state.quran.selectedTranslation;
-
-        if (!translation) {
-            throw new Error(
-                'No Quran translation has been selected.'
-            );
-        }
-
-        const url =
-            `${API_BASE}/surah/${surahNumber}/editions/quran-uthmani,${encodeURIComponent(
-                translation
-            )}`;
-
-        console.log(
-            '[Quran] Loading Surah:',
-            surahNumber,
-            url
-        );
-
-        const result =
-            await fetchJson(url);
-
-        const editions =
-            result.data || [];
-
-        const arabic =
-            editions.find(
-                edition =>
-                    edition.edition?.identifier ===
-                    'quran-uthmani'
-            );
-
-        const translated =
-            editions.find(
-                edition =>
-                    edition.edition?.identifier ===
-                    translation
-            );
-
-        if (!arabic) {
-            throw new Error(
-                'Arabic Quran edition was not returned by the API.'
-            );
-        }
-
-        if (!translated) {
-            console.warn(
-                '[Quran] Translation was not returned:',
-                translation
-            );
-        }
-
-        state.quran.selectedSurah =
-            Number(surahNumber);
-
-        state.quran.selectedAyah =
-            Number(focusAyah) || 1;
-
-        state.quran.juz = null;
-
-        state.quran.ayahs =
-            mergeAyahs(
-                arabic,
-                translated
-            );
-
-        state.quran.currentView =
-            'reader';
-
-        saveLastRead(
-            Number(surahNumber),
-            Number(focusAyah) || 1
-        );
-
-        renderReader(
-            arabic,
-            translated
-        );
-
-        if (reader) {
-            setTimeout(() => {
-                reader.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-
-                focusReaderAyah();
-            }, 100);
-        }
-
-    } catch (error) {
-
-        console.error(
-            '[Quran] Surah loading failed:',
-            error
-        );
-
-        renderReaderError(error);
-
-    } finally {
-
-        state.quran.loading = false;
-    }
-}
-
-
-async function loadJuz(
-    juzNumber
-) {
-
-    state.quran.loading = true;
-
-    const browser =
-        document.querySelector(
-            '[data-q2-browser]'
-        );
-
-    const reader =
-        document.querySelector(
-            '[data-q2-reader]'
-        );
-
-    browser?.classList.add(
-        'is-hidden'
-    );
-
-    reader?.classList.remove(
-        'is-hidden'
-    );
-
-    renderReaderLoading();
-
-    reader?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
     });
 
+    audio.addEventListener('error', () => {
+        const ayah = player.queue[player.index];
+        if (!ayah) {
+            return;
+        }
+        player.attempt += 1;
+        const next = audioUrl(quranPrefs.get().selectedReciter, ayah.number, player.attempt);
+        if (next) {
+            audio.src = next;
+            audio.play().catch(() => {});
+        } else {
+            toast('This recitation could not be played. Try another reciter.');
+            updatePlayer();
+        }
+    });
 
-    try {
+    ['play', 'pause', 'timeupdate', 'loadedmetadata'].forEach(type => audio.addEventListener(type, updatePlayerProgress));
+    ['play', 'pause'].forEach(type => audio.addEventListener(type, () => {
+        updatePlayer();
+        markPlaying(false);
+    }));
 
-        await loadEditions();
-
-
-        const translation =
-            state.quran.selectedTranslation;
-
-
-        const [
-            arabicResult,
-            translationResult
-        ] =
-            await Promise.all([
-                fetchJson(
-                    `${API_BASE}/juz/${juzNumber}/quran-uthmani`
-                ),
-                fetchJson(
-                    `${API_BASE}/juz/${juzNumber}/${encodeURIComponent(
-                        translation
-                    )}`
-                )
-            ]);
-
-
-        state.quran.juz =
-            juzNumber;
-
-
-        state.quran.selectedSurah =
-            null;
-
-
-        state.quran.ayahs =
-            (arabicResult.data?.ayahs || [])
-                .map(
-                    ayah => ({
-                        ...ayah,
-
-                        translation:
-                            (
-                                translationResult
-                                    .data
-                                    ?.ayahs || []
-                            ).find(
-                                translated =>
-                                    translated.number ===
-                                    ayah.number
-                            ) || null
-                    })
-                );
-
-
-        state.quran.currentView =
-            'reader';
-
-
-        renderJuzReader(
-            arabicResult.data,
-            translationResult.data
-        );
-
-
-    } catch (error) {
-
-        console.error(
-            '[Quran] Juz loading failed',
-            error
-        );
-
-        renderReaderError(
-            error
-        );
-
-    } finally {
-
-        state.quran.loading = false;
-    }
+    player.audio = audio;
+    return audio;
 }
 
+function playIndex(index) {
+    const ayah = player.queue[index];
 
-function renderReader(
-    arabic,
-    translated
-) {
-
-    const reader =
-        document.querySelector(
-            '[data-q2-reader]'
-        );
-
-    if (!reader) {
+    if (!ayah) {
         return;
     }
 
+    bus.emit('audio-exclusive', { source: 'quran' });
 
-    const surah =
-        state.quran.surahs.find(
-            item =>
-                item.number ===
-                state.quran.selectedSurah
-        );
+    const audio = audioElement();
+    player.index = index;
+    player.attempt = 0;
+    player.visible = true;
+    audio.src = audioUrl(quranPrefs.get().selectedReciter, ayah.number, 0);
+    audio.play().catch(error => {
+        if (error?.name !== 'AbortError') {
+            updatePlayer();
+        }
+    });
 
-
-    reader.innerHTML = `
-
-        <div class="q2-reader-toolbar">
-
-            <div>
-
-                <span class="q2-eyebrow">
-                    SURAH ${state.quran.selectedSurah}
-                </span>
-
-                <h2>
-                    ${escapeHtml(
-                        arabic?.englishName ||
-                        surah?.englishName ||
-                        ''
-                    )}
-                </h2>
-
-                <p>
-                    ${escapeHtml(
-                        arabic?.englishNameTranslation ||
-                        surah?.englishNameTranslation ||
-                        ''
-                    )}
-                    ·
-                    ${arabic?.numberOfAyahs || 0}
-                    verses
-                </p>
-
-            </div>
-
-
-            <div class="q2-reader-actions">
-
-                <button
-                    class="q2-icon-button"
-                    data-q2-play-surah
-                    title="Play Surah"
-                >
-                    ▶
-                </button>
-
-                <button
-                    class="q2-icon-button"
-                    data-q2-reader-back
-                    title="Back"
-                >
-                    ←
-                </button>
-
-            </div>
-
-        </div>
-
-
-        <div class="q2-surah-title">
-
-            <div>
-                ${escapeHtml(
-                    arabic?.name || ''
-                )}
-            </div>
-
-            <small>
-                ${escapeHtml(
-                    arabic?.revelationType ||
-                    surah?.revelationType ||
-                    ''
-                )}
-            </small>
-
-        </div>
-
-
-        <div
-            class="q2-ayah-list"
-            style="
-                --q2-font-scale:
-                ${state.quran.fontSize / 100};
-            "
-        >
-
-            ${(state.quran.ayahs || [])
-                .map(
-                    (ayah, index) =>
-                        renderAyah(
-                            ayah,
-                            index
-                        )
-                )
-                .join('')}
-
-        </div>
-    `;
-
-
-    bindReader();
-
-    focusReaderAyah();
+    quranPrefs.update({ lastRead: { surah: ayah.surah, ayah: ayah.numberInSurah } });
+    updatePlayer();
+    markPlaying(true);
 }
 
+export function playFrom(ayahs, index, title) {
+    player.queue = ayahs;
+    player.title = title;
+    playIndex(index);
+}
 
-function renderJuzReader(
-    arabic,
-    translated
-) {
+function togglePlay() {
+    const audio = audioElement();
 
-    const reader =
-        document.querySelector(
-            '[data-q2-reader]'
-        );
+    if (!audio.src && player.queue.length) {
+        playIndex(Math.max(0, player.index));
+    } else if (audio.paused) {
+        bus.emit('audio-exclusive', { source: 'quran' });
+        audio.play().catch(() => {});
+    } else {
+        audio.pause();
+    }
+}
 
-    if (!reader) {
+function closePlayer() {
+    player.audio?.pause();
+    player.visible = false;
+    updatePlayer();
+    markPlaying(false);
+}
+
+function markPlaying(scroll) {
+    document.querySelectorAll('.ayah.is-playing').forEach(element => {
+        element.classList.remove('is-playing');
+        const button = element.querySelector('[data-ayah-play]');
+        if (button) {
+            button.innerHTML = icon('play', { size: 16 });
+        }
+    });
+
+    const ayah = player.queue[player.index];
+
+    if (!ayah || !player.visible) {
         return;
     }
 
+    const element = document.getElementById(`ayah-${ayah.number}`);
 
-    reader.innerHTML = `
+    if (element) {
+        element.classList.add('is-playing');
+        const button = element.querySelector('[data-ayah-play]');
+        if (button && player.audio && !player.audio.paused) {
+            button.innerHTML = icon('pause', { size: 16 });
+        }
+        if (scroll) {
+            element.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'center' });
+        }
+    }
+}
 
-        <div class="q2-reader-toolbar">
+function updatePlayer() {
+    const slot = document.getElementById('player');
 
-            <div>
+    if (!slot) {
+        return;
+    }
 
-                <span class="q2-eyebrow">
-                    JUZ ${state.quran.juz}
-                </span>
+    const ayah = player.queue[player.index];
 
-                <h2>
-                    Juz ${state.quran.juz}
-                </h2>
+    if (!player.visible || !ayah) {
+        slot.innerHTML = '';
+        document.body.classList.remove('has-player');
+        return;
+    }
 
-                <p>
-                    Quran reading section
-                </p>
+    const playing = player.audio && !player.audio.paused;
+    const reciterId = quranPrefs.get().selectedReciter;
 
+    document.body.classList.add('has-player');
+    slot.innerHTML = `
+        <div class="player" role="region" aria-label="Quran audio">
+            <div class="player-progress"><span data-player-progress></span></div>
+            <a class="player-info" href="#quran/${ayah.surah}:${ayah.numberInSurah}">
+                <strong>${esc(ayah.surahName || player.title)} ${ayah.surah}:${ayah.numberInSurah}</strong>
+                <small data-player-reciter>${esc(reciterName(reciterId))}</small>
+            </a>
+            <div class="player-controls">
+                <button type="button" class="icon-button" data-player="prev" aria-label="Previous ayah" ${player.index <= 0 ? 'disabled' : ''}>${icon('prev')}</button>
+                <button type="button" class="icon-button player-play" data-player="toggle" aria-label="${playing ? 'Pause' : 'Play'}">${icon(playing ? 'pause' : 'play')}</button>
+                <button type="button" class="icon-button" data-player="next" aria-label="Next ayah" ${player.index >= player.queue.length - 1 ? 'disabled' : ''}>${icon('next')}</button>
+                <button type="button" class="icon-button ${player.repeat ? 'is-on' : ''}" data-player="repeat" aria-pressed="${player.repeat}" aria-label="Repeat this ayah">${icon('repeat', { size: 18 })}</button>
+                <button type="button" class="icon-button" data-player="close" aria-label="Close player">${icon('close', { size: 18 })}</button>
             </div>
-
-
-            <div class="q2-reader-actions">
-
-                <button
-                    class="q2-icon-button"
-                    data-q2-reader-back
-                >
-                    ←
-                </button>
-
-            </div>
-
-        </div>
-
-
-        <div
-            class="q2-ayah-list"
-            style="
-                --q2-font-scale:
-                ${state.quran.fontSize / 100};
-            "
-        >
-
-            ${(state.quran.ayahs || [])
-                .map(
-                    (ayah, index) =>
-                        renderAyah(
-                            ayah,
-                            index
-                        )
-                )
-                .join('')}
-
         </div>
     `;
 
-
-    bindReader();
+    updatePlayerProgress();
 }
 
+function updatePlayerProgress() {
+    const bar = document.querySelector('[data-player-progress]');
+    const audio = player.audio;
 
-function renderAyah(
-    ayah,
-    index
-) {
+    if (bar && audio?.duration) {
+        bar.style.width = `${(audio.currentTime / audio.duration) * 100}%`;
+    }
+}
 
-    const bookmarked =
-        isBookmarked(
-            ayah.number
-        );
+let reciterCache = [];
 
+function reciterName(id) {
+    return reciterCache.find(item => item.id === id)?.name || id.replace(/^ar\./, '');
+}
 
-    const active =
-        currentAudioMode === 'ayah' &&
-        currentAudioIndex === index;
+export function initQuranPlayer() {
+    document.getElementById('player')?.addEventListener('click', event => {
+        const button = event.target.closest('[data-player]');
 
+        if (!button) {
+            return;
+        }
+
+        const action = button.dataset.player;
+
+        if (action === 'toggle') {
+            togglePlay();
+        } else if (action === 'prev' && player.index > 0) {
+            playIndex(player.index - 1);
+        } else if (action === 'next' && player.index < player.queue.length - 1) {
+            playIndex(player.index + 1);
+        } else if (action === 'repeat') {
+            player.repeat = !player.repeat;
+            updatePlayer();
+        } else if (action === 'close') {
+            closePlayer();
+        }
+    });
+
+    bus.on('audio-exclusive', ({ source }) => {
+        if (source !== 'quran') {
+            player.audio?.pause();
+        }
+    });
+
+    reciters().then(list => {
+        reciterCache = list;
+    }).catch(() => {});
+}
+
+/* ---------------------------------------------------------------
+ * Browse
+ * ------------------------------------------------------------- */
+
+function continueCard() {
+    const last = quranPrefs.get().lastRead;
+
+    if (!last) {
+        return '';
+    }
 
     return `
+        <a class="continue" href="#quran/${Number(last.surah)}:${Number(last.ayah)}" data-continue>
+            ${icon('book', { size: 22 })}
+            <span><span class="continue-label">Continue reading</span>
+            <strong data-continue-name>Surah ${Number(last.surah)}, ayah ${Number(last.ayah)}</strong></span>
+            ${icon('right')}
+        </a>
+    `;
+}
 
-        <article
-            class="
-                q2-ayah
-                ${active ? 'is-playing' : ''}
-            "
-            data-q2-ayah="${index}"
-        >
-
-            <div class="q2-ayah-top">
-
-                <span class="q2-ayah-number">
-                    ${ayah.numberInSurah}
-                </span>
-
-
-                <span class="q2-ayah-reference">
-                    ${ayah.surah?.englishName || ''}
-                    ${ayah.surah?.number ? ` · ${ayah.surah.number}:${ayah.numberInSurah}` : ''}
-                </span>
-
-
-                <div class="q2-ayah-actions">
-
-                    <button
-                        class="q2-ayah-button"
-                        data-q2-play="${index}"
-                        title="Play ayah"
-                    >
-                        ${active ? '❚❚' : '▶'}
-                    </button>
-
-                    <button
-                        class="
-                            q2-ayah-button
-                            ${bookmarked ? 'is-bookmarked' : ''}
-                        "
-                        data-q2-bookmark="${index}"
-                        title="Bookmark"
-                    >
-                        ${bookmarked ? '★' : '☆'}
-                    </button>
-                    <button
-                        class="
-                            q2-ayah-button
-                            q2-ayah-tafsir
-                        "
-                        data-q2-tafsir="${index}"
-                        title="Read tafsir"
-                    >
-                        Tafsir
-                    </button>
-
-                </div>
-
+function browseView() {
+    return `
+        <div class="page quran-page">
+            ${pageHeader('Quran', 'Read, listen and reflect.')}
+            ${continueCard()}
+            <form class="search-bar" data-quran-search role="search">
+                ${icon('search', { size: 18 })}
+                <input type="search" name="q" placeholder="Search the Quran" value="${esc(browse.query)}" aria-label="Search the Quran">
+                <button type="submit" class="button button-primary">Search</button>
+            </form>
+            <div data-search-results></div>
+            <div class="segmented" role="tablist" aria-label="Browse by">
+                ${[['surahs', 'Surahs'], ['juz', 'Juz'], ['bookmarks', 'Bookmarks']].map(([id, label]) => `
+                    <button type="button" role="tab" class="segment ${browse.tab === id ? 'is-active' : ''}" data-browse-tab="${id}" aria-selected="${browse.tab === id}">${label}</button>
+                `).join('')}
             </div>
+            <div data-browse-body>${spinner('Loading surahs')}</div>
+        </div>
+    `;
+}
 
+async function renderBrowseBody(root) {
+    const body = root.querySelector('[data-browse-body]');
 
-            <div
-                class="q2-arabic"
-                dir="rtl"
-            >
-                ${escapeHtml(
-                    ayah.text
-                )}
+    if (!body) {
+        return;
+    }
+
+    if (browse.tab === 'juz') {
+        body.innerHTML = `<div class="juz-grid">${Array.from({ length: 30 }, (_, i) => `
+            <a class="juz-card" href="#quran/juz/${i + 1}"><span>Juz</span><strong class="tnum">${i + 1}</strong></a>`).join('')}</div>`;
+        return;
+    }
+
+    if (browse.tab === 'bookmarks') {
+        const bookmarks = quranPrefs.get().bookmarks;
+        body.innerHTML = bookmarks.length ? `
+            <ul class="bookmark-list">
+                ${bookmarks.map(item => `
+                    <li class="bookmark">
+                        <a href="#quran/${Number(item.surah)}:${Number(item.ayah)}">
+                            <strong>${esc(item.surahName || `Surah ${item.surah}`)} ${Number(item.surah)}:${Number(item.ayah)}</strong>
+                            <span class="bookmark-arabic" lang="ar" dir="rtl">${esc(item.text || '')}</span>
+                            ${item.translationText ? `<span class="bookmark-text">${esc(item.translationText)}</span>` : ''}
+                        </a>
+                        <button type="button" class="icon-button" data-remove-bookmark="${Number(item.number)}" aria-label="Remove bookmark">${icon('trash', { size: 18 })}</button>
+                    </li>
+                `).join('')}
+            </ul>
+        ` : emptyState({ title: 'No bookmarks yet', text: 'Tap the bookmark icon next to an ayah while reading to save it here.' });
+        return;
+    }
+
+    try {
+        const list = await surahList();
+        const filter = browse.filter.toLowerCase();
+        const items = list.filter(item => !filter ||
+            String(item.number) === filter ||
+            item.englishName.toLowerCase().includes(filter) ||
+            item.meaning.toLowerCase().includes(filter) ||
+            item.name.includes(browse.filter));
+
+        if (!body.isConnected) {
+            return;
+        }
+
+        body.innerHTML = `
+            <div class="filter-field">
+                ${icon('search', { size: 16 })}
+                <input type="search" placeholder="Filter surahs by name or number" value="${esc(browse.filter)}" data-surah-filter aria-label="Filter surahs">
             </div>
+            <ol class="surah-grid" data-surah-grid>
+                ${items.map(item => `
+                    <li><a class="surah-card" href="#quran/${item.number}">
+                        <span class="surah-number tnum">${item.number}</span>
+                        <span class="surah-names">
+                            <strong>${esc(item.englishName)}</strong>
+                            <small>${esc(item.meaning)}, ${item.ayahs} ayahs</small>
+                        </span>
+                        <span class="surah-arabic" lang="ar" dir="rtl">${esc(item.name.replace(/^سُورَةُ\s*/, ''))}</span>
+                    </a></li>
+                `).join('') || '<li class="muted">No surah matches this filter.</li>'}
+            </ol>
+        `;
 
+        const input = body.querySelector('[data-surah-filter]');
+        input.addEventListener('input', debounce(() => {
+            browse.filter = input.value.trim();
+            const position = input.selectionStart;
+            renderBrowseBody(root).then(() => {
+                const next = root.querySelector('[data-surah-filter]');
+                next?.focus();
+                next?.setSelectionRange(position, position);
+            });
+        }, 200));
 
-            ${
-                ayah.translation
-                    ? `
-                        <div
-                            class="q2-translation"
-                        >
-                            ${escapeHtml(
-                                ayah.translation.text
-                            )}
-                        </div>
-                    `
-                    : ''
-            }
+    } catch (error) {
+        body.innerHTML = emptyState({
+            title: 'The surah list could not be loaded',
+            text: error.message,
+            action: '<button type="button" class="button button-primary" data-reload-browse>Try again</button>'
+        });
+    }
+}
 
+async function runSearch(root, query) {
+    const box = root.querySelector('[data-search-results]');
+    browse.query = query;
+
+    if (!query) {
+        browse.results = null;
+        box.innerHTML = '';
+        return;
+    }
+
+    box.innerHTML = spinner('Searching');
+
+    const arabic = /[؀-ۿ]/.test(query);
+    const edition = arabic ? 'quran-simple-clean' : quranPrefs.get().selectedTranslation;
+
+    try {
+        const result = await searchQuran(query, edition);
+        browse.results = result;
+
+        box.innerHTML = `
+            <section class="search-results" aria-live="polite">
+                <header class="panel-head">
+                    <h2 class="panel-title">${result.count ? `${result.count} ${result.count === 1 ? 'result' : 'results'}` : 'No results'}</h2>
+                    <button type="button" class="link-button" data-clear-search>Clear</button>
+                </header>
+                ${result.count ? `<ol class="result-list">
+                    ${result.matches.slice(0, 100).map(match => `
+                        <li><a class="result" href="#quran/${match.surah}:${match.numberInSurah}">
+                            <strong>${esc(match.surahName)} ${match.surah}:${match.numberInSurah}</strong>
+                            <span ${arabic ? 'lang="ar" dir="rtl" class="result-arabic"' : ''}>${highlight(match.text, query)}</span>
+                        </a></li>`).join('')}
+                </ol>${result.count > 100 ? '<p class="panel-note">Showing the first 100 results. Add words to narrow the search.</p>' : ''}` : '<p class="panel-note">Try a different word, or check the spelling.</p>'}
+            </section>
+        `;
+    } catch (error) {
+        box.innerHTML = emptyState({ title: 'Search failed', text: error.message });
+    }
+}
+
+/* ---------------------------------------------------------------
+ * Reader
+ * ------------------------------------------------------------- */
+
+function readerShell(kind, number) {
+    return `
+        <div class="page reader" data-reader>
+            <div class="reader-bar">
+                <a class="icon-button" href="#quran" aria-label="All surahs">${icon('left')}</a>
+                <div class="reader-bar-title" data-reader-title>${kind === 'juz' ? `Juz ${number}` : `Surah ${number}`}</div>
+                <button type="button" class="icon-button" data-reader-play aria-label="Play from the start">${icon('play', { size: 18 })}</button>
+                <button type="button" class="icon-button" data-reader-options aria-label="Reading options">${icon('type', { size: 18 })}</button>
+            </div>
+            <div class="reader-body" data-reader-body>${spinner('Loading')}</div>
+        </div>
+    `;
+}
+
+function ayahHTML(ayah, prefs, showSurahLabel) {
+    const bookmarked = prefs.bookmarks.some(item => Number(item.number) === ayah.number);
+
+    return `
+        ${showSurahLabel ? `<h3 class="juz-surah">${esc(ayah.surahName)}</h3>` : ''}
+        <article class="ayah" id="ayah-${ayah.number}" data-ayah="${ayah.number}" data-key="${ayah.surah}:${ayah.numberInSurah}">
+            <p class="ayah-arabic" lang="ar" dir="rtl">${esc(ayah.text)} <span class="ayah-end" aria-label="Ayah ${ayah.numberInSurah}">\u06DD${toArabicDigits(ayah.numberInSurah)}</span></p>
+            ${prefs.showTranslation && ayah.translation ? `<p class="ayah-translation"><span class="ayah-ref tnum">${ayah.surah}:${ayah.numberInSurah}</span> ${esc(ayah.translation)}</p>` : ''}
+            <div class="ayah-actions">
+                ${prefs.showTranslation && ayah.translation ? '' : `<span class="ayah-ref tnum">${ayah.surah}:${ayah.numberInSurah}</span>`}
+                <button type="button" class="icon-button" data-ayah-play="${ayah.number}" aria-label="Play ayah ${ayah.numberInSurah}">${icon('play', { size: 16 })}</button>
+                <button type="button" class="icon-button ${bookmarked ? 'is-on' : ''}" data-ayah-bookmark="${ayah.number}" aria-pressed="${bookmarked}" aria-label="Bookmark ayah ${ayah.numberInSurah}">${icon(bookmarked ? 'bookmarkFilled' : 'bookmark', { size: 16 })}</button>
+                <button type="button" class="text-button" data-ayah-tafsir="${ayah.number}">Tafsir</button>
+                <button type="button" class="icon-button" data-ayah-share="${ayah.number}" aria-label="Share ayah ${ayah.numberInSurah}">${icon('share', { size: 16 })}</button>
+            </div>
         </article>
     `;
 }
 
-
-
-async function loadTafsir(ayah) {
-
-    const surahNumber =
-        Number(
-            ayah.surah?.number ||
-            state.quran.selectedSurah
-        );
-
-    const ayahNumber =
-        Number(
-            ayah.numberInSurah
-        );
-
-    if (
-        !surahNumber ||
-        !ayahNumber
-    ) {
-        throw new Error(
-            'Unable to determine the ayah reference.'
-        );
-    }
-
-    const verseKey =
-        `${surahNumber}:${ayahNumber}`;
-
-    /*
-     * Quran Foundation / Quran.com
-     * Resource 169 = Tafsir Ibn Kathir
-     */
-    const url =
-        `https://api.quran.com/api/v4/tafsirs/169/by_ayah/${encodeURIComponent(verseKey)}`;
-
-    const result =
-        await fetchJson(url);
-
-    return {
-        ...result.tafsir,
-        verseKey
-    };
+function toArabicDigits(number) {
+    return String(number).replace(/\d/g, digit => '٠١٢٣٤٥٦٧٨٩'[digit]);
 }
 
+function readerContent() {
+    const prefs = quranPrefs.get();
 
-function sanitizeTafsirHtml(
-    html = ''
-) {
-
-    const template =
-        document.createElement(
-            'template'
-        );
-
-    template.innerHTML =
-        String(html);
-
-    const allowed =
-        new Set([
-            'P',
-            'BR',
-            'STRONG',
-            'EM',
-            'B',
-            'I',
-            'H2',
-            'H3',
-            'UL',
-            'OL',
-            'LI',
-            'A'
-        ]);
-
-    template.content
-        .querySelectorAll('*')
-        .forEach(element => {
-
-            if (
-                !allowed.has(
-                    element.tagName
-                )
-            ) {
-
-                element.replaceWith(
-                    document.createTextNode(
-                        element.textContent ||
-                        ''
-                    )
-                );
-
-                return;
-            }
-
-            [
-                ...element.attributes
-            ].forEach(attribute => {
-
-                if (
-                    element.tagName === 'A' &&
-                    attribute.name === 'href'
-                ) {
-
-                    const value =
-                        attribute.value ||
-                        '';
-
-                    if (
-                        !value.startsWith(
-                            'https://'
-                        )
-                    ) {
-
-                        element.removeAttribute(
-                            'href'
-                        );
-
-                    } else {
-
-                        element.setAttribute(
-                            'target',
-                            '_blank'
-                        );
-
-                        element.setAttribute(
-                            'rel',
-                            'noopener noreferrer'
-                        );
-                    }
-
-                } else {
-
-                    element.removeAttribute(
-                        attribute.name
-                    );
-                }
-            });
-        });
-
-    return template.innerHTML;
-}
-
-
-function closeTafsirModal() {
-
-    document
-        .querySelector(
-            '[data-q2-tafsir-modal]'
-        )
-        ?.remove();
-
-    document.body.classList.remove(
-        'q2-tafsir-open'
-    );
-}
-
-
-function bindTafsirClose(
-    modal
-) {
-
-    modal
-        .querySelectorAll(
-            '[data-q2-tafsir-close]'
-        )
-        .forEach(button => {
-
-            button.addEventListener(
-                'click',
-                closeTafsirModal
-            );
-        });
-
-    modal
-        .querySelector(
-            '.q2-tafsir-backdrop'
-        )
-        ?.addEventListener(
-            'click',
-            closeTafsirModal
-        );
-}
-
-
-function renderTafsirModal(
-    ayah,
-    tafsir
-) {
-
-    closeTafsirModal();
-
-    const surahName =
-        ayah.surah?.englishName ||
-        ayah.surah?.name ||
-        'Quran';
-
-    const verseKey =
-        tafsir.verseKey ||
-        `${ayah.surah?.number || state.quran.selectedSurah}:${ayah.numberInSurah}`;
-
-    const sourceName =
-        tafsir.resource_name ||
-        tafsir.resourceName ||
-        tafsir.translated_name?.name ||
-        'Tafsir Ibn Kathir';
-
-    const text =
-        sanitizeTafsirHtml(
-            tafsir.text ||
-            ''
-        );
-
-    const modal =
-        document.createElement(
-            'div'
-        );
-
-    modal.className =
-        'q2-tafsir-modal';
-
-    modal.setAttribute(
-        'data-q2-tafsir-modal',
-        ''
-    );
-
-    modal.innerHTML = `
-
-        <div
-            class="q2-tafsir-backdrop"
-            data-q2-tafsir-close
-        ></div>
-
-
-        <section
-            class="q2-tafsir-dialog"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="q2-tafsir-title"
-        >
-
-            <header
-                class="q2-tafsir-header"
-            >
-
-                <div>
-
-                    <span class="q2-eyebrow">
-                        TAFSIR
-                    </span>
-
-                    <h2
-                        id="q2-tafsir-title"
-                    >
-                        ${escapeHtml(
-                            sourceName
-                        )}
-                    </h2>
-
-                    <p>
-                        ${escapeHtml(
-                            surahName
-                        )}
-                        ·
-                        ${escapeHtml(
-                            verseKey
-                        )}
-                    </p>
-
-                </div>
-
-
-                <button
-                    class="q2-tafsir-close"
-                    type="button"
-                    data-q2-tafsir-close
-                    aria-label="Close tafsir"
-                >
-                    ×
-                </button>
-
+    if (reading.kind === 'juz') {
+        let lastSurah = null;
+        return `
+            <header class="surah-head">
+                <h1 class="surah-title">Juz <span class="num">${reading.number}</span></h1>
             </header>
-
-
-            <div
-                class="q2-tafsir-ayah"
-            >
-
-                <div
-                    class="q2-tafsir-arabic"
-                    dir="rtl"
-                >
-                    ${escapeHtml(
-                        ayah.text ||
-                        ''
-                    )}
-                </div>
-
-
-                ${
-                    ayah.translation
-                        ? `
-                            <div
-                                class="q2-tafsir-translation"
-                            >
-                                ${escapeHtml(
-                                    ayah.translation.text ||
-                                    ''
-                                )}
-                            </div>
-                        `
-                        : ''
-                }
-
+            <div class="ayahs" style="--quran-scale:${prefs.fontSize / 100}">
+                ${reading.ayahs.map(ayah => {
+                    const label = ayah.surah !== lastSurah;
+                    lastSurah = ayah.surah;
+                    return ayahHTML(ayah, prefs, label);
+                }).join('')}
             </div>
-
-
-            <div
-                class="q2-tafsir-content"
-            >
-
-                ${
-                    text ||
-                    '<p>No tafsir text was returned for this ayah.</p>'
-                }
-
-            </div>
-
-
-            <footer
-                class="q2-tafsir-footer"
-            >
-
-                <span>
-                    Source:
-                    ${escapeHtml(
-                        sourceName
-                    )}
-                </span>
-
-                <a
-                    href="https://quran.com/${encodeURIComponent(verseKey)}/tafsirs/169"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    View source
-                </a>
-
-            </footer>
-
-        </section>
-    `;
-
-    document.body.appendChild(
-        modal
-    );
-
-    document.body.classList.add(
-        'q2-tafsir-open'
-    );
-
-    bindTafsirClose(
-        modal
-    );
-
-    modal
-        .querySelector(
-            '.q2-tafsir-close'
-        )
-        ?.focus();
-}
-
-
-async function openTafsir(
-    ayah
-) {
-
-    closeTafsirModal();
-
-    const verseKey =
-        `${ayah.surah?.number || state.quran.selectedSurah}:${ayah.numberInSurah}`;
-
-    const modal =
-        document.createElement(
-            'div'
-        );
-
-    modal.className =
-        'q2-tafsir-modal';
-
-    modal.setAttribute(
-        'data-q2-tafsir-modal',
-        ''
-    );
-
-    modal.innerHTML = `
-
-        <div
-            class="q2-tafsir-backdrop"
-            data-q2-tafsir-close
-        ></div>
-
-
-        <section
-            class="q2-tafsir-dialog"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="q2-tafsir-loading-title"
-        >
-
-            <header
-                class="q2-tafsir-header"
-            >
-
-                <div>
-
-                    <span class="q2-eyebrow">
-                        TAFSIR
-                    </span>
-
-                    <h2
-                        id="q2-tafsir-loading-title"
-                    >
-                        Tafsir Ibn Kathir
-                    </h2>
-
-                    <p>
-                        ${escapeHtml(
-                            ayah.surah?.englishName ||
-                            'Quran'
-                        )}
-                        ·
-                        ${escapeHtml(
-                            verseKey
-                        )}
-                    </p>
-
-                </div>
-
-
-                <button
-                    class="q2-tafsir-close"
-                    type="button"
-                    data-q2-tafsir-close
-                    aria-label="Close tafsir"
-                >
-                    ×
-                </button>
-
-            </header>
-
-
-            <div
-                class="q2-tafsir-loading"
-            >
-
-                <div
-                    class="q2-spinner"
-                ></div>
-
-                <p>
-                    Loading tafsir...
-                </p>
-
-            </div>
-
-        </section>
-    `;
-
-    document.body.appendChild(
-        modal
-    );
-
-    document.body.classList.add(
-        'q2-tafsir-open'
-    );
-
-    bindTafsirClose(
-        modal
-    );
-
-    try {
-
-        const tafsir =
-            await loadTafsir(
-                ayah
-            );
-
-        if (
-            !document.body.contains(
-                modal
-            )
-        ) {
-            return;
-        }
-
-        renderTafsirModal(
-            ayah,
-            tafsir
-        );
-
-    } catch (error) {
-
-        if (
-            !document.body.contains(
-                modal
-            )
-        ) {
-            return;
-        }
-
-        const dialog =
-            modal.querySelector(
-                '.q2-tafsir-dialog'
-            );
-
-        if (!dialog) {
-            return;
-        }
-
-        dialog.innerHTML = `
-
-            <header
-                class="q2-tafsir-header"
-            >
-
-                <div>
-
-                    <span
-                        class="q2-eyebrow"
-                    >
-                        TAFSIR
-                    </span>
-
-                    <h2>
-                        Tafsir unavailable
-                    </h2>
-
-                    <p>
-                        ${escapeHtml(
-                            ayah.surah?.englishName ||
-                            'Quran'
-                        )}
-                        ·
-                        ${escapeHtml(
-                            verseKey
-                        )}
-                    </p>
-
-                </div>
-
-
-                <button
-                    class="q2-tafsir-close"
-                    type="button"
-                    data-q2-tafsir-close
-                    aria-label="Close tafsir"
-                >
-                    ×
-                </button>
-
-            </header>
-
-
-            <div
-                class="q2-tafsir-error"
-            >
-
-                <p>
-                    ${escapeHtml(
-                        error?.message ||
-                        'The tafsir could not be loaded.'
-                    )}
-                </p>
-
-            </div>
-        `;
-
-        bindTafsirClose(
-            modal
-        );
-    }
-}
-
-function renderReaderError(
-    error
-) {
-
-    const reader =
-        document.querySelector(
-            '[data-q2-reader]'
-        );
-
-    if (!reader) {
-        return;
-    }
-
-
-    reader.innerHTML = `
-
-        <div class="q2-empty q2-error">
-
-            <div class="q2-empty-icon">
-                !
-            </div>
-
-            <h3>
-                Quran could not be loaded
-            </h3>
-
-            <p>
-                ${escapeHtml(
-                    error?.message ||
-                    'Please check your connection.'
-                )}
-            </p>
-
-        </div>
-    `;
-}
-
-
-function focusReaderAyah() {
-
-    if (!state.quran.selectedAyah) {
-        return;
-    }
-
-
-    const target =
-        document.querySelector(
-            `[data-q2-ayah]`
-        );
-
-
-    const items =
-        document.querySelectorAll(
-            '[data-q2-ayah]'
-        );
-
-
-    const index =
-        state.quran.ayahs.findIndex(
-            ayah =>
-                Number(
-                    ayah.numberInSurah
-                ) ===
-                Number(
-                    state.quran.selectedAyah
-                )
-        );
-
-
-    if (
-        index >= 0 &&
-        items[index]
-    ) {
-
-        items[index].scrollIntoView({
-            behavior: 'smooth',
-            block: 'center'
-        });
-    }
-}
-
-
-function bindReader() {
-
-    document
-        .querySelectorAll(
-            '[data-q2-play]'
-        )
-        .forEach(button => {
-
-            button.addEventListener(
-                'click',
-                () => {
-
-                    playAyah(
-                        Number(
-                            button.dataset.q2Play
-                        )
-                    );
-                }
-            );
-        });
-
-
-     document
-
-
-         .querySelectorAll(
-
-
-             '[data-q2-tafsir]'
-
-
-         )
-
-
-         .forEach(button => {
-
-
-
-
-
-             button.addEventListener(
-
-
-                 'click',
-
-
-                 event => {
-
-
-
-
-
-                     event.stopPropagation();
-
-
-
-
-
-                     const ayah =
-
-
-                         state.quran.ayahs[
-
-
-                             Number(
-
-
-                                 button.dataset.q2Tafsir
-
-
-                             )
-
-
-                         ];
-
-
-
-
-
-                     if (ayah) {
-
-
-
-
-
-                         openTafsir(
-
-
-                             ayah
-
-
-                         );
-
-
-                     }
-
-
-                 }
-
-
-             );
-
-
-         });
-
-
-
-
-
-
-
-    document
-        .querySelectorAll(
-            '[data-q2-bookmark]'
-        )
-        .forEach(button => {
-
-            button.addEventListener(
-                'click',
-                () => {
-
-                    const index =
-                        Number(
-                            button.dataset.q2Bookmark
-                        );
-
-
-                    const ayah =
-                        state.quran.ayahs[index];
-
-
-                    if (ayah) {
-
-                        toggleBookmark(
-                            ayah
-                        );
-
-                        if (
-                            state.quran.currentView ===
-                            'reader'
-                        ) {
-
-                            if (
-                                state.quran.selectedSurah
-                            ) {
-
-                                const surah =
-                                    state.quran.selectedSurah;
-
-                                const focus =
-                                    ayah.numberInSurah;
-
-                                loadSurah(
-                                    surah,
-                                    focus
-                                );
-
-                            }
-                        }
-                    }
-                }
-            );
-        });
-
-
-    document
-        .querySelector(
-            '[data-q2-play-surah]'
-        )
-        ?.addEventListener(
-            'click',
-            playSurah
-        );
-
-
-    document
-        .querySelector(
-            '[data-q2-reader-back]'
-        )
-        ?.addEventListener(
-            'click',
-            () => {
-
-                state.quran.currentView =
-                    'surahs';
-
-                const reader =
-                    document.querySelector(
-                        '[data-q2-reader]'
-                    );
-
-                const browser =
-                    document.querySelector(
-                        '[data-q2-browser]'
-                    );
-
-                if (reader) {
-                    reader.classList.add(
-                        'is-hidden'
-                    );
-                }
-
-                if (browser) {
-                    browser.classList.remove(
-                        'is-hidden'
-                    );
-                }
-
-                renderSurahList();
-
-                browser?.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-        );
-}
-
-
-function createAudio() {
-
-    if (audio) {
-        return audio;
-    }
-
-
-    audio =
-        document.createElement(
-            'audio'
-        );
-
-
-    audio.preload =
-        'metadata';
-
-    audio.controls =
-        false;
-
-    audio.style.display =
-        'none';
-
-
-    document.body.appendChild(
-        audio
-    );
-
-
-    audio.addEventListener(
-        'loadedmetadata',
-        () => {
-
-            playerDuration =
-                audio.duration || 0;
-
-            updateAudioPlayer();
-        }
-    );
-
-
-    audio.addEventListener(
-        'timeupdate',
-        () => {
-
-            playerCurrentTime =
-                audio.currentTime || 0;
-
-            updateAudioPlayer();
-        }
-    );
-
-
-    audio.addEventListener(
-        'play',
-        () => {
-
-            playerPlaying =
-                true;
-
-            updateAudioPlayer();
-
-            highlightCurrentAyah();
-        }
-    );
-
-
-    audio.addEventListener(
-        'pause',
-        () => {
-
-            playerPlaying =
-                false;
-
-            updateAudioPlayer();
-        }
-    );
-
-
-    audio.addEventListener(
-        'ended',
-        () => {
-
-            playerPlaying =
-                false;
-
-
-            if (
-                currentAudioMode ===
-                'ayah'
-            ) {
-
-                if (
-                    state.quran.autoPlay
-                ) {
-
-                    playNextAyah();
-
-                } else {
-
-                    updateAudioPlayer();
-                }
-
-            } else {
-
-                updateAudioPlayer();
-            }
-        }
-    );
-
-
-    return audio;
-}
-
-
-function prepareAyahAudio(index) {
-
-    const ayah =
-        state.quran.ayahs[index];
-
-    if (!ayah) {
-        return false;
-    }
-
-    const player =
-        createAudio();
-
-    if (!player) {
-        return false;
-    }
-
-    if (!player.paused) {
-        player.pause();
-    }
-
-    currentAudioMode =
-        'ayah';
-
-    currentAudioIndex =
-        index;
-
-    state.quran.selectedAyah =
-        ayah.numberInSurah;
-
-    const url =
-        `${CDN_BASE}/audio/128/${encodeURIComponent(
-            state.quran.selectedReciter
-        )}/${ayah.number}.mp3`;
-
-    player.src =
-        url;
-
-    player.currentTime =
-        0;
-
-    playerPlaying =
-        false;
-
-    playerCurrentTime =
-        0;
-
-    playerDuration =
-        0;
-
-    updatePlayerTrack();
-
-    highlightCurrentAyah();
-
-    return true;
-}
-
-
-function playAyah(index) {
-
-    const ayah =
-        state.quran.ayahs[index];
-
-
-    if (!ayah) {
-        return;
-    }
-
-
-    const player =
-        createAudio();
-
-
-    openAudioPlayer();
-
-
-    currentAudioMode =
-        'ayah';
-
-    currentAudioIndex =
-        index;
-
-
-    state.quran.selectedAyah =
-        ayah.numberInSurah;
-
-
-    saveLastRead(
-        ayah.surah?.number ||
-        state.quran.selectedSurah,
-        ayah.numberInSurah
-    );
-
-
-    const url =
-        `${CDN_BASE}/audio/128/${encodeURIComponent(
-            state.quran.selectedReciter
-        )}/${ayah.number}.mp3`;
-
-
-    player.src =
-        url;
-
-    player.currentTime =
-        0;
-
-
-    playerPlaying =
-        false;
-
-    playerCurrentTime =
-        0;
-
-    playerDuration =
-        0;
-
-
-    updatePlayerTrack();
-
-    highlightCurrentAyah();
-
-
-    player.play()
-        .catch(
-            error => {
-
-                console.error(
-                    '[Quran] Audio playback failed',
-                    error
-                );
-
-                playerPlaying =
-                    false;
-
-                updateAudioPlayer();
-            }
-        );
-}
-
-
-function playSurah() {
-
-    if (
-        !state.quran.selectedSurah ||
-        !state.quran.ayahs.length
-    ) {
-        return;
-    }
-
-
-    currentAudioMode =
-        'ayah';
-
-
-    playAyah(0);
-}
-
-
-function highlightCurrentAyah() {
-
-    document
-        .querySelectorAll(
-            '.q2-ayah.is-playing'
-        )
-        .forEach(
-            element =>
-                element.classList.remove(
-                    'is-playing'
-                )
-        );
-
-
-    const active =
-        document.querySelector(
-            `[data-q2-ayah="${currentAudioIndex}"]`
-        );
-
-
-    if (active) {
-
-        active.classList.add(
-            'is-playing'
-        );
-
-        active.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center'
-        });
-    }
-}
-
-
-function bindSurahCards() {
-
-    document
-        .querySelectorAll(
-            '[data-q2-surah]'
-        )
-        .forEach(button => {
-
-            button.addEventListener(
-                'click',
-                () => {
-
-                    loadSurah(
-                        Number(
-                            button.dataset.q2Surah
-                        )
-                    );
-                }
-            );
-        });
-}
-
-
-function showBrowser() {
-
-    document
-        .querySelector(
-            '[data-q2-browser]'
-        )
-        ?.classList.remove(
-            'is-hidden'
-        );
-
-
-    document
-        .querySelector(
-            '[data-q2-reader]'
-        )
-        ?.classList.remove(
-            'is-hidden'
-        );
-}
-
-
-function setView(
-    view
-) {
-
-    state.quran.currentView =
-        view;
-
-
-    document
-        .querySelectorAll(
-            '[data-q2-tab]'
-        )
-        .forEach(button => {
-
-            button.classList.toggle(
-                'is-active',
-                button.dataset.q2Tab ===
-                view
-            );
-        });
-
-
-    const reader =
-        document.querySelector(
-            '[data-q2-reader]'
-        );
-
-
-    if (view === 'reader') {
-        return;
-    }
-
-
-    reader
-        ?.classList
-        .add(
-            'is-hidden'
-        );
-
-
-    document
-        .querySelector(
-            '[data-q2-browser]'
-        )
-        ?.classList
-        .remove(
-            'is-hidden'
-        );
-
-
-    if (view === 'surahs') {
-
-        renderSurahList();
-
-    } else if (view === 'juz') {
-
-        renderJuzList();
-
-    } else if (view === 'bookmarks') {
-
-        renderBookmarks();
-    }
-}
-
-
-
-
-/* ============================================================
- * Search Result Highlighting
- * ============================================================ */
-
-function escapeSearchRegex(value) {
-    return String(value || '').replace(
-        /[.*+?^${}()|[\]\\]/g,
-        '\\$&'
-    );
-}
-
-function highlightSearchText(text, query) {
-    const source = String(text || '');
-    const cleanQuery = String(query || '').trim();
-
-    if (!source) {
-        return '';
-    }
-
-    if (!cleanQuery) {
-        return escapeHtml(source);
-    }
-
-    const regex = new RegExp(
-        `(${escapeSearchRegex(cleanQuery)})`,
-        'gi'
-    );
-
-    let output = '';
-    let lastIndex = 0;
-    let match;
-
-    while ((match = regex.exec(source)) !== null) {
-        const start = match.index;
-        const end = start + match[0].length;
-
-        output += escapeHtml(
-            source.slice(lastIndex, start)
-        );
-
-        output += `
-            <mark class="adhan-search-highlight">
-                ${escapeHtml(match[0])}
-            </mark>
-        `;
-
-        lastIndex = end;
-
-        if (match[0].length === 0) {
-            regex.lastIndex++;
-        }
-    }
-
-    output += escapeHtml(
-        source.slice(lastIndex)
-    );
-
-    return output;
-}
-
-async function performSearch() {
-
-    const input =
-        document.querySelector(
-            '[data-q2-search]'
-        );
-
-
-    const query =
-        input?.value
-            ?.trim();
-
-
-    if (!query) {
-        return;
-    }
-
-
-    const container =
-        document.querySelector(
-            '[data-q2-content]'
-        );
-
-
-    container.innerHTML = `
-
-        <div class="q2-loading">
-
-            <div class="q2-spinner"></div>
-
-            <p>
-                Searching the Quran...
-            </p>
-
-        </div>
-    `;
-
-
-    try {
-
-        const edition =
-            state.quran.selectedTranslation ||
-            'quran-uthmani';
-
-
-        const result =
-            await fetchJson(
-                `${API_BASE}/search/${encodeURIComponent(
-                    query
-                )}/all/${encodeURIComponent(
-                    edition
-                )}`
-            );
-
-
-        currentResults =
-            result.data?.matches || [];
-
-
-        if (!currentResults.length) {
-
-            container.innerHTML = `
-
-                <div class="q2-empty">
-
-                    <div class="q2-empty-icon">
-                        ?
-                    </div>
-
-                    <h3>
-                        No results found
-                    </h3>
-
-                    <p>
-                        Try another word or phrase.
-                    </p>
-
-                </div>
-            `;
-
-            return;
-        }
-
-
-        container.innerHTML = `
-
-            <div class="q2-search-results">
-
-                <div class="q2-search-summary">
-
-                    <span>
-                        ${result.data.count}
-                        result${
-                            result.data.count === 1
-                                ? ''
-                                : 's'
-                        }
-                    </span>
-
-                    <button
-                        class="q2-text-button"
-                        data-q2-back-browser
-                    >
-                        ← Surahs
-                    </button>
-
-                </div>
-
-
-                ${currentResults
-                    .map(
-                        (match, index) => `
-
-                            <article
-                                class="q2-search-result"
-                            >
-
-                                <div
-                                    class="q2-search-result-top"
-                                >
-
-                                    <strong>
-                                        ${escapeHtml(
-                                            match.surah
-                                                ?.englishName ||
-                                            ''
-                                        )}
-                                    </strong>
-
-                                    <span>
-                                        ${match.surah?.number || ''}
-                                        :
-                                        ${match.numberInSurah || ''}
-                                    </span>
-
-                                </div>
-
-
-                                <p>
-                                    ${escapeHtml(
-                                        match.text
-                                    )}
-                                </p>
-
-
-                                <button
-                                    class="q2-secondary-button"
-                                    data-q2-search-result="${index}"
-                                >
-                                    Open ayah
-                                </button>
-
-                            </article>
-                        `
-                    )
-                    .join('')}
-
-            </div>
-        `;
-
-
-        container
-            .querySelectorAll(
-                '[data-q2-search-result]'
-            )
-            .forEach(button => {
-
-                button.addEventListener(
-                    'click',
-                    () => {
-
-                        const match =
-                            currentResults[
-                                Number(
-                                    button.dataset.q2SearchResult
-                                )
-                            ];
-
-
-                        if (!match) {
-                            return;
-                        }
-
-
-                        loadSurah(
-                            match.surah.number,
-                            match.numberInSurah
-                        );
-                    }
-                );
-            });
-
-
-        container
-            .querySelector(
-                '[data-q2-back-browser]'
-            )
-            ?.addEventListener(
-                'click',
-                () => {
-
-                    setView(
-                        'surahs'
-                    );
-                }
-            );
-
-
-    } catch (error) {
-
-        console.error(
-            '[Quran] Search failed',
-            error
-        );
-
-
-        container.innerHTML = `
-
-            <div class="q2-empty q2-error">
-
-                <div class="q2-empty-icon">
-                    !
-                </div>
-
-                <h3>
-                    Search failed
-                </h3>
-
-                <p>
-                    ${escapeHtml(
-                        error.message
-                    )}
-                </p>
-
-            </div>
+            <nav class="reader-nav">
+                ${reading.number > 1 ? `<a class="button button-ghost" href="#quran/juz/${reading.number - 1}">${icon('left', { size: 18 })} Juz ${reading.number - 1}</a>` : '<span></span>'}
+                ${reading.number < 30 ? `<a class="button button-ghost" href="#quran/juz/${reading.number + 1}">Juz ${reading.number + 1} ${icon('right', { size: 18 })}</a>` : ''}
+            </nav>
         `;
     }
-}
 
-
-function renderLastRead() {
-
-    const container =
-        document.querySelector(
-            '[data-q2-last-read]'
-        );
-
-
-    if (!container) {
-        return;
-    }
-
-
-    const last =
-        state.quran.lastRead;
-
-
-    if (!last) {
-
-        container.innerHTML = `
-            <span>
-                No reading position saved yet.
-            </span>
-        `;
-
-        return;
-    }
-
-
-    const surah =
-        state.quran.surahs.find(
-            item =>
-                item.number ===
-                Number(last.surah)
-        );
-
-
-    container.innerHTML = `
-
-        <div>
-
-            <span class="q2-eyebrow">
-                LAST READ
-            </span>
-
-            <strong>
-                ${
-                    escapeHtml(
-                        surah?.englishName ||
-                        `Surah ${last.surah}`
-                    )
-                }
-            </strong>
-
-            <small>
-                Ayah ${last.ayah}
-            </small>
-
-        </div>
-
-        <button
-            class="q2-primary-button"
-            data-q2-continue
-        >
-            Continue
-        </button>
-    `;
-
-
-    container
-        .querySelector(
-            '[data-q2-continue]'
-        )
-        ?.addEventListener(
-            'click',
-            () => {
-
-                loadSurah(
-                    Number(last.surah),
-                    Number(last.ayah)
-                );
-            }
-        );
-}
-
-
-function renderReaderSettings() {
-
-    const font =
-        document.querySelector(
-            '[data-q2-font]'
-        );
-
-
-    if (font) {
-
-        font.value =
-            state.quran.fontSize;
-    }
-
-
-    const autoplay =
-        document.querySelector(
-            '[data-q2-autoplay]'
-        );
-
-
-    if (autoplay) {
-
-        autoplay.checked =
-            state.quran.autoPlay;
-    }
-}
-
-
-async function initializeQuran() {
-
-    try {
-
-        await Promise.all([
-            loadSurahList(),
-            loadEditions(),
-            loadAudioEditions()
-        ]);
-
-
-        renderLanguageOptions();
-
-        renderTranslationOptions();
-
-        renderReciterOptions();
-
-        if (state.quran.currentView === 'surahs') {
-            renderSurahList();
-        } else if (state.quran.currentView === 'juz') {
-            renderJuzList();
-        } else if (state.quran.currentView === 'bookmarks') {
-            renderBookmarks();
-        }
-
-        renderLastRead();
-
-        renderReaderSettings();
-
-        if (
-            pendingQuranTarget?.surahNumber &&
-            pendingQuranTarget?.ayahNumber
-        ) {
-            const target = pendingQuranTarget;
-
-            pendingQuranTarget = null;
-
-            await loadSurah(
-                target.surahNumber,
-                target.ayahNumber
-            );
-
-            const targetIndex =
-                state.quran.ayahs.findIndex(
-                    ayah =>
-                        Number(ayah.numberInSurah) ===
-                        Number(target.ayahNumber)
-                );
-
-            if (targetIndex >= 0) {
-                prepareAyahAudio(targetIndex);
-            }
-
-        } else if (
-            state.quran.lastRead?.surah &&
-            state.quran.lastRead?.ayah
-        ) {
-            const lastSurah =
-                Number(state.quran.lastRead.surah);
-
-            const lastAyah =
-                Number(state.quran.lastRead.ayah);
-
-            await loadSurah(
-                lastSurah,
-                lastAyah
-            );
-
-            const lastReadIndex =
-                state.quran.ayahs.findIndex(
-                    ayah =>
-                        Number(ayah.numberInSurah) ===
-                        lastAyah
-                );
-
-            if (lastReadIndex >= 0) {
-                prepareAyahAudio(lastReadIndex);
-            }
-        }
-
-
-    } catch (error) {
-
-        console.error(
-            '[Quran] Initialization failed',
-            error
-        );
-
-
-        const container =
-            document.querySelector(
-                '[data-q2-content]'
-            );
-
-
-        if (container) {
-
-            container.innerHTML = `
-
-                <div class="q2-empty q2-error">
-
-                    <div class="q2-empty-icon">
-                        !
-                    </div>
-
-                    <h3>
-                        Quran data could not be loaded
-                    </h3>
-
-                    <p>
-                        ${escapeHtml(
-                            error.message
-                        )}
-                    </p>
-
-                </div>
-            `;
-        }
-    }
-}
-
-
-
-function renderAudioPlayer() {
-
-    let player =
-        document.querySelector(
-            '[data-q2-player]'
-        );
-
-    if (player) {
-
-        player.classList.toggle(
-            'is-minimized',
-            playerMinimized
-        );
-
-        player.classList.toggle(
-            'is-closed',
-            playerClosed
-        );
-
-        return;
-    }
-
-
-    player =
-        document.createElement('aside');
-
-
-    player.className =
-        'q2-audio-player';
-
-
-    player.dataset.q2Player =
-        'true';
-
-
-    player.innerHTML = `
-
-        <div class="q2-player-main">
-
-            <div class="q2-player-info">
-
-                <span
-                    class="q2-player-eyebrow"
-                    data-q2-player-label
-                >
-                    QURAN AUDIO
-                </span>
-
-
-                <strong
-                    data-q2-player-title
-                >
-                    Ready to listen
-                </strong>
-
-
-                <small
-                    data-q2-player-reciter
-                >
-                    ${escapeHtml(
-                        state.quran.selectedReciter
-                    )}
-                </small>
-
-            </div>
-
-
-            <div class="q2-player-controls">
-
-                <button
-                    class="q2-player-button"
-                    data-q2-player-prev
-                    title="Previous ayah"
-                    aria-label="Previous ayah"
-                    type="button"
-                >
-                    ‹
-                </button>
-
-
-                <button
-                    class="q2-player-play"
-                    data-q2-player-play
-                    title="Play"
-                    aria-label="Play"
-                    type="button"
-                >
-                    ▶
-                </button>
-
-
-                <button
-                    class="q2-player-button"
-                    data-q2-player-next
-                    title="Next ayah"
-                    aria-label="Next ayah"
-                    type="button"
-                >
-                    ›
-                </button>
-
-            </div>
-
-
-            <button
-                class="q2-player-repeat"
-                data-q2-player-repeat
-                title="Repeat"
-                aria-label="Repeat"
-                type="button"
-            >
-                ↻
-            </button>
-
-
-            <div
-                class="q2-player-window-actions"
-                aria-label="Audio player options"
-            >
-
-                <button
-                    class="q2-player-window-button"
-                    data-q2-player-minimize
-                    title="Minimize player"
-                    aria-label="Minimize player"
-                    type="button"
-                >
-                    −
-                </button>
-
-
-                <button
-                    class="q2-player-window-button q2-player-close"
-                    data-q2-player-close
-                    title="Close player"
-                    aria-label="Close player"
-                    type="button"
-                >
-                    ×
-                </button>
-
-            </div>
-
-        </div>
-
-
-        <div class="q2-player-progress">
-
-            <span
-                data-q2-player-current
-            >
-                0:00
-            </span>
-
-
-            <input
-                type="range"
-                min="0"
-                max="0"
-                value="0"
-                step="0.1"
-                data-q2-player-seek
-                aria-label="Audio progress"
-            >
-
-
-            <span
-                data-q2-player-duration
-            >
-                0:00
-            </span>
-
-        </div>
-    `;
-
-
-    document.body.appendChild(
-        player
-    );
-
-
-    player.classList.toggle(
-        'is-minimized',
-        playerMinimized
-    );
-
-
-    player.classList.toggle(
-        'is-closed',
-        playerClosed
-    );
-
-
-    bindAudioPlayer();
-}
-
-
-function formatAudioTime(seconds) {
-
-    if (!Number.isFinite(seconds)) {
-        return '0:00';
-    }
-
-    const minutes =
-        Math.floor(seconds / 60);
-
-    const remaining =
-        Math.floor(seconds % 60);
-
-    return `${minutes}:${String(
-        remaining
-    ).padStart(2, '0')}`;
-}
-
-
-function updateAudioPlayer() {
-
-    const player =
-        document.querySelector(
-            '[data-q2-player]'
-        );
-
-    if (!player) {
-        return;
-    }
-
-    const playButton =
-        player.querySelector(
-            '[data-q2-player-play]'
-        );
-
-    const seek =
-        player.querySelector(
-            '[data-q2-player-seek]'
-        );
-
-    const current =
-        player.querySelector(
-            '[data-q2-player-current]'
-        );
-
-    const duration =
-        player.querySelector(
-            '[data-q2-player-duration]'
-        );
-
-
-    if (playButton) {
-
-        playButton.textContent =
-            playerPlaying
-                ? '❚❚'
-                : '▶';
-
-        playButton.title =
-            playerPlaying
-                ? 'Pause'
-                : 'Play';
-    }
-
-
-    if (seek) {
-
-        seek.max =
-            String(
-                playerDuration || 0
-            );
-
-        seek.value =
-            String(
-                playerCurrentTime || 0
-            );
-    }
-
-
-    if (current) {
-
-        current.textContent =
-            formatAudioTime(
-                playerCurrentTime
-            );
-    }
-
-
-    if (duration) {
-
-        duration.textContent =
-            formatAudioTime(
-                playerDuration
-            );
-    }
-
-
-    const reciter =
-        player.querySelector(
-            '[data-q2-player-reciter]'
-        );
-
-    if (reciter) {
-
-        const edition =
-            state.quran.audioEditions
-                .find(
-                    item =>
-                        item.identifier ===
-                        state.quran.selectedReciter
-                );
-
-        reciter.textContent =
-            edition?.englishName ||
-            edition?.name ||
-            state.quran.selectedReciter;
-    }
-}
-
-
-function updatePlayerTrack() {
-
-    const title =
-        document.querySelector(
-            '[data-q2-player-title]'
-        );
-
-    if (!title) {
-        return;
-    }
-
-
-    if (
-        state.quran.selectedSurah &&
-        state.quran.selectedAyah
-    ) {
-
-        const surah =
-            state.quran.surahs.find(
-                item =>
-                    item.number ===
-                    Number(
-                        state.quran.selectedSurah
-                    )
-            );
-
-
-        title.textContent =
-            `${surah?.englishName || `Surah ${state.quran.selectedSurah}`} · Ayah ${state.quran.selectedAyah}`;
-
-    } else {
-
-        title.textContent =
-            'Ready to listen';
-    }
-
-
-    updateAudioPlayer();
-}
-
-
-function bindAudioPlayerWindowControls() {
-
-    const player =
-        document.querySelector(
-            '[data-q2-player]'
-        );
-
-    if (!player) {
-        return;
-    }
-
-
-    const minimizeButton =
-        player.querySelector(
-            '[data-q2-player-minimize]'
-        );
-
-
-    const closeButton =
-        player.querySelector(
-            '[data-q2-player-close]'
-        );
-
-
-    minimizeButton?.addEventListener(
-        'click',
-        () => {
-
-            playerMinimized =
-                !playerMinimized;
-
-
-            player.classList.toggle(
-                'is-minimized',
-                playerMinimized
-            );
-
-
-            minimizeButton.textContent =
-                playerMinimized
-                    ? '＋'
-                    : '−';
-
-
-            minimizeButton.title =
-                playerMinimized
-                    ? 'Expand player'
-                    : 'Minimize player';
-
-
-            minimizeButton.setAttribute(
-                'aria-label',
-                playerMinimized
-                    ? 'Expand player'
-                    : 'Minimize player'
-            );
-        }
-    );
-
-
-    closeButton?.addEventListener(
-        'click',
-        () => {
-
-            closeAudioPlayer();
-        }
-    );
-}
-
-
-function closeAudioPlayer() {
-
-    if (audio) {
-
-        audio.pause();
-
-        audio.currentTime = 0;
-    }
-
-
-    playerPlaying = false;
-
-    playerCurrentTime = 0;
-
-    playerDuration = 0;
-
-    playerClosed = true;
-
-    playerVisible = false;
-
-
-    document
-        .querySelectorAll(
-            '.q2-ayah.is-playing'
-        )
-        .forEach(
-            element =>
-                element.classList.remove(
-                    'is-playing'
-                )
-        );
-
-
-    const player =
-        document.querySelector(
-            '[data-q2-player]'
-        );
-
-
-    if (player) {
-
-        player.classList.add(
-            'is-closed'
-        );
-
-        player.classList.remove(
-            'is-minimized'
-        );
-    }
-}
-
-
-function openAudioPlayer() {
-
-    playerClosed = false;
-
-    playerVisible = true;
-
-
-    const player =
-        document.querySelector(
-            '[data-q2-player]'
-        );
-
-
-    if (!player) {
-
-        renderAudioPlayer();
-
-        return;
-    }
-
-
-    player.classList.remove(
-        'is-closed'
-    );
-
-
-    player.classList.toggle(
-        'is-minimized',
-        playerMinimized
-    );
-
-
-    updateAudioPlayer();
-
-    updatePlayerTrack();
-}
-
-
-function bindAudioPlayer() {
-
-    const player =
-        document.querySelector(
-            '[data-q2-player]'
-        );
-
-    if (!player) {
-        return;
-    }
-
-
-    player
-        .querySelector(
-            '[data-q2-player-play]'
-        )
-        ?.addEventListener(
-            'click',
-            () => {
-
-                if (!audio) {
-                    return;
-                }
-
-                if (audio.paused) {
-
-                    audio.play()
-                        .catch(
-                            error =>
-                                console.error(
-                                    '[Quran] Player play failed',
-                                    error
-                                )
-                        );
-
-                } else {
-
-                    audio.pause();
-                }
-            }
-        );
-
-
-    player
-        .querySelector(
-            '[data-q2-player-prev]'
-        )
-        ?.addEventListener(
-            'click',
-            playPreviousAyah
-        );
-
-
-    player
-        .querySelector(
-            '[data-q2-player-next]'
-        )
-        ?.addEventListener(
-            'click',
-            playNextAyah
-        );
-
-
-    player
-        .querySelector(
-            '[data-q2-player-repeat]'
-        )
-        ?.addEventListener(
-            'click',
-            () => {
-
-                playerRepeat =
-                    !playerRepeat;
-
-                player.classList.toggle(
-                    'is-repeat',
-                    playerRepeat
-                );
-            }
-        );
-
-
-    player
-        .querySelector(
-            '[data-q2-player-seek]'
-        )
-        ?.addEventListener(
-            'input',
-            event => {
-
-                if (!audio) {
-                    return;
-                }
-
-                audio.currentTime =
-                    Number(
-                        event.target.value
-                    );
-            }
-        );
-
-
-    bindAudioPlayerWindowControls();
-
-    updateAudioPlayer();
-
-    updatePlayerTrack();
-}
-
-
-function playPreviousAyah() {
-
-    if (
-        !state.quran.ayahs.length ||
-        currentAudioIndex <= 0
-    ) {
-        return;
-    }
-
-    playAyah(
-        currentAudioIndex - 1
-    );
-}
-
-
-function playNextAyah() {
-
-    if (
-        !state.quran.ayahs.length
-    ) {
-        return;
-    }
-
-    const next =
-        currentAudioIndex + 1;
-
-    if (
-        next >=
-        state.quran.ayahs.length
-    ) {
-
-        if (playerRepeat) {
-
-            playAyah(0);
-
-        } else {
-
-            stopAudioPlayer();
-        }
-
-        return;
-    }
-
-    playAyah(next);
-}
-
-
-function stopAudioPlayer() {
-
-    if (audio) {
-        audio.pause();
-        audio.currentTime = 0;
-    }
-
-    playerPlaying = false;
-    playerCurrentTime = 0;
-
-    updateAudioPlayer();
-}
-
-
-export function renderQuranPage() {
-
-    document
-        .querySelector(
-            '[data-q2-player]'
-        )
-        ?.remove();
+    const info = reading.info;
+    const hasBasmala = info.number !== 1 && info.number !== 9;
 
     return `
-
-        <section class="q2-page">
-
-            <div class="q2-heading">
-
-                <div>
-
-                    <span class="q2-eyebrow">
-                        THE QURAN
-                    </span>
-
-                    <h1>
-                        Read the Quran
-                    </h1>
-
-                    <p>
-                        Read, listen, search and continue
-                        your journey through the Quran.
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <div
-                class="q2-last-read"
-                data-q2-last-read
-            >
-                <span>
-                    Loading your reading position...
-                </span>
-            </div>
-
-
-            <div class="q2-controls">
-
-                <div class="q2-search-box">
-
-                    <input
-                        type="search"
-                        placeholder="Search the Quran..."
-                        data-q2-search
-                    >
-
-                    <button
-                        class="q2-primary-button"
-                        data-q2-search-submit
-                    >
-                        Search
-                    </button>
-
-                </div>
-
-
-                <div class="q2-select-row">
-
-                    <label>
-
-                        <span>
-                            Language
-                        </span>
-
-                        <select
-                            data-q2-language
-                        >
-                            <option>
-                                Loading...
-                            </option>
-                        </select>
-
-                    </label>
-
-
-                    <label>
-
-                        <span>
-                            Translation
-                        </span>
-
-                        <select
-                            data-q2-translation
-                        >
-                            <option>
-                                Loading...
-                            </option>
-                        </select>
-
-                    </label>
-
-
-                    <label>
-
-                        <span>
-                            Reciter
-                        </span>
-
-                        <select
-                            data-q2-reciter
-                        >
-                            <option>
-                                Loading...
-                            </option>
-                        </select>
-
-                    </label>
-
-                </div>
-
-
-                <div class="q2-reader-settings">
-
-                    <label>
-
-                        <span>
-                            Text size
-                        </span>
-
-                        <input
-                            type="range"
-                            min="80"
-                            max="140"
-                            step="5"
-                            value="100"
-                            data-q2-font
-                        >
-
-                    </label>
-
-
-                    <label class="q2-checkbox">
-
-                        <input
-                            type="checkbox"
-                            checked
-                            data-q2-autoplay
-                        >
-
-                        <span>
-                            Auto-play next ayah
-                        </span>
-
-                    </label>
-
-                </div>
-
-            </div>
-
-
-            <div class="q2-tabs">
-
-                <button
-                    class="q2-tab is-active"
-                    data-q2-tab="surahs"
-                >
-                    Surahs
-                </button>
-
-                <button
-                    class="q2-tab"
-                    data-q2-tab="juz"
-                >
-                    Juz
-                </button>
-
-                <button
-                    class="q2-tab"
-                    data-q2-tab="bookmarks"
-                >
-                    Bookmarks
-                </button>
-
-            </div>
-
-
-            <div
-                class="q2-browser"
-                data-q2-browser
-            >
-
-                <div
-                    class="q2-browser-heading"
-                >
-
-                    <div>
-
-                        <span class="q2-eyebrow">
-                            BROWSE
-                        </span>
-
-                        <h2>
-                            All 114 Surahs
-                        </h2>
-
-                    </div>
-
-                    <input
-                        type="search"
-                        placeholder="Filter Surahs..."
-                        data-q2-surah-filter
-                    >
-
-                </div>
-
-
-                <div
-                    data-q2-content
-                >
-
-                    <div class="q2-loading">
-
-                        <div class="q2-spinner"></div>
-
-                        <p>
-                            Loading Surahs...
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div
-                class="q2-reader is-hidden"
-                data-q2-reader
-            ></div>
-
-            <button
-                class="q2-back-to-top"
-                data-q2-back-to-top
-                type="button"
-                aria-label="Back to top"
-                title="Back to top"
-                hidden
-            >
-                ↑
-            </button>
-
-        </section>
+        <header class="surah-head">
+            <p class="surah-arabic-name" lang="ar" dir="rtl">${esc(info.name)}</p>
+            <h1 class="surah-title">${esc(info.englishName)}</h1>
+            <p class="surah-meta">${esc(info.meaning)}. ${info.type === 'Medinan' ? 'Medinan' : 'Meccan'}, ${info.ayahs} ayahs.</p>
+        </header>
+        ${hasBasmala ? '<p class="basmala" lang="ar" dir="rtl">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</p>' : ''}
+        <div class="ayahs" style="--quran-scale:${prefs.fontSize / 100}">
+            ${reading.ayahs.map(ayah => ayahHTML(ayah, prefs, false)).join('')}
+        </div>
+        <nav class="reader-nav">
+            ${info.number > 1 ? `<a class="button button-ghost" href="#quran/${info.number - 1}">${icon('left', { size: 18 })} Previous surah</a>` : '<span></span>'}
+            ${info.number < 114 ? `<a class="button button-primary" href="#quran/${info.number + 1}">Next surah ${icon('right', { size: 18 })}</a>` : ''}
+        </nav>
     `;
 }
 
+async function loadReader(root, kind, number, focusAyah) {
+    const body = root.querySelector('[data-reader-body]');
+    const title = root.querySelector('[data-reader-title]');
+    const translation = quranPrefs.get().selectedTranslation;
 
+    try {
+        const data = kind === 'juz'
+            ? await loadJuzData(number, translation).catch(() => loadJuzData(number, 'en.sahih'))
+            : await loadSurahData(number, translation).catch(() => loadSurahData(number, 'en.sahih'));
 
-function bindQuranBackToTop() {
-    const button = document.querySelector('[data-q2-back-to-top]');
-
-    if (!button) {
-        return;
-    }
-
-    const oldScrollHandler = window.__q2BackToTopScrollHandler;
-    if (oldScrollHandler) {
-        window.removeEventListener('scroll', oldScrollHandler);
-    }
-
-    if (window.__q2BackToTopPlayerObserver) {
-        window.__q2BackToTopPlayerObserver.disconnect();
-        window.__q2BackToTopPlayerObserver = null;
-    }
-
-    const update = () => {
-        const currentButton = document.querySelector(
-            '[data-q2-back-to-top]'
-        );
-
-        if (!currentButton) {
-            window.removeEventListener('scroll', update);
-            if (window.__q2BackToTopScrollHandler === update) {
-                window.__q2BackToTopScrollHandler = null;
-            }
+        if (!body.isConnected) {
             return;
         }
 
-        const onQuranPage = Boolean(
-            document.querySelector('.q2-page')
-        );
+        reading = { kind, number, info: data.info || null, ayahs: data.ayahs };
+        title.textContent = kind === 'juz' ? `Juz ${number}` : `${data.info.englishName}`;
+        document.title = `${title.textContent} | Adhan Display`;
+        body.innerHTML = readerContent();
+        markPlaying(false);
 
-        currentButton.hidden = !onQuranPage || window.scrollY < 450;
-
-        const player = document.querySelector('[data-q2-player]');
-        const playerVisible = player &&
-            !player.classList.contains('is-closed') &&
-            getComputedStyle(player).display !== 'none';
-
-        if (playerVisible) {
-            const rect = player.getBoundingClientRect();
-            const gap = 20;
-            const buttonHeight = currentButton.offsetHeight || 46;
-            const bottom = window.innerHeight - rect.top + gap;
-
-            currentButton.style.bottom =
-                `${Math.max(24, bottom)}px`;
-
-            currentButton.style.visibility =
-                rect.top < buttonHeight + gap ? 'hidden' : 'visible';
+        if (focusAyah) {
+            const target = body.querySelector(`[data-key="${number}:${focusAyah}"]`);
+            if (target) {
+                target.classList.add('is-target');
+                requestAnimationFrame(() => target.scrollIntoView({ block: 'center' }));
+                setTimeout(() => target.classList.remove('is-target'), 2500);
+            }
         } else {
-            currentButton.style.bottom = '24px';
-            currentButton.style.visibility = 'visible';
+            window.scrollTo(0, 0);
         }
-    };
 
-    window.__q2BackToTopScrollHandler = update;
-    window.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', update);
+        if (kind === 'surah') {
+            quranPrefs.update({ lastRead: { surah: number, ayah: focusAyah || 1 } });
+        }
 
-    button.addEventListener('click', () => {
-        window.scrollTo({
-            top: 0,
-            behavior: window.matchMedia(
-                '(prefers-reduced-motion: reduce)'
-            ).matches ? 'auto' : 'smooth'
-        });
-    });
-
-    const player = document.querySelector('[data-q2-player]');
-    if (player && 'MutationObserver' in window) {
-        window.__q2BackToTopPlayerObserver = new MutationObserver(() => {
-            requestAnimationFrame(update);
-        });
-        window.__q2BackToTopPlayerObserver.observe(player, {
-            attributes: true,
-            attributeFilter: ['class', 'style']
+        trackReading(root);
+    } catch (error) {
+        body.innerHTML = emptyState({
+            title: 'This section could not be loaded',
+            text: error.message,
+            action: `<button type="button" class="button button-primary" data-reader-retry>${icon('refresh')} Try again</button>`
         });
     }
+}
 
-    if (!window.__q2BackToTopNavigationHandler) {
-        window.__q2BackToTopNavigationHandler = () => {
-            if (!document.querySelector('[data-q2-back-to-top]')) {
-                const handler = window.__q2BackToTopScrollHandler;
-                if (handler) {
-                    window.removeEventListener('scroll', handler);
-                    window.removeEventListener('resize', handler);
+/* Remember the ayah at the top of the screen as the reading position. */
+let observer = null;
+
+function trackReading(root) {
+    observer?.disconnect();
+
+    if (!('IntersectionObserver' in window) || reading?.kind !== 'surah') {
+        return;
+    }
+
+    const save = debounce(key => {
+        const [surah, ayah] = key.split(':').map(Number);
+        quranPrefs.update({ lastRead: { surah, ayah } });
+    }, 1500);
+
+    observer = new IntersectionObserver(entries => {
+        const visible = entries.filter(entry => entry.isIntersecting)
+            .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+        if (visible) {
+            save(visible.target.dataset.key);
+        }
+    }, { rootMargin: '-20% 0px -60% 0px' });
+
+    root.querySelectorAll('.ayah').forEach(element => observer.observe(element));
+}
+
+async function openOptions(root) {
+    const prefs = quranPrefs.get();
+    const { root: dialog, close } = openDialog({
+        title: 'Reading options',
+        body: `
+            <label class="field-label" for="opt-translation">Translation</label>
+            <select id="opt-translation" class="select" data-opt="translation"><option>Loading</option></select>
+
+            <label class="field-label" for="opt-reciter">Reciter</label>
+            <select id="opt-reciter" class="select" data-opt="reciter"><option>Loading</option></select>
+
+            <label class="field-label" for="opt-size">Arabic text size</label>
+            <div class="range-row">
+                <span class="range-small" lang="ar">ع</span>
+                <input id="opt-size" type="range" min="80" max="160" step="10" value="${prefs.fontSize}" data-opt="size">
+                <span class="range-large" lang="ar">ع</span>
+            </div>
+
+            <label class="switch-row"><span>Show translation</span>
+                <input type="checkbox" class="switch" data-opt="showTranslation" ${prefs.showTranslation ? 'checked' : ''}></label>
+            <label class="switch-row"><span>Play the next ayah automatically</span>
+                <input type="checkbox" class="switch" data-opt="autoPlay" ${prefs.autoPlay ? 'checked' : ''}></label>
+        `,
+        onClose: () => {
+            if (reading && root.isConnected) {
+                const translation = quranPrefs.get().selectedTranslation;
+                if (translation !== prefs.selectedTranslation) {
+                    root.querySelector('[data-reader-body]').innerHTML = spinner('Loading translation');
+                    loadReader(root, reading.kind, reading.number, null);
+                } else {
+                    root.querySelector('[data-reader-body]').innerHTML = readerContent();
+                    markPlaying(false);
+                    trackReading(root);
                 }
+            }
+        }
+    });
 
-                window.__q2BackToTopScrollHandler = null;
+    fillTranslationSelect(dialog.querySelector('[data-opt="translation"]'), prefs.selectedTranslation);
+    fillReciterSelect(dialog.querySelector('[data-opt="reciter"]'), prefs.selectedReciter);
 
-                if (window.__q2BackToTopPlayerObserver) {
-                    window.__q2BackToTopPlayerObserver.disconnect();
-                    window.__q2BackToTopPlayerObserver = null;
-                }
+    dialog.addEventListener('change', event => {
+        const option = event.target.dataset.opt;
+        if (option === 'translation') {
+            quranPrefs.update({ selectedTranslation: event.target.value });
+        } else if (option === 'reciter') {
+            quranPrefs.update({ selectedReciter: event.target.value });
+            updatePlayer();
+        } else if (option === 'showTranslation' || option === 'autoPlay') {
+            quranPrefs.update({ [option]: event.target.checked });
+        }
+    });
+
+    dialog.querySelector('[data-opt="size"]').addEventListener('input', event => {
+        quranPrefs.update({ fontSize: Number(event.target.value) });
+        root.querySelector('.ayahs')?.style.setProperty('--quran-scale', Number(event.target.value) / 100);
+    });
+
+    return close;
+}
+
+export async function fillTranslationSelect(select, selected) {
+    try {
+        const list = await translations();
+        const languageNames = new Intl.DisplayNames(['en'], { type: 'language' });
+        const groups = new Map();
+
+        list.forEach(item => {
+            if (!groups.has(item.language)) {
+                groups.set(item.language, []);
+            }
+            groups.get(item.language).push(item);
+        });
+
+        const name = code => {
+            try {
+                return languageNames.of(code) || code;
+            } catch {
+                return code;
             }
         };
 
-        window.addEventListener(
-            'adhan:navigate',
-            window.__q2BackToTopNavigationHandler
-        );
+        select.innerHTML = [...groups.entries()]
+            .sort((a, b) => name(a[0]).localeCompare(name(b[0])))
+            .map(([language, items]) => `
+                <optgroup label="${esc(name(language))}">
+                    ${items.map(item => `<option value="${esc(item.id)}" ${item.id === selected ? 'selected' : ''}>${esc(item.name)}</option>`).join('')}
+                </optgroup>
+            `).join('');
+    } catch {
+        select.innerHTML = `<option value="${esc(selected)}">${esc(selected)}</option>`;
+    }
+}
+
+export async function fillReciterSelect(select, selected) {
+    try {
+        const list = await reciters();
+        reciterCache = list;
+        select.innerHTML = list.map(item => `<option value="${esc(item.id)}" ${item.id === selected ? 'selected' : ''}>${esc(item.name)}</option>`).join('');
+    } catch {
+        select.innerHTML = `<option value="${esc(selected)}">${esc(reciterName(selected))}</option>`;
+    }
+}
+
+async function openTafsir(ayah) {
+    const { root } = openDialog({
+        title: `Tafsir of ${ayah.surahName || 'Surah'} ${ayah.surah}:${ayah.numberInSurah}`,
+        wide: true,
+        body: `
+            <p class="ayah-arabic dialog-arabic" lang="ar" dir="rtl">${esc(ayah.text)}</p>
+            ${ayah.translation ? `<p class="ayah-translation">${esc(ayah.translation)}</p>` : ''}
+            <div class="tafsir" data-tafsir>${spinner('Loading tafsir')}</div>
+        `
+    });
+
+    const box = root.querySelector('[data-tafsir]');
+
+    try {
+        const result = await tafsir(ayah.surah, ayah.numberInSurah);
+        box.innerHTML = `
+            <p class="source">${esc(result.name)}</p>
+            ${sanitizeHtml(result.html) || '<p>No tafsir is available for this ayah.</p>'}
+            <p><a class="link-button" href="https://quran.com/${ayah.surah}:${ayah.numberInSurah}" target="_blank" rel="noopener noreferrer">${icon('external', { size: 16 })} Open on Quran.com</a></p>
+        `;
+    } catch (error) {
+        box.innerHTML = `
+            <p class="field-error">The tafsir could not be loaded. ${esc(error.message)}</p>
+            <p><a class="link-button" href="https://quran.com/${ayah.surah}:${ayah.numberInSurah}" target="_blank" rel="noopener noreferrer">${icon('external', { size: 16 })} Read it on Quran.com</a></p>
+        `;
+    }
+}
+
+function findAyah(number) {
+    return reading?.ayahs.find(ayah => ayah.number === Number(number)) || null;
+}
+
+/* ---------------------------------------------------------------
+ * Page
+ * ------------------------------------------------------------- */
+
+function parsePath(path) {
+    const [first, second] = path;
+
+    if (first === 'juz' && Number(second) >= 1 && Number(second) <= 30) {
+        return { view: 'juz', number: Number(second) };
     }
 
-    update();
+    if (first === 'juz' || first === 'bookmarks') {
+        return { view: 'browse', tab: first === 'juz' ? 'juz' : 'bookmarks' };
+    }
+
+    const match = String(first || '').match(/^(\d{1,3})(?::(\d{1,3}))?$/);
+
+    if (match && Number(match[1]) >= 1 && Number(match[1]) <= 114) {
+        return { view: 'surah', number: Number(match[1]), ayah: match[2] ? Number(match[2]) : null };
+    }
+
+    return { view: 'browse' };
 }
 
+export const quranPage = {
+    title: 'Quran',
 
-export function bindQuranPage() {
+    render(path) {
+        const route = parsePath(path);
 
-    createAudio();
+        if (route.view === 'browse') {
+            if (route.tab) {
+                browse.tab = route.tab;
+            }
+            return browseView();
+        }
 
-    renderAudioPlayer();
+        return readerShell(route.view === 'juz' ? 'juz' : 'surah', route.number);
+    },
 
+    mount(root, path, ctx) {
+        const route = parsePath(path);
+        ctx.cleanup(() => observer?.disconnect());
 
-    document
-        .querySelector(
-            '[data-q2-search-submit]'
-        )
-        ?.addEventListener(
-            'click',
-            performSearch
-        );
+        if (route.view === 'browse') {
+            renderBrowseBody(root);
 
-
-    document
-        .querySelector(
-            '[data-q2-search]'
-        )
-        ?.addEventListener(
-            'keydown',
-            event => {
-
-                if (
-                    event.key ===
-                    'Enter'
-                ) {
-
-                    performSearch();
+            const last = quranPrefs.get().lastRead;
+            surahList().then(list => {
+                const name = root.querySelector('[data-continue-name]');
+                const info = last && list.find(item => item.number === Number(last.surah));
+                if (name && info) {
+                    name.textContent = `${info.englishName}, ayah ${last.ayah}`;
                 }
+            }).catch(() => {});
+
+            if (browse.query) {
+                runSearch(root, browse.query);
             }
-        );
 
-
-    document
-        .querySelector(
-            '[data-q2-language]'
-        )
-        ?.addEventListener(
-            'change',
-            event => {
-
-                const language =
-                    event.target.value;
-
-
-                state.quran.selectedLanguage =
-                    language;
-
-
-                const editions =
-                    language
-                        ? getTranslationsForLanguage(
-                            language
-                        )
-                        : state.quran.editions;
-
-
-                const preferred =
-                    editions.find(
-                        edition =>
-                            edition.identifier ===
-                            state.quran.selectedTranslation
-                    );
-
-
-                state.quran.selectedTranslation =
-                    preferred?.identifier ||
-                    editions[0]?.identifier ||
-                    state.quran.selectedTranslation;
-
-
-                renderTranslationOptions();
-
-                saveQuranState();
-
-
-                if (
-                    state.quran.selectedSurah
-                ) {
-
-                    loadSurah(
-                        state.quran.selectedSurah,
-                        state.quran.selectedAyah
-                    );
+            root.addEventListener('submit', event => {
+                if (event.target.matches('[data-quran-search]')) {
+                    event.preventDefault();
+                    runSearch(root, new FormData(event.target).get('q').toString().trim());
                 }
-            }
-        );
+            });
 
+            root.addEventListener('click', event => {
+                const tab = event.target.closest('[data-browse-tab]');
+                const remove = event.target.closest('[data-remove-bookmark]');
 
-    document
-        .querySelector(
-            '[data-q2-translation]'
-        )
-        ?.addEventListener(
-            'change',
-            event => {
-
-                state.quran.selectedTranslation =
-                    event.target.value;
-
-
-                const edition =
-                    state.quran.editions.find(
-                        item =>
-                            item.identifier ===
-                            state.quran.selectedTranslation
-                    );
-
-
-                state.quran.selectedLanguage =
-                    edition?.language ||
-                    state.quran.selectedLanguage;
-
-
-                renderLanguageOptions();
-
-                saveQuranState();
-
-
-                if (
-                    state.quran.selectedSurah
-                ) {
-
-                    loadSurah(
-                        state.quran.selectedSurah,
-                        state.quran.selectedAyah
-                    );
+                if (tab) {
+                    browse.tab = tab.dataset.browseTab;
+                    root.querySelectorAll('[data-browse-tab]').forEach(button => {
+                        const active = button === tab;
+                        button.classList.toggle('is-active', active);
+                        button.setAttribute('aria-selected', String(active));
+                    });
+                    renderBrowseBody(root);
+                } else if (remove) {
+                    const bookmarks = quranPrefs.get().bookmarks.filter(item => Number(item.number) !== Number(remove.dataset.removeBookmark));
+                    quranPrefs.update({ bookmarks });
+                    renderBrowseBody(root);
+                } else if (event.target.closest('[data-clear-search]')) {
+                    browse.query = '';
+                    browse.results = null;
+                    root.querySelector('[data-search-results]').innerHTML = '';
+                    root.querySelector('[data-quran-search] input').value = '';
+                } else if (event.target.closest('[data-reload-browse]')) {
+                    renderBrowseBody(root);
                 }
-            }
-        );
+            });
 
+            return;
+        }
 
-    document
-        .querySelector(
-            '[data-q2-reciter]'
-        )
-        ?.addEventListener(
-            'change',
-            event => {
+        const kind = route.view === 'juz' ? 'juz' : 'surah';
+        loadReader(root, kind, route.number, route.ayah);
 
-                state.quran.selectedReciter =
-                    event.target.value;
+        root.addEventListener('click', event => {
+            const target = event.target;
+            const play = target.closest('[data-ayah-play]');
+            const bookmark = target.closest('[data-ayah-bookmark]');
+            const tafsirButton = target.closest('[data-ayah-tafsir]');
+            const share = target.closest('[data-ayah-share]');
 
-                saveQuranState();
-            }
-        );
-
-
-    document
-        .querySelector(
-            '[data-q2-font]'
-        )
-        ?.addEventListener(
-            'input',
-            event => {
-
-                state.quran.fontSize =
-                    Number(
-                        event.target.value
-                    );
-
-                saveQuranState();
-
-
-                document
-                    .querySelector(
-                        '.q2-ayah-list'
-                    )
-                    ?.style
-                    .setProperty(
-                        '--q2-font-scale',
-                        state.quran.fontSize /
-                            100
-                    );
-            }
-        );
-
-
-    document
-        .querySelector(
-            '[data-q2-autoplay]'
-        )
-        ?.addEventListener(
-            'change',
-            event => {
-
-                state.quran.autoPlay =
-                    event.target.checked;
-
-                saveQuranState();
-            }
-        );
-
-
-    document
-        .querySelectorAll(
-            '[data-q2-tab]'
-        )
-        .forEach(button => {
-
-            button.addEventListener(
-                'click',
-                () => {
-
-                    setView(
-                        button.dataset.q2Tab
-                    );
+            if (play) {
+                const index = reading.ayahs.findIndex(ayah => ayah.number === Number(play.dataset.ayahPlay));
+                const current = player.queue[player.index];
+                if (current && current.number === Number(play.dataset.ayahPlay) && player.visible) {
+                    togglePlay();
+                } else {
+                    playFrom(reading.ayahs, index, reading.info?.englishName || `Juz ${reading.number}`);
                 }
-            );
+            } else if (bookmark) {
+                const ayah = findAyah(bookmark.dataset.ayahBookmark);
+                if (ayah) {
+                    const added = quranPrefs.toggleBookmark(ayah);
+                    bookmark.classList.toggle('is-on', added);
+                    bookmark.setAttribute('aria-pressed', String(added));
+                    bookmark.innerHTML = icon(added ? 'bookmarkFilled' : 'bookmark', { size: 16 });
+                    toast(added ? 'Bookmark saved' : 'Bookmark removed', { duration: 2000 });
+                }
+            } else if (tafsirButton) {
+                const ayah = findAyah(tafsirButton.dataset.ayahTafsir);
+                if (ayah) {
+                    openTafsir(ayah);
+                }
+            } else if (share) {
+                const ayah = findAyah(share.dataset.ayahShare);
+                if (ayah) {
+                    shareText({
+                        title: `Quran ${ayah.surah}:${ayah.numberInSurah}`,
+                        text: `${ayah.text}\n\n${ayah.translation}\n\n${ayah.surahName} ${ayah.surah}:${ayah.numberInSurah}`,
+                        url: `${SITE}#quran/${ayah.surah}:${ayah.numberInSurah}`
+                    });
+                }
+            } else if (target.closest('[data-reader-play]') && reading) {
+                playFrom(reading.ayahs, 0, reading.info?.englishName || `Juz ${reading.number}`);
+            } else if (target.closest('[data-reader-options]')) {
+                openOptions(root);
+            } else if (target.closest('[data-reader-retry]')) {
+                loadReader(root, kind, route.number, route.ayah);
+            }
         });
-
-
-    document
-        .querySelector(
-            '[data-q2-surah-filter]'
-        )
-        ?.addEventListener(
-            'input',
-            renderSurahList
-        );
-
-
-    bindQuranBackToTop();
-
-    initializeQuran();
-}
+    }
+};
