@@ -130,6 +130,26 @@ function readTune() {
     return result;
 }
 
+/* Iqamah: minutes after the adhan per prayer, plus an optional fixed Jumu'ah time ("13:30"). */
+export const IQAMAH_DEFAULTS = { Fajr: 20, Dhuhr: 15, Asr: 15, Maghrib: 5, Isha: 15 };
+
+function readIqamah() {
+    const saved = store.get('iqamah', null);
+    const value = saved && typeof saved === 'object' ? saved : {};
+    const offsets = {};
+
+    SALAH.forEach(name => {
+        const minutes = Number(value.offsets?.[name]);
+        offsets[name] = Number.isFinite(minutes) ? Math.max(0, Math.min(90, Math.round(minutes))) : IQAMAH_DEFAULTS[name];
+    });
+
+    return {
+        on: value.on === true,
+        offsets,
+        jumuah: /^\d{1,2}:\d{2}$/.test(value.jumuah || '') ? value.jumuah : ''
+    };
+}
+
 function readTheme() {
     const theme = store.raw('theme', null);
 
@@ -169,7 +189,8 @@ export function getSettings() {
         displaySeconds: bool('display_seconds', true),
 
         exemptionMode: bool('tracker_exemption_mode', false),
-        askOnTime: bool('tracker_ask_on_time', true)
+        askOnTime: bool('tracker_ask_on_time', true),
+        iqamah: readIqamah()
     };
 }
 
@@ -194,7 +215,8 @@ export function setSetting(key, value) {
         displayAwake: ['display_awake', 'json'],
         displaySeconds: ['display_seconds', 'json'],
         exemptionMode: ['tracker_exemption_mode', 'json'],
-        askOnTime: ['tracker_ask_on_time', 'json']
+        askOnTime: ['tracker_ask_on_time', 'json'],
+        iqamah: ['iqamah', 'json']
     };
 
     const entry = map[key];

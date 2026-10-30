@@ -13,7 +13,7 @@ import { prayerState, loadPrayerTimes, monthTimetable, qibla } from '../services
 import { location } from '../services/location.js';
 import { tracker } from '../services/tracker.js';
 import { methodName, ASR_METHODS, HIGH_LATITUDE_RULES } from '../data/content.js';
-import { timeHTML, hijriText, prayerListHTML, bindAlertToggles, pageHeader, tabsHTML, openLocationDialog, prayChipsHTML, togglePrayer } from './components.js';
+import { timeHTML, hijriText, prayerListHTML, bindAlertToggles, pageHeader, tabsHTML, openLocationDialog, prayChipsHTML, togglePrayer, bindPrayerHold } from './components.js';
 
 const TABS = [['', 'common.today'], ['month', 'prayer.tabMonth'], ['qibla', 'qibla.title'], ['tracker', 'prayer.tabTracker']];
 
@@ -318,6 +318,7 @@ function trackerView() {
                 </header>
 
                 ${prayChipsHTML(record, { key, large: true, label: t('tracker.prayersOn', { day: dayLabel }) })}
+                ${record.Exempt ? '' : `<p class="chips-hint">${esc(t('tracker.holdHint'))}</p>`}
 
                 <div class="extras">
                     <label class="switch-row"><span>${esc(t('tracker.fasted'))}</span>
@@ -374,7 +375,7 @@ function trackerView() {
                 </div>
                 <p class="panel-note">${esc(stats.trackedDays
                     ? [
-                        t('tracker.summary', { count: stats.totalDone, days: stats.trackedDays }),
+                        stats.trackedDays === 1 ? t('tracker.summaryOneDay', { count: stats.totalDone }) : t('tracker.summary', { count: stats.totalDone, days: stats.trackedDays }),
                         t('tracker.perfect', { count: stats.perfectDays }),
                         stats.exemptDays ? t('tracker.exemptNotCounted', { count: stats.exemptDays }) : ''
                     ].filter(Boolean).join(' ')
@@ -438,6 +439,7 @@ export const prayerPage = {
     },
 
     mount(root, path, ctx) {
+        bindPrayerHold(root, chip => chip.dataset.trackKey);
         const tab = TABS.some(([id]) => id === path[0]) ? path[0] : '';
         const body = root.querySelector('[data-tab-body]');
         const rerender = () => {

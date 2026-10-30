@@ -70,7 +70,13 @@ export function openDialog({ title, body, className = '', onClose = null, wide =
         onClose?.();
     });
 
+    const openedAt = Date.now();
+
     dialog.addEventListener('click', event => {
+        /* A click on the backdrop right after opening is the end of the tap that opened it. */
+        if (event.target === dialog && Date.now() - openedAt < 400) {
+            return;
+        }
         if (event.target === dialog || event.target.closest('[data-dialog-close]')) {
             close();
         }

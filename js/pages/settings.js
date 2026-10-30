@@ -18,6 +18,8 @@ import { CALCULATION_METHODS, ASR_METHODS, HIGH_LATITUDE_RULES, ADHAN_SOUNDS, SU
 import { pageHeader, openLocationDialog } from './components.js';
 import { fillTranslationSelect, fillReciterSelect } from './quran.js';
 import { APP_VERSION, install } from '../app-info.js';
+import { downloadBackup, lastBackup } from '../services/backup.js';
+import { formatGregorian } from '../core/time.js';
 
 const SECTIONS = [
     'appearance',
@@ -77,6 +79,16 @@ function field(label, control, hint = '') {
             ${hint ? `<p class="field-hint">${esc(hint)}</p>` : ''}
         </div>
     `;
+}
+
+function lastBackupText() {
+    const last = lastBackup();
+    if (!last) {
+        return t('settings.lastBackupNever');
+    }
+    const date = new Date(last);
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    return t('settings.lastBackup', { date: formatGregorian(key, { day: 'numeric', month: 'long', year: 'numeric' }) });
 }
 
 function sectionHTML(id, title, body) {
@@ -179,6 +191,20 @@ function bodyHTML() {
             ${toggle('displayAwake', settings.displayAwake, t('settings.displayAwake'), t('settings.displayAwakeHint'))}
             ${toggle('displayDim', settings.displayDim, t('settings.displayDim'), t('settings.displayDimHint'))}
             ${toggle('displaySeconds', settings.displaySeconds, t('settings.displaySeconds'))}
+            ${toggle('iqamahOn', settings.iqamah.on, t('settings.iqamah'), t('settings.iqamahHint'))}
+            ${settings.iqamah.on ? `
+                <div class="field">
+                    <span class="field-label">${esc(t('settings.iqamahAfter'))}</span>
+                    <div class="steppers">
+                        ${SALAH.map(name => stepper(`iqamah:${name}`, settings.iqamah.offsets[name], 0, 90, t(`prayer.${name}`))).join('')}
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="field-label" for="iqamah-jumuah">${esc(t('settings.iqamahJumuah'))}</label>
+                    <input id="iqamah-jumuah" class="input input-time" type="time" value="${esc(settings.iqamah.jumuah)}" data-iqamah-jumuah>
+                    <p class="field-hint">${esc(t('settings.iqamahJumuahHint'))}</p>
+                </div>
+            ` : ''}
             <a class="button button-primary" href="#display">${icon('monitor', { size: 18 })} ${esc(t('settings.openDisplay'))}</a>
         `),
 
@@ -192,6 +218,7 @@ function bodyHTML() {
 
         sectionHTML('data', t('settings.data'), `
             <p class="field-hint">${esc(t('settings.dataLead'))}</p>
+            <p class="field-hint" data-last-backup>${esc(lastBackupText())}</p>
             <div class="button-row">
                 <button type="button" class="button button-ghost" data-data="export">${icon('download', { size: 18 })} ${esc(t('settings.export'))}</button>
                 <button type="button" class="button button-ghost" data-data="import">${icon('upload', { size: 18 })} ${esc(t('settings.import'))}</button>
@@ -309,7 +336,9 @@ export const settingsPage = {
                 const wrapper = step.closest('[data-stepper]');
                 const name = wrapper.dataset.stepper;
                 const settings = getSettings();
-                const current = name.startsWith('tune:') ? settings.tune[name.slice(5)] : settings[name];
+                const current = name.startsWith('tune:') ? settings.tune[name.slice(5)]
+                    : name.startsWith('iqamah:') ? settings.iqamah.offsets[name.slice(7)]
+                    : settings[name];
                 const next = Math.min(Number(wrapper.dataset.max), Math.max(Number(wrapper.dataset.min), current + Number(step.dataset.step)));
 
                 if (next === current) {
@@ -319,6 +348,9 @@ export const settingsPage = {
                 if (name.startsWith('tune:')) {
                     setSetting('tune', { ...settings.tune, [name.slice(5)]: next });
                     changed('tune');
+                } else if (name.startsWith('iqamah:')) {
+                    setSetting('iqamah', { ...settings.iqamah, offsets: { ...settings.iqamah.offsets, [name.slice(7)]: next } });
+                    changed('iqamah');
                 } else {
                     setSetting(name, next);
                     changed(name);
@@ -339,16 +371,12 @@ export const settingsPage = {
             } else if (target.closest('[data-install]')) {
                 install.prompt();
             } else if (dataAction === 'export') {
-                const blob = new Blob([JSON.stringify(exportBackup(APP_VERSION), null, 2)], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `adhan-display-backup-${new Date().toISOString().slice(0, 10)}.json`;
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-                setTimeout(() => URL.revokeObjectURL(url), 1000);
+                downloadBackup();
                 toast(t('settings.backupDone'));
+                const last = root.querySelector('[data-last-backup]');
+                if (last) {
+                    last.textContent = lastBackupText();
+                }
             } else if (dataAction === 'import') {
                 root.querySelector('[data-import-file]').click();
             } else if (dataAction === 'cache') {
@@ -397,6 +425,13 @@ export const settingsPage = {
                     }
                 }
 
+                if (name === 'iqamahOn') {
+                    setSetting('iqamah', { ...getSettings().iqamah, on: target.checked });
+                    changed('iqamah');
+                    rerender();
+                    return;
+                }
+
                 if (name === 'autoLocation') {
                     setSetting('autoLocation', target.checked ? 'true' : 'false');
                     if (target.checked) {
@@ -406,6 +441,9 @@ export const settingsPage = {
                     setSetting(name, target.checked);
                 }
                 changed(name);
+            } else if (target.matches('[data-iqamah-jumuah]')) {
+                setSetting('iqamah', { ...getSettings().iqamah, jumuah: target.value || '' });
+                changed('iqamah');
             } else if (target.matches('[data-alert]')) {
                 setSetting('alerts', { ...getSettings().alerts, [target.dataset.alert]: target.checked });
                 changed('alerts');

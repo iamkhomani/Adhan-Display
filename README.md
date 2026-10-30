@@ -18,12 +18,15 @@ Live: [adhandisplay.com](https://adhandisplay.com)
 
 **Display mode**
 - Full-screen clock for a tablet, TV or mosque screen
+- Optional iqamah times per prayer (and a fixed Jumu'ah time) with a countdown after the adhan
 - Keeps the screen awake, dims at night and highlights the next prayer
 
 **Quran**
 - All surahs and juz in Uthmani script with translations in dozens of languages
 - Ayah-by-ayah recitation with a player that keeps playing while you browse
 - Bookmarks, continue reading, search in translation or Arabic and tafsir Ibn Kathir
+- Khatm goal: the whole Quran in 7 to 60 days, one portion a day along the juz
+- Memorisation mode: repeat each ayah and a range of ayahs a set number of times
 
 **Hadith**
 - Sahih al-Bukhari, Sahih Muslim and eight other collections
@@ -31,6 +34,7 @@ Live: [adhandisplay.com](https://adhandisplay.com)
 
 **Islamic tools**
 - Morning and evening adhkar with counters
+- Du'a collection for daily moments (sleep, home, mosque, food, travel, hardship and more), with sources
 - Tasbih counter with targets
 - 99 Names of Allah
 - Ramadan countdown with suhoor and iftar times
@@ -41,6 +45,9 @@ Live: [adhandisplay.com](https://adhandisplay.com)
 - After ticking off a prayer, optionally mark it as prayed late (the default is on time); the statistics show how many prayers were on time
 - Streaks, completion rates and a four-week overview
 - Make-up (qada) counter and an optional exemption mode
+- Press and hold a prayer to change it to on time, late or not prayed
+- Share today's prayer times as an image
+- A gentle reminder to download a backup once a month
 
 **Languages**
 - The interface is available in 11 languages: English, 中文, हिन्दी, Español, Français, العربية (right-to-left), বাংলা, Português, Русский, اردو (right-to-left) and Nederlands

@@ -10,6 +10,8 @@ import {
 } from '../core/time.js';
 import { bus } from '../core/bus.js';
 import { toast } from '../core/ui.js';
+import { backupDue, downloadBackup, snoozeBackup } from '../services/backup.js';
+import { sharePrayerTimesImage, preloadShareImage } from '../services/share-image.js';
 import { t, locale, isRtl } from '../core/i18n.js';
 import { prayerState, loadPrayerTimes, qibla, hijriFor } from '../services/prayer.js';
 import { location } from '../services/location.js';
@@ -19,7 +21,7 @@ import { DAILY_HADITHS, SHAHADA } from '../data/content.js';
 import {
     timeHTML, hijriText, prayerListHTML, bindAlertToggles, timelineHTML,
     updateTimelineNow, openLocationDialog, upcomingEvents,
-    prayChipsHTML, togglePrayer
+    prayChipsHTML, togglePrayer, bindPrayerHold
 } from './components.js';
 
 function weekdayName(key) {
@@ -133,7 +135,10 @@ function timesCard() {
         <section class="panel times-panel" aria-labelledby="times-title">
             <header class="panel-head">
                 <h2 id="times-title" class="panel-title">${esc(t('common.today'))}</h2>
-                <button type="button" class="link-button" data-action="location">${icon('pin', { size: 16 })} ${esc(loc.city)}</button>
+                <span class="panel-head-actions">
+                    <button type="button" class="link-button" data-action="location">${icon('pin', { size: 16 })} ${esc(loc.city)}</button>
+                    <button type="button" class="icon-button" data-share-times aria-label="${esc(t('share.times'))}" title="${esc(t('share.times'))}">${icon('share', { size: 18 })}</button>
+                </span>
             </header>
             ${prayerListHTML(today.entries)}
             <a class="panel-foot" href="#prayer/month">${esc(t('home.monthly'))}</a>
@@ -272,6 +277,25 @@ function insightCard() {
     `;
 }
 
+function backupCard() {
+    if (!backupDue()) {
+        return '';
+    }
+    return `
+        <section class="panel backup-card" aria-labelledby="backup-title">
+            <span class="backup-icon">${icon('download', { size: 20 })}</span>
+            <div class="backup-text">
+                <h2 id="backup-title" class="panel-title">${esc(t('backup.title'))}</h2>
+                <p>${esc(t('backup.text'))}</p>
+            </div>
+            <div class="backup-actions">
+                <button type="button" class="button button-primary" data-backup="now">${esc(t('settings.export'))}</button>
+                <button type="button" class="button button-ghost" data-backup="later">${esc(t('backup.later'))}</button>
+            </div>
+        </section>
+    `;
+}
+
 function readingCards() {
     const [text, reference] = pickOfDay(DAILY_HADITHS) || ['', ''];
 
@@ -307,6 +331,7 @@ export const homePage = {
                     ${qiblaCard()}
                     ${insightCard()}
                 </div>
+                <div data-backup-slot>${backupCard()}</div>
                 ${readingCards()}
                 <section class="shahada" aria-label="${esc(t('home.shahada'))}">
                     <p class="shahada-arabic" lang="ar" dir="rtl">${esc(SHAHADA.arabic)}</p>
@@ -372,12 +397,38 @@ export const homePage = {
         });
 
         bindAlertToggles(root);
+        bindPrayerHold(root, () => prayerState.todayKey);
+        preloadShareImage();
 
         root.addEventListener('click', event => {
             const track = event.target.closest('[data-track]');
             const heroAlert = event.target.closest('[data-hero-alert]');
 
-            if (track && prayerState.todayKey) {
+            const backup = event.target.closest('[data-backup]');
+
+            const shareTimes = event.target.closest('[data-share-times]');
+
+            if (shareTimes) {
+                shareTimes.disabled = true;
+                sharePrayerTimesImage()
+                    .then(result => {
+                        if (result === 'downloaded') {
+                            toast(t('share.imageSaved'));
+                        }
+                    })
+                    .catch(error => toast(error.message))
+                    .finally(() => {
+                        shareTimes.disabled = false;
+                    });
+            } else if (backup) {
+                if (backup.dataset.backup === 'now') {
+                    downloadBackup();
+                    toast(t('settings.backupDone'));
+                } else {
+                    snoozeBackup();
+                }
+                root.querySelector('[data-backup-slot]').innerHTML = '';
+            } else if (track && prayerState.todayKey) {
                 togglePrayer(prayerState.todayKey, track.dataset.track);
             } else if (heroAlert) {
                 const name = heroAlert.dataset.heroAlert;

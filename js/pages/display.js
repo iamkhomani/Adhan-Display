@@ -6,7 +6,8 @@
 import { esc } from '../core/util.js';
 import { icon } from '../core/icons.js';
 import { getSettings } from '../core/storage.js';
-import { formatClock, formatDuration, formatGregorian } from '../core/time.js';
+import { formatClock, formatDuration, formatGregorian, formatCountdown } from '../core/time.js';
+import { iqamahFor } from '../services/iqamah.js';
 import { prayerState } from '../services/prayer.js';
 import { location } from '../services/location.js';
 import { alerts } from '../services/alerts.js';
@@ -49,6 +50,12 @@ function statusHTML(now) {
         return esc(prayerState.status === 'error' ? t('display.unavailable') : t('home.loading'));
     }
 
+    const iqamah = current && !current.fromYesterday ? iqamahFor(current, prayerState.todayKey, prayerState.tz) : null;
+
+    if (iqamah && now >= current.date && now < iqamah.date) {
+        return `${esc(t('display.iqamahIn', { prayer: current.label }))} <strong class="tnum" data-display-remaining>${esc(formatCountdown(iqamah.date - now))}</strong>`;
+    }
+
     if (current?.date && !current.fromYesterday && now - current.date < PRAYER_WINDOW_MS) {
         return `<strong>${esc(t('display.timeFor', { prayer: current.label }))}</strong>`;
     }
@@ -63,8 +70,14 @@ function tilesHTML() {
             <span class="display-tile-name">${esc(entry.isTomorrow ? t('display.tomorrow', { prayer: entry.label }) : entry.label)}</span>
             ${isRtl() ? '' : `<span class="display-tile-arabic" lang="ar" dir="rtl">${esc(entry.arabic)}</span>`}
             <span class="display-tile-time">${timeHTML(entry.hm)}</span>
+            ${iqamahLine(entry)}
         </div>
     `).join('');
+}
+
+function iqamahLine(entry) {
+    const iqamah = iqamahFor(entry, prayerState.todayKey, prayerState.tz);
+    return iqamah ? `<span class="display-tile-iqamah">${esc(t('display.iqamah'))} ${timeHTML(iqamah.hm)}</span>` : '';
 }
 
 function isNight(now) {

@@ -247,3 +247,57 @@ export const SHAHADA = {
 };
 
 export const SUPPORT_URL = 'https://buymeacoffee.com/kmni';
+
+/*
+ * Du'a collection for daily situations (mostly from Hisnul Muslim).
+ * Titles and categories are translation keys (dua.<id>, duas.cat.<id>);
+ * the Arabic, transliteration and English meaning are kept as they are.
+ */
+export const DUA_CATEGORIES = [
+    { id: 'sleep', icon: 'moon', duas: [
+        { id: 'wake', arabic: 'الْحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ', transliteration: 'Alhamdu lillahil-ladhi ahyana ba‘da ma amatana wa ilayhin-nushur.', meaning: 'All praise is for Allah, who gave us life after He caused us to die, and to Him is the return.', reference: 'Sahih al-Bukhari 6312' },
+        { id: 'sleep', arabic: 'بِاسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحْيَا', transliteration: 'Bismika Allahumma amutu wa ahya.', meaning: 'In Your name, O Allah, I die and I live.', reference: 'Sahih al-Bukhari 6324' }
+    ] },
+    { id: 'home', icon: 'home', duas: [
+        { id: 'leaveHome', arabic: 'بِسْمِ اللَّهِ، تَوَكَّلْتُ عَلَى اللَّهِ، وَلَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ', transliteration: 'Bismillah, tawakkaltu ‘alallah, wa la hawla wa la quwwata illa billah.', meaning: 'In the name of Allah, I place my trust in Allah, and there is no power and no strength except with Allah.', reference: 'Abu Dawud 5095, at-Tirmidhi 3426' },
+        { id: 'enterHome', arabic: 'بِسْمِ اللَّهِ وَلَجْنَا، وَبِسْمِ اللَّهِ خَرَجْنَا، وَعَلَى اللَّهِ رَبِّنَا تَوَكَّلْنَا', transliteration: 'Bismillahi walajna, wa bismillahi kharajna, wa ‘alallahi rabbina tawakkalna.', meaning: 'In the name of Allah we enter, in the name of Allah we leave, and upon Allah, our Lord, we place our trust.', reference: 'Abu Dawud 5096' }
+    ] },
+    { id: 'mosque', icon: 'mosque', duas: [
+        { id: 'enterMosque', arabic: 'اللَّهُمَّ افْتَحْ لِي أَبْوَابَ رَحْمَتِكَ', transliteration: 'Allahummaftah li abwaba rahmatik.', meaning: 'O Allah, open the gates of Your mercy for me.', reference: 'Sahih Muslim 713' },
+        { id: 'leaveMosque', arabic: 'اللَّهُمَّ إِنِّي أَسْأَلُكَ مِنْ فَضْلِكَ', transliteration: 'Allahumma inni as’aluka min fadlik.', meaning: 'O Allah, I ask You of Your bounty.', reference: 'Sahih Muslim 713' },
+        { id: 'afterSalah', arabic: 'أَسْتَغْفِرُ اللَّهَ، أَسْتَغْفِرُ اللَّهَ، أَسْتَغْفِرُ اللَّهَ، اللَّهُمَّ أَنْتَ السَّلَامُ وَمِنْكَ السَّلَامُ، تَبَارَكْتَ يَا ذَا الْجَلَالِ وَالْإِكْرَامِ', transliteration: 'Astaghfirullah, astaghfirullah, astaghfirullah. Allahumma antas-salamu wa minkas-salam, tabarakta ya dhal-jalali wal-ikram.', meaning: 'I seek Allah’s forgiveness (three times). O Allah, You are Peace and from You comes peace. Blessed are You, Possessor of majesty and honour.', reference: 'Sahih Muslim 591' }
+    ] },
+    { id: 'purity', icon: 'hand', duas: [
+        { id: 'toiletIn', arabic: 'اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْخُبُثِ وَالْخَبَائِثِ', transliteration: 'Allahumma inni a‘udhu bika minal-khubuthi wal-khaba’ith.', meaning: 'O Allah, I seek refuge in You from evil and from evil beings.', reference: 'Sahih al-Bukhari 142, Sahih Muslim 375' },
+        { id: 'toiletOut', arabic: 'غُفْرَانَكَ', transliteration: 'Ghufranak.', meaning: 'I ask You for Your forgiveness.', reference: 'Abu Dawud 30, at-Tirmidhi 7' },
+        { id: 'afterWudu', arabic: 'أَشْهَدُ أَنْ لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، وَأَشْهَدُ أَنَّ مُحَمَّدًا عَبْدُهُ وَرَسُولُهُ', transliteration: 'Ashhadu an la ilaha illallahu wahdahu la sharika lah, wa ashhadu anna Muhammadan ‘abduhu wa rasuluh.', meaning: 'I bear witness that there is no god but Allah alone, without partner, and I bear witness that Muhammad is His servant and Messenger.', reference: 'Sahih Muslim 234' }
+    ] },
+    { id: 'food', icon: 'food', duas: [
+        { id: 'beforeEating', arabic: 'بِسْمِ اللَّهِ', transliteration: 'Bismillah. If you forget at the start: Bismillahi awwalahu wa akhirah.', meaning: 'In the name of Allah. (If forgotten: In the name of Allah, at its beginning and at its end.)', reference: 'Abu Dawud 3767, at-Tirmidhi 1858' },
+        { id: 'afterEating', arabic: 'الْحَمْدُ لِلَّهِ الَّذِي أَطْعَمَنِي هَٰذَا وَرَزَقَنِيهِ مِنْ غَيْرِ حَوْلٍ مِنِّي وَلَا قُوَّةٍ', transliteration: 'Alhamdu lillahil-ladhi at‘amani hadha wa razaqanihi min ghayri hawlin minni wa la quwwah.', meaning: 'All praise is for Allah, who fed me this and provided it for me without any might or power from myself.', reference: 'Abu Dawud 4023, at-Tirmidhi 3458' }
+    ] },
+    { id: 'travel', icon: 'navigation', duas: [
+        { id: 'travel', arabic: 'سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَٰذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ، وَإِنَّا إِلَىٰ رَبِّنَا لَمُنْقَلِبُونَ', transliteration: 'Subhanal-ladhi sakhkhara lana hadha wa ma kunna lahu muqrinin, wa inna ila rabbina lamunqalibun.', meaning: 'Glory be to Him who has made this subservient to us, for we could not have done it ourselves, and to our Lord we will surely return.', reference: 'Quran 43:13–14, Sahih Muslim 1342' }
+    ] },
+    { id: 'hardship', icon: 'heart', duas: [
+        { id: 'distress', arabic: 'لَا إِلَٰهَ إِلَّا اللَّهُ الْعَظِيمُ الْحَلِيمُ، لَا إِلَٰهَ إِلَّا اللَّهُ رَبُّ الْعَرْشِ الْعَظِيمِ، لَا إِلَٰهَ إِلَّا اللَّهُ رَبُّ السَّمَاوَاتِ وَرَبُّ الْأَرْضِ وَرَبُّ الْعَرْشِ الْكَرِيمِ', transliteration: 'La ilaha illallahul-‘Azimul-Halim, la ilaha illallahu Rabbul-‘arshil-‘azim, la ilaha illallahu Rabbus-samawati wa Rabbul-ardi wa Rabbul-‘arshil-karim.', meaning: 'There is no god but Allah, the Mighty, the Forbearing. There is no god but Allah, Lord of the Mighty Throne. There is no god but Allah, Lord of the heavens, Lord of the earth and Lord of the Noble Throne.', reference: 'Sahih al-Bukhari 6346, Sahih Muslim 2730' },
+        { id: 'yunus', arabic: 'لَا إِلَٰهَ إِلَّا أَنْتَ سُبْحَانَكَ إِنِّي كُنْتُ مِنَ الظَّالِمِينَ', transliteration: 'La ilaha illa anta subhanaka inni kuntu minaz-zalimin.', meaning: 'There is no god but You. Glory be to You. Indeed, I have been of the wrongdoers.', reference: 'Quran 21:87' },
+        { id: 'worry', arabic: 'اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْهَمِّ وَالْحَزَنِ، وَالْعَجْزِ وَالْكَسَلِ، وَالْبُخْلِ وَالْجُبْنِ، وَضَلَعِ الدَّيْنِ وَغَلَبَةِ الرِّجَالِ', transliteration: 'Allahumma inni a‘udhu bika minal-hammi wal-hazan, wal-‘ajzi wal-kasal, wal-bukhli wal-jubn, wa dala‘id-dayni wa ghalabatir-rijal.', meaning: 'O Allah, I seek refuge in You from worry and grief, from helplessness and laziness, from miserliness and cowardice, from the burden of debt and from being overpowered by others.', reference: 'Sahih al-Bukhari 6369' },
+        { id: 'anger', arabic: 'أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ', transliteration: 'A‘udhu billahi minash-shaytanir-rajim.', meaning: 'I seek refuge in Allah from Satan, the accursed.', reference: 'Sahih al-Bukhari 3282' }
+    ] },
+    { id: 'daily', icon: 'sun', duas: [
+        { id: 'sneeze', arabic: 'الْحَمْدُ لِلَّهِ — يَرْحَمُكَ اللَّهُ — يَهْدِيكُمُ اللَّهُ وَيُصْلِحُ بَالَكُمْ', transliteration: 'Alhamdulillah. Reply: Yarhamukallah. Answer: Yahdikumullahu wa yuslihu balakum.', meaning: 'The one who sneezes says: All praise is for Allah. The listener replies: May Allah have mercy on you. The one who sneezed answers: May Allah guide you and set your affairs right.', reference: 'Sahih al-Bukhari 6224' },
+        { id: 'dressing', arabic: 'الْحَمْدُ لِلَّهِ الَّذِي كَسَانِي هَٰذَا الثَّوْبَ وَرَزَقَنِيهِ مِنْ غَيْرِ حَوْلٍ مِنِّي وَلَا قُوَّةٍ', transliteration: 'Alhamdu lillahil-ladhi kasani hadhath-thawba wa razaqanihi min ghayri hawlin minni wa la quwwah.', meaning: 'All praise is for Allah, who clothed me with this garment and provided it for me without any might or power from myself.', reference: 'Abu Dawud 4023' },
+        { id: 'rain', arabic: 'اللَّهُمَّ صَيِّبًا نَافِعًا', transliteration: 'Allahumma sayyiban nafi‘a.', meaning: 'O Allah, let it be a beneficial rain.', reference: 'Sahih al-Bukhari 1032' },
+        { id: 'sick', arabic: 'لَا بَأْسَ، طَهُورٌ إِنْ شَاءَ اللَّهُ', transliteration: 'La ba’s, tahurun in sha’ Allah.', meaning: 'No harm, it is a purification, if Allah wills.', reference: 'Sahih al-Bukhari 3616' },
+        { id: 'newMoon', arabic: 'اللَّهُمَّ أَهِلَّهُ عَلَيْنَا بِالْيُمْنِ وَالْإِيمَانِ، وَالسَّلَامَةِ وَالْإِسْلَامِ، رَبِّي وَرَبُّكَ اللَّهُ', transliteration: 'Allahumma ahillahu ‘alayna bil-yumni wal-iman, was-salamati wal-islam, rabbi wa rabbukallah.', meaning: 'O Allah, let this moon appear to us with blessing and faith, with safety and Islam. My Lord and your Lord is Allah.', reference: 'at-Tirmidhi 3451' }
+    ] },
+    { id: 'family', icon: 'star', duas: [
+        { id: 'parents', arabic: 'رَبِّ ارْحَمْهُمَا كَمَا رَبَّيَانِي صَغِيرًا', transliteration: 'Rabbir-hamhuma kama rabbayani saghira.', meaning: 'My Lord, have mercy on them as they raised me when I was small.', reference: 'Quran 17:24' },
+        { id: 'family', arabic: 'رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ وَاجْعَلْنَا لِلْمُتَّقِينَ إِمَامًا', transliteration: 'Rabbana hab lana min azwajina wa dhurriyyatina qurrata a‘yunin waj‘alna lil-muttaqina imama.', meaning: 'Our Lord, grant us from our spouses and offspring comfort to our eyes, and make us leaders of the righteous.', reference: 'Quran 25:74' }
+    ] },
+    { id: 'ramadan', icon: 'crescent', duas: [
+        { id: 'iftar', arabic: 'ذَهَبَ الظَّمَأُ وَابْتَلَّتِ الْعُرُوقُ، وَثَبَتَ الْأَجْرُ إِنْ شَاءَ اللَّهُ', transliteration: 'Dhahabadh-dhama’u wabtallatil-‘uruqu wa thabatal-ajru in sha’ Allah.', meaning: 'The thirst is gone, the veins are moistened, and the reward is certain, if Allah wills.', reference: 'Abu Dawud 2357' },
+        { id: 'qadr', arabic: 'اللَّهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّي', transliteration: 'Allahumma innaka ‘afuwwun tuhibbul-‘afwa fa‘fu ‘anni.', meaning: 'O Allah, You are Pardoning and You love to pardon, so pardon me.', reference: 'at-Tirmidhi 3513' }
+    ] }
+];

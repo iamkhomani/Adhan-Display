@@ -14,6 +14,9 @@ import {
 } from '../services/quran.js';
 import { pageHeader } from './components.js';
 import { t, locale } from '../core/i18n.js';
+import { zonedParts, daysBetweenKeys } from '../core/time.js';
+import { portion } from '../data/quran-meta.js';
+import { confirmDialog } from '../core/ui.js';
 
 const SITE = 'https://adhandisplay.com/';
 
@@ -34,8 +37,34 @@ const player = {
     title: '',
     repeat: false,
     attempt: 0,
-    visible: false
+    visible: false,
+    /* Memorisation: { start, end, each, rounds, played, round } as queue indices; rounds 0 = endless. */
+    memo: null
 };
+
+/* Next step in memorisation mode. Returns false when the session is finished. */
+function memoNext() {
+    const memo = player.memo;
+    memo.played += 1;
+
+    if (memo.played < memo.each) {
+        return player.index;
+    }
+
+    memo.played = 0;
+
+    if (player.index < memo.end) {
+        return player.index + 1;
+    }
+
+    memo.round += 1;
+
+    if (memo.rounds && memo.round >= memo.rounds) {
+        return -1;
+    }
+
+    return memo.start;
+}
 
 function audioElement() {
     if (player.audio) {
@@ -49,6 +78,19 @@ function audioElement() {
         if (player.repeat) {
             audio.currentTime = 0;
             audio.play().catch(() => {});
+        } else if (player.memo) {
+            const next = memoNext();
+            if (next === player.index) {
+                audio.currentTime = 0;
+                audio.play().catch(() => {});
+                updatePlayer();
+            } else if (next >= 0) {
+                playIndex(next);
+            } else {
+                player.memo = null;
+                updatePlayer();
+                toast(t('memo.finished'));
+            }
         } else if (quranPrefs.get().autoPlay && player.index < player.queue.length - 1) {
             playIndex(player.index + 1);
         } else {
@@ -107,9 +149,13 @@ function playIndex(index) {
     markPlaying(true);
 }
 
-export function playFrom(ayahs, index, title) {
+export function playFrom(ayahs, index, title, memo = null) {
     player.queue = ayahs;
     player.title = title;
+    player.memo = memo ? { ...memo, played: 0, round: 0 } : null;
+    if (memo) {
+        player.repeat = false;
+    }
     playIndex(index);
 }
 
@@ -186,7 +232,12 @@ function updatePlayer() {
             <div class="player-progress"><span data-player-progress></span></div>
             <a class="player-info" href="#quran/${ayah.surah}:${ayah.numberInSurah}">
                 <strong>${esc(ayah.surahName || player.title)} ${ayah.surah}:${ayah.numberInSurah}</strong>
-                <small data-player-reciter>${esc(reciterName(reciterId))}</small>
+                <small data-player-reciter>${player.memo ? `${icon('repeat', { size: 12 })} ${esc(t('memo.status', {
+                    each: player.memo.played + 1,
+                    eachTotal: player.memo.each,
+                    round: player.memo.round + 1,
+                    rounds: player.memo.rounds || '∞'
+                }))}` : esc(reciterName(reciterId))}</small>
             </a>
             <div class="player-controls">
                 <button type="button" class="icon-button" data-player="prev" aria-label="${esc(t('quran.prevAyah'))}" ${player.index <= 0 ? 'disabled' : ''}>${icon('prev')}</button>
@@ -234,8 +285,12 @@ export function initQuranPlayer() {
             playIndex(player.index + 1);
         } else if (action === 'repeat') {
             player.repeat = !player.repeat;
+            if (player.repeat) {
+                player.memo = null;
+            }
             updatePlayer();
         } else if (action === 'close') {
+            player.memo = null;
             closePlayer();
         }
     });
@@ -272,11 +327,135 @@ function continueCard() {
     `;
 }
 
+/* ---------------------------------------------------------------
+ * Khatm goal: the whole Quran in a set number of days, one portion a day
+ * ------------------------------------------------------------- */
+
+const KHATM_DAYS = [7, 10, 15, 30, 60];
+let surahNames = null;
+
+function refLabel({ surah, ayah }) {
+    const name = surahNames?.[surah - 1];
+    return t('quran.surahAyah', { surah: name || t('quran.surahN', { n: surah }), ayah });
+}
+
+function khatmCard() {
+    const goal = quranPrefs.get().khatm;
+
+    if (!goal) {
+        return `
+            <section class="panel khatm-card">
+                <div class="khatm-text">
+                    <h2 class="panel-title">${esc(t('khatm.title'))}</h2>
+                    <p>${esc(t('khatm.lead'))}</p>
+                </div>
+                <button type="button" class="button button-ghost" data-khatm="setup">${icon('calendar', { size: 18 })} ${esc(t('khatm.set'))}</button>
+            </section>
+        `;
+    }
+
+    const today = zonedParts(new Date()).key;
+    const day = Math.max(1, daysBetweenKeys(goal.start, today) + 1);
+    const done = Math.min(goal.done, goal.days);
+    const percent = Math.round((done / goal.days) * 100);
+
+    if (done >= goal.days) {
+        return `
+            <section class="panel khatm-card is-complete">
+                <div class="khatm-text">
+                    <h2 class="panel-title">${esc(t('khatm.complete'))}</h2>
+                    <p>${esc(t('khatm.completeText'))}</p>
+                </div>
+                <div class="button-row">
+                    <button type="button" class="button button-primary" data-khatm="again">${esc(t('khatm.again'))}</button>
+                    <button type="button" class="button button-ghost" data-khatm="stop">${esc(t('khatm.stop'))}</button>
+                </div>
+            </section>
+        `;
+    }
+
+    const behind = Math.min(goal.days, day) - done - 1;
+    const part = portion(done, goal.days);
+
+    return `
+        <section class="panel khatm-card" aria-labelledby="khatm-title">
+            <header class="panel-head">
+                <h2 id="khatm-title" class="panel-title">${esc(t('khatm.title'))}</h2>
+                <span class="panel-meta tnum">${esc(t('khatm.progress', { done, days: goal.days }))}</span>
+            </header>
+            <span class="bar" role="img" aria-label="${percent}%"><span style="width:${percent}%"></span></span>
+            <p class="khatm-status ${behind > 0 ? 'is-behind' : ''}">${esc(day > goal.days && behind >= 0
+                ? t('khatm.overdue')
+                : behind > 0 ? t('khatm.behind', { count: behind }) : t('khatm.onTrack'))}</p>
+            <div class="khatm-portion">
+                <span class="field-label">${esc(t('khatm.portion', { n: done + 1 }))}</span>
+                <strong>${esc(refLabel(part.from))} – ${esc(refLabel(part.to))}</strong>
+            </div>
+            <div class="button-row">
+                <a class="button button-primary" href="#quran/${part.from.surah}:${part.from.ayah}">${icon('book', { size: 18 })} ${esc(t('khatm.read'))}</a>
+                <button type="button" class="button button-ghost" data-khatm="done">${icon('check', { size: 18 })} ${esc(t('khatm.markDone'))}</button>
+                <button type="button" class="link-button khatm-stop" data-khatm="stop">${esc(t('khatm.stop'))}</button>
+            </div>
+        </section>
+    `;
+}
+
+function openKhatmSetup(onDone) {
+    const { root: dialog, close } = openDialog({
+        title: t('khatm.title'),
+        className: 'dialog-small',
+        body: `
+            <p class="dialog-text">${esc(t('khatm.chooseDays'))}</p>
+            <div class="status-options">
+                ${KHATM_DAYS.map(days => `
+                    <button type="button" class="status-option" data-khatm-days="${days}">
+                        ${icon('calendar', { size: 18 })}<span>${esc(t('khatm.inDays', { count: days }))}</span>
+                        <small class="muted">${esc(days === 30 ? t('khatm.perDayJuz') : t('khatm.perDay', { amount: Math.round((30 / days) * 10) / 10 }))}</small>
+                    </button>
+                `).join('')}
+            </div>
+        `
+    });
+
+    dialog.addEventListener('click', event => {
+        const option = event.target.closest('[data-khatm-days]');
+        if (option) {
+            quranPrefs.update({ khatm: { start: zonedParts(new Date()).key, days: Number(option.dataset.khatmDays), done: 0 } });
+            close();
+            onDone();
+        }
+    });
+}
+
+async function handleKhatm(root, action) {
+    const refresh = () => {
+        const slot = root.querySelector('[data-khatm-slot]');
+        if (slot) {
+            slot.innerHTML = khatmCard();
+        }
+    };
+    const goal = quranPrefs.get().khatm;
+
+    if (action === 'setup' || action === 'again') {
+        openKhatmSetup(refresh);
+    } else if (action === 'done' && goal) {
+        quranPrefs.update({ khatm: { ...goal, done: goal.done + 1 } });
+        refresh();
+        toast(goal.done + 1 >= goal.days ? t('khatm.complete') : t('khatm.saved'), { duration: 2500 });
+    } else if (action === 'stop' && goal) {
+        if (await confirmDialog(t('khatm.stopConfirm'), { confirm: t('khatm.stop') })) {
+            quranPrefs.update({ khatm: null });
+            refresh();
+        }
+    }
+}
+
 function browseView() {
     return `
         <div class="page quran-page">
             ${pageHeader(t('nav.quran'), t('quran.lead'))}
             ${continueCard()}
+            <div data-khatm-slot>${khatmCard()}</div>
             <form class="search-bar" data-quran-search role="search">
                 ${icon('search', { size: 18 })}
                 <input type="search" name="q" placeholder="${esc(t('quran.search'))}" value="${esc(browse.query)}" aria-label="${esc(t('quran.search'))}">
@@ -427,6 +606,7 @@ function readerShell(kind, number) {
                 <a class="icon-button" href="#quran" aria-label="${esc(t('quran.allSurahs'))}">${icon('left')}</a>
                 <div class="reader-bar-title" data-reader-title>${esc(kind === 'juz' ? t('quran.juzN', { n: number }) : t('quran.surahN', { n: number }))}</div>
                 <button type="button" class="icon-button" data-reader-play aria-label="${esc(t('quran.playAll'))}">${icon('play', { size: 18 })}</button>
+                <button type="button" class="icon-button" data-reader-memo aria-label="${esc(t('memo.title'))}" title="${esc(t('memo.title'))}">${icon('repeat', { size: 18 })}</button>
                 <button type="button" class="icon-button" data-reader-options aria-label="${esc(t('quran.options'))}">${icon('type', { size: 18 })}</button>
             </div>
             <div class="reader-body" data-reader-body>${spinner()}</div>
@@ -569,6 +749,62 @@ function trackReading(root) {
     }, { rootMargin: '-20% 0px -60% 0px' });
 
     root.querySelectorAll('.ayah').forEach(element => observer.observe(element));
+}
+
+/* Memorisation (hifz): repeat a range of ayahs, each ayah and the whole range a set number of times. */
+function openMemorize() {
+    const ayahs = reading.ayahs;
+    const label = ayah => (reading.kind === 'juz' ? `${ayah.surah}:${ayah.numberInSurah}` : String(ayah.numberInSurah));
+    const current = player.queue === ayahs ? Math.max(0, player.index) : 0;
+    const options = selected => ayahs.map((ayah, index) => `<option value="${index}" ${index === selected ? 'selected' : ''}>${esc(label(ayah))}</option>`).join('');
+    const choice = (name, values, selected, format) => `
+        <div class="segmented" role="radiogroup">
+            ${values.map(value => `<button type="button" role="radio" class="segment ${value === selected ? 'is-active' : ''}" aria-checked="${value === selected}" data-memo-${name}="${value}">${esc(format(value))}</button>`).join('')}
+        </div>`;
+
+    const { root: dialog, close } = openDialog({
+        title: t('memo.title'),
+        body: `
+            <p class="dialog-text">${esc(t('memo.lead'))}</p>
+            <div class="memo-range">
+                <label><span class="field-label">${esc(t('memo.from'))}</span><select class="select" data-memo-from>${options(current)}</select></label>
+                <label><span class="field-label">${esc(t('memo.to'))}</span><select class="select" data-memo-to>${options(Math.min(ayahs.length - 1, current + 4))}</select></label>
+            </div>
+            <span class="field-label">${esc(t('memo.each'))}</span>
+            ${choice('each', [1, 3, 5, 10], 3, value => `${value}×`)}
+            <span class="field-label">${esc(t('memo.rounds'))}</span>
+            ${choice('rounds', [1, 3, 5, 0], 3, value => (value ? `${value}×` : '∞'))}
+            <div class="dialog-actions">
+                <button type="button" class="button button-ghost" data-dialog-close>${esc(t('common.cancel'))}</button>
+                <button type="button" class="button button-primary" data-memo-start>${icon('play', { size: 16 })} ${esc(t('memo.start'))}</button>
+            </div>
+        `
+    });
+
+    dialog.addEventListener('click', event => {
+        const segment = event.target.closest('[data-memo-each], [data-memo-rounds]');
+
+        if (segment) {
+            segment.parentElement.querySelectorAll('.segment').forEach(button => {
+                const active = button === segment;
+                button.classList.toggle('is-active', active);
+                button.setAttribute('aria-checked', String(active));
+            });
+            return;
+        }
+
+        if (event.target.closest('[data-memo-start]')) {
+            let start = Number(dialog.querySelector('[data-memo-from]').value);
+            let end = Number(dialog.querySelector('[data-memo-to]').value);
+            if (end < start) {
+                [start, end] = [end, start];
+            }
+            const each = Number(dialog.querySelector('[data-memo-each].is-active')?.dataset.memoEach || 1);
+            const rounds = Number(dialog.querySelector('[data-memo-rounds].is-active')?.dataset.memoRounds ?? 1);
+            close();
+            playFrom(ayahs, start, reading.info?.englishName || t('quran.juzN', { n: reading.number }), { start, end, each, rounds });
+        }
+    });
 }
 
 async function openOptions(root) {
@@ -756,6 +992,11 @@ export const quranPage = {
 
             const last = quranPrefs.get().lastRead;
             surahList().then(list => {
+                surahNames = list.map(item => item.englishName);
+                const khatm = root.querySelector('[data-khatm-slot]');
+                if (khatm && quranPrefs.get().khatm) {
+                    khatm.innerHTML = khatmCard();
+                }
                 const name = root.querySelector('[data-continue-name]');
                 const info = last && list.find(item => item.number === Number(last.surah));
                 if (name && info) {
@@ -777,8 +1018,11 @@ export const quranPage = {
             root.addEventListener('click', event => {
                 const tab = event.target.closest('[data-browse-tab]');
                 const remove = event.target.closest('[data-remove-bookmark]');
+                const khatm = event.target.closest('[data-khatm]');
 
-                if (tab) {
+                if (khatm) {
+                    handleKhatm(root, khatm.dataset.khatm);
+                } else if (tab) {
                     browse.tab = tab.dataset.browseTab;
                     root.querySelectorAll('[data-browse-tab]').forEach(button => {
                         const active = button === tab;
@@ -848,6 +1092,8 @@ export const quranPage = {
                 playFrom(reading.ayahs, 0, reading.info?.englishName || t('quran.juzN', { n: reading.number }));
             } else if (target.closest('[data-reader-options]')) {
                 openOptions(root);
+            } else if (target.closest('[data-reader-memo]') && reading?.ayahs?.length) {
+                openMemorize();
             } else if (target.closest('[data-reader-retry]')) {
                 loadReader(root, kind, route.number, route.ayah);
             }

@@ -53,6 +53,27 @@ export const tracker = {
         return Boolean(record?.[name] && record.Late?.[name]);
     },
 
+    /* status: 'onTime' | 'late' | 'none' */
+    setStatus(key, name, status) {
+        const data = all();
+        const record = this.record(key);
+
+        if (!SALAH.includes(name) || record.Exempt) {
+            return record;
+        }
+
+        record[name] = status !== 'none';
+        if (status === 'late') {
+            record.Late[name] = true;
+        } else {
+            delete record.Late[name];
+        }
+
+        data[key] = tidy(record);
+        saveAll(data);
+        return record;
+    },
+
     /* Marks a prayed prayer as late (true) or on time (false). */
     setLate(key, name, late) {
         const data = all();

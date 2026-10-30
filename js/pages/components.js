@@ -227,6 +227,125 @@ export function togglePrayer(key, name) {
     return record;
 }
 
+/* A small dialog to set a prayer to on time, late or not prayed. */
+export function openPrayerStatus(key, name) {
+    const record = tracker.record(key);
+    const current = !record[name] ? 'none' : tracker.isLate(record, name) ? 'late' : 'onTime';
+    const options = [['onTime', 'check', t('tracker.statusOnTime')], ['late', 'clock', t('tracker.statusLate')], ['none', 'close', t('tracker.statusNone')]];
+
+    const { root, close } = openDialog({
+        title: t(`prayer.${name}`),
+        className: 'dialog-small',
+        body: `
+            <div class="status-options" role="radiogroup" aria-label="${esc(t(`prayer.${name}`))}">
+                ${options.map(([value, iconName, label]) => `
+                    <button type="button" role="radio" class="status-option ${value === current ? 'is-active' : ''}" aria-checked="${value === current}" data-status="${value}">
+                        ${icon(iconName, { size: 18 })}<span>${esc(label)}</span>
+                    </button>
+                `).join('')}
+            </div>
+        `
+    });
+
+    root.addEventListener('click', event => {
+        const option = event.target.closest('[data-status]');
+        if (option) {
+            tracker.setStatus(key, name, option.dataset.status);
+            close();
+        }
+    });
+}
+
+/*
+ * Press and hold (or right-click) a prayer chip to choose on time, late or not prayed.
+ * `keyFor(chip)` returns the day the chip belongs to.
+ */
+export function bindPrayerHold(root, keyFor) {
+    let timer = null;
+    let start = null;
+    let active = null;
+
+    const open = chip => {
+        if (chip.dataset.opened) {
+            return;
+        }
+        chip.dataset.opened = '1';
+        /* Open after the release, so the tap that ends the press cannot close the dialog. */
+        setTimeout(() => openPrayerStatus(keyFor(chip), chip.dataset.track), 60);
+    };
+
+    const stopTimer = () => {
+        clearTimeout(timer);
+        timer = null;
+    };
+
+    root.addEventListener('pointerdown', event => {
+        const chip = event.target.closest('[data-track]');
+        if (!chip || chip.disabled || event.button > 0) {
+            return;
+        }
+        delete chip.dataset.held;
+        delete chip.dataset.opened;
+        active = chip;
+        start = { x: event.clientX, y: event.clientY };
+        stopTimer();
+        timer = setTimeout(() => {
+            timer = null;
+            chip.dataset.held = '1';
+            chip.classList.add('is-held');
+            navigator.vibrate?.(15);
+        }, 500);
+    });
+
+    root.addEventListener('pointermove', event => {
+        if (timer && start && Math.hypot(event.clientX - start.x, event.clientY - start.y) > 10) {
+            stopTimer();
+        }
+    });
+
+    const release = () => {
+        stopTimer();
+        if (active?.dataset.held) {
+            open(active);
+        }
+        active?.classList.remove('is-held');
+        active = null;
+    };
+
+    root.addEventListener('pointerup', release);
+    root.addEventListener('pointercancel', release);
+    root.addEventListener('pointerleave', event => {
+        if (event.target === root) {
+            stopTimer();
+        }
+    });
+
+    /* Right-click on a computer, or the long-press menu on Android. */
+    root.addEventListener('contextmenu', event => {
+        const chip = event.target.closest('[data-track]');
+        if (!chip || chip.disabled) {
+            return;
+        }
+        event.preventDefault();
+        chip.dataset.held = '1';
+        if (active === chip) {
+            stopTimer();
+        } else {
+            open(chip);
+        }
+    });
+
+    /* The click that follows a long press must not toggle the prayer. Runs before the page's own handler. */
+    root.addEventListener('click', event => {
+        const chip = event.target.closest('[data-track]');
+        if (chip?.dataset.held) {
+            delete chip.dataset.held;
+            event.stopImmediatePropagation();
+            event.preventDefault();
+        }
+    }, true);
+}
+
 export function pageHeader(title, text = '', actions = '') {
     return `
         <header class="page-head">

@@ -896,6 +896,7 @@ mark {
 
 /* Form controls */
 
+.input,
 .select,
 .search-field input,
 .filter-field input,
@@ -916,6 +917,21 @@ mark {
     background-position: calc(100% - 20px) 19px, calc(100% - 15px) 19px;
     background-size: 5px 5px;
     background-repeat: no-repeat;
+}
+
+.input {
+    padding: 0 14px;
+    font: inherit;
+}
+
+.input-time {
+    width: auto;
+    min-width: 140px;
+    color-scheme: dark;
+}
+
+[data-theme="light"] .input-time {
+    color-scheme: light;
 }
 
 .select:focus,
@@ -1178,6 +1194,10 @@ input[type="range"] {
 
 .dialog-wide {
     width: min(760px, calc(100% - 24px));
+}
+
+.dialog-small {
+    width: min(360px, calc(100% - 24px));
 }
 
 .dialog::backdrop {
@@ -1795,6 +1815,51 @@ input[type="range"] {
     border-color: var(--sage);
     background: var(--sage);
     color: var(--panel);
+}
+
+/* Press and hold opens the on time / late choice, so no text selection or callout. */
+.pray-chip {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    touch-action: manipulation;
+}
+
+.pray-chip.is-held {
+    transform: scale(0.96);
+    border-color: var(--gold-line);
+}
+
+.chips-hint {
+    margin: 10px 0 0;
+    color: var(--muted);
+    font-size: 0.8125rem;
+    text-align: center;
+}
+
+.status-options {
+    display: grid;
+    gap: 8px;
+}
+
+.status-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 52px;
+    padding: 0 16px;
+    border: 1px solid var(--line-strong);
+    border-radius: 14px;
+    background: var(--panel-2);
+    color: var(--text);
+    font-weight: 700;
+    text-align: start;
+}
+
+.status-option.is-active {
+    border-color: var(--gold-line);
+    background: var(--gold-soft);
+    color: var(--gold);
 }
 
 /* Prayed, but late: gold instead of green, with a clock. */
@@ -3845,6 +3910,17 @@ body[data-page="display"] .banner {
     line-height: 1.1;
 }
 
+.display-tile-iqamah {
+    color: var(--muted);
+    font-size: clamp(0.75rem, 0.45rem + 0.8vw, 1.25rem);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.display-tile.is-next .display-tile-iqamah {
+    color: var(--text-2);
+}
+
 .display-tile.is-next {
     border-color: var(--gold-line);
     background: var(--gold-soft);
@@ -4104,3 +4180,172 @@ html[lang="ur"] * {
     direction: ltr;
 }
 
+
+/* Backup reminder on the home page */
+.backup-card {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 16px;
+    margin-top: 16px;
+    border-color: var(--gold-line);
+}
+
+.backup-icon {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--gold-soft);
+    color: var(--gold);
+}
+
+.backup-text .panel-title {
+    margin: 0 0 4px;
+}
+
+.backup-text p {
+    margin: 0;
+    color: var(--text-2);
+    font-size: 0.9375rem;
+}
+
+.backup-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+@media (max-width: 700px) {
+    .backup-card {
+        grid-template-columns: auto 1fr;
+    }
+
+    .backup-actions {
+        grid-column: 1 / -1;
+    }
+
+    .backup-actions .button {
+        flex: 1;
+    }
+}
+
+.panel-head-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+}
+
+
+/* Khatm goal (Quran page) */
+.khatm-card {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.khatm-card:not([aria-labelledby]) {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+}
+
+.khatm-card .panel-head {
+    margin-bottom: 0;
+}
+
+.khatm-text .panel-title {
+    margin: 0 0 4px;
+}
+
+.khatm-text p,
+.khatm-status {
+    margin: 0;
+    color: var(--text-2);
+    font-size: 0.9375rem;
+}
+
+.khatm-status.is-behind {
+    color: var(--gold);
+}
+
+.khatm-portion strong {
+    display: block;
+    font-size: 1.0625rem;
+}
+
+.khatm-card .button-row {
+    align-items: center;
+}
+
+.khatm-stop {
+    margin-inline-start: auto;
+    color: var(--muted);
+}
+
+.khatm-card.is-complete {
+    border-color: var(--gold-line);
+}
+
+@media (max-width: 600px) {
+    .khatm-card:not([aria-labelledby]) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.status-option small {
+    margin-inline-start: auto;
+    font-weight: 600;
+}
+
+/* Memorise dialog */
+.memo-range {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.memo-range .field-label {
+    display: block;
+    margin-bottom: 6px;
+}
+
+.dialog-body > .field-label {
+    display: block;
+    margin: 14px 0 6px;
+}
+
+.player-info small .icon {
+    vertical-align: -2px;
+}
+
+/* Du'a collection */
+.dua-section {
+    margin-top: 28px;
+}
+
+.dua-section .section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dua-section .section-title .icon {
+    color: var(--gold);
+}
+
+.tool-page > .chips-scroll {
+    margin-bottom: 4px;
+}
+
+/* English texts (hadith, meanings) and transliterations stay left-to-right in the Arabic and Urdu interface. */
+[dir="rtl"] :not(html)[lang="en"],
+[dir="rtl"] .dhikr-transliteration,
+[dir="rtl"] .dua-transliteration,
+[dir="rtl"] .hadith-transliteration {
+    direction: ltr;
+    text-align: left;
+    unicode-bidi: isolate;
+}

@@ -6,7 +6,7 @@
 import { esc, pickOfDay } from '../core/util.js';
 import { icon } from '../core/icons.js';
 import { store, getSettings } from '../core/storage.js';
-import { spinner, emptyState, confirmDialog, toast } from '../core/ui.js';
+import { spinner, emptyState, confirmDialog, toast, shareText } from '../core/ui.js';
 import {
     formatGregorian, hijriMonthName, hijriMonthArabic, addDaysToKey,
     zonedDate, keyToParts, daysBetweenKeys
@@ -15,7 +15,7 @@ import { prayerState, hijriFor } from '../services/prayer.js';
 import { location } from '../services/location.js';
 import { namesOfAllah } from '../services/api.js';
 import {
-    ADHKAR, DAILY_DUAS, TASBIH_PHRASES, HOLY_SITES, LEARN_SALAH
+    ADHKAR, DAILY_DUAS, TASBIH_PHRASES, HOLY_SITES, LEARN_SALAH, DUA_CATEGORIES
 } from '../data/content.js';
 import { pageHeader, hijriText, timeHTML, upcomingEvents } from './components.js';
 import { t, locale } from '../core/i18n.js';
@@ -23,11 +23,11 @@ import { t, locale } from '../core/i18n.js';
 /* [id, icon]; titles and descriptions are translation keys tool.<id> and tool.<id>.text */
 const TOOLS = [
     ['adhkar', 'sun'],
+    ['duas', 'hand'],
     ['tasbih', 'sparkle'],
     ['names', 'star'],
     ['ramadan', 'crescent'],
-    ['calendar', 'calendar'],
-    ['qibla', 'compass']
+    ['calendar', 'calendar']
 ];
 
 function whenLabel(days) {
@@ -77,7 +77,7 @@ function hubView() {
 
             <nav class="tool-grid" aria-label="${esc(t('islamic.tools'))}">
                 ${TOOLS.map(([id, iconName]) => `
-                    <a class="tool-card" href="${id === 'qibla' ? '#prayer/qibla' : `#islamic/${id}`}">
+                    <a class="tool-card" href="#islamic/${id}">
                         <span class="tool-icon">${icon(iconName, { size: 22 })}</span>
                         <span><strong>${esc(t(`tool.${id}`))}</strong><small>${esc(t(`tool.${id}.text`))}</small></span>
                     </a>
@@ -205,6 +205,56 @@ function adhkarView() {
             </ol>
         </div>
     `;
+}
+
+/* ---------------------------------------------------------------
+ * Du'a collection
+ * ------------------------------------------------------------- */
+
+function duasView() {
+    return `
+        <div class="page tool-page">
+            ${backLink()}
+            ${pageHeader(t('tool.duas'), t('duas.lead'))}
+            <div class="chips-scroll" role="group" aria-label="${esc(t('duas.categories'))}">
+                <button type="button" class="chip is-on" data-dua-cat="" aria-pressed="true">${esc(t('duas.all'))}</button>
+                ${DUA_CATEGORIES.map(category => `
+                    <button type="button" class="chip" data-dua-cat="${category.id}" aria-pressed="false">${esc(t(`duas.cat.${category.id}`))}</button>
+                `).join('')}
+            </div>
+            ${DUA_CATEGORIES.map(category => `
+                <section class="dua-section" data-dua-section="${category.id}" aria-labelledby="duas-${category.id}">
+                    <h2 class="section-title" id="duas-${category.id}">${icon(category.icon, { size: 18 })} ${esc(t(`duas.cat.${category.id}`))}</h2>
+                    <div class="adhkar">
+                        ${category.duas.map(dua => `
+                            <article class="panel dhikr" id="dua-${dua.id}">
+                                <header class="dhikr-head">
+                                    <h3 class="dhikr-title">${esc(t(`dua.${dua.id}`))}</h3>
+                                </header>
+                                <p class="dhikr-arabic" lang="ar" dir="rtl">${esc(dua.arabic)}</p>
+                                <p class="dhikr-transliteration">${esc(dua.transliteration)}</p>
+                                <p class="dhikr-meaning" lang="en">${esc(dua.meaning)}</p>
+                                <footer class="dhikr-foot">
+                                    <span class="source">${esc(dua.reference)}</span>
+                                    <button type="button" class="icon-button" data-dua-share="${dua.id}" aria-label="${esc(t('duas.share'))}">${icon('share', { size: 18 })}</button>
+                                </footer>
+                            </article>
+                        `).join('')}
+                    </div>
+                </section>
+            `).join('')}
+        </div>
+    `;
+}
+
+function findDua(id) {
+    for (const category of DUA_CATEGORIES) {
+        const dua = category.duas.find(item => item.id === id);
+        if (dua) {
+            return dua;
+        }
+    }
+    return null;
 }
 
 /* ---------------------------------------------------------------
@@ -533,6 +583,7 @@ function calendarView() {
 function viewFor(tool) {
     switch (tool) {
         case 'adhkar': return adhkarView();
+        case 'duas': return duasView();
         case 'tasbih': return tasbihView();
         case 'names': return namesView();
         case 'ramadan': return ramadanView();
@@ -589,6 +640,34 @@ export const islamicPage = {
             const tasbihAction = target.closest('[data-tasbih]');
             const phrase = target.closest('[data-phrase]');
             const goal = target.closest('[data-target]');
+
+            const duaCategory = target.closest('[data-dua-cat]');
+            const duaShare = target.closest('[data-dua-share]');
+
+            if (duaCategory) {
+                const id = duaCategory.dataset.duaCat;
+                root.querySelectorAll('[data-dua-cat]').forEach(chip => {
+                    const active = chip === duaCategory;
+                    chip.classList.toggle('is-on', active);
+                    chip.setAttribute('aria-pressed', String(active));
+                });
+                root.querySelectorAll('[data-dua-section]').forEach(section => {
+                    section.hidden = Boolean(id) && section.dataset.duaSection !== id;
+                });
+                return;
+            }
+
+            if (duaShare) {
+                const dua = findDua(duaShare.dataset.duaShare);
+                if (dua) {
+                    shareText({
+                        title: t(`dua.${dua.id}`),
+                        text: `${t(`dua.${dua.id}`)}\n\n${dua.arabic}\n\n${dua.transliteration}\n\n${dua.meaning}\n(${dua.reference})`,
+                        url: 'https://adhandisplay.com/#islamic/duas'
+                    });
+                }
+                return;
+            }
 
             if (counter) {
                 const index = Number(counter.dataset.count);

@@ -39,6 +39,9 @@ export const quranPrefs = {
             autoPlay: saved.autoPlay !== false,
             showTranslation: saved.showTranslation !== false,
             lastRead: saved.lastRead && saved.lastRead.surah ? saved.lastRead : null,
+            khatm: saved.khatm && /^\d{4}-\d{2}-\d{2}$/.test(saved.khatm.start) && Number(saved.khatm.days) > 0
+                ? { start: saved.khatm.start, days: Number(saved.khatm.days), done: Math.max(0, Number(saved.khatm.done) || 0) }
+                : null,
             bookmarks: Array.isArray(saved.bookmarks) ? saved.bookmarks : []
         };
     },
