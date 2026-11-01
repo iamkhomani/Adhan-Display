@@ -39,6 +39,7 @@ Live: [adhandisplay.com](https://adhandisplay.com)
 - 99 Names of Allah
 - Ramadan countdown with suhoor and iftar times
 - Islamic calendar with upcoming occasions and the white days
+- Zakat calculator: a few amounts, the nisab from today's gold or silver price (updated daily by a GitHub Action, `scripts/update-prices.mjs`), and the zakat to pay
 
 **Tracker**
 - Mark your five daily prayers, fasting and Surah Al-Kahf

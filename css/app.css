@@ -4383,3 +4383,214 @@ html[lang="ur"] * {
 @media (prefers-reduced-motion: reduce) {
     .live-badge::before { animation: none; }
 }
+
+/* Zakat calculator */
+.zakat-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+    gap: 16px;
+    align-items: start;
+}
+
+.zakat-form {
+    display: grid;
+    gap: 10px;
+}
+
+.zakat-currency {
+    margin: 0 0 6px;
+}
+
+.zakat-field {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) minmax(110px, 180px);
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--panel-2);
+}
+
+.zakat-field:focus-within {
+    border-color: var(--gold-line);
+}
+
+.zakat-field-icon {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--gold-soft);
+    color: var(--gold);
+}
+
+.zakat-field.is-minus .zakat-field-icon {
+    background: var(--danger-soft);
+    color: var(--danger);
+}
+
+.zakat-field-text {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.zakat-field-label {
+    font-weight: 700;
+}
+
+.zakat-field-text small {
+    color: var(--muted);
+    font-size: 0.8125rem;
+}
+
+.zakat-input {
+    height: 44px;
+    text-align: end;
+    font-size: 1.0625rem;
+}
+
+.zakat-input:focus,
+.zakat-price:focus {
+    box-shadow: none;
+}
+
+.zakat-nisab {
+    margin-top: 6px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+}
+
+.zakat-nisab summary {
+    cursor: pointer;
+    font-weight: 700;
+    color: var(--text-2);
+}
+
+.zakat-nisab .segmented {
+    margin-top: 10px;
+}
+
+.zakat-price {
+    max-width: 200px;
+    height: 44px;
+}
+
+.zakat-clear {
+    justify-self: start;
+    margin-top: 4px;
+    color: var(--muted);
+}
+
+.zakat-result {
+    position: sticky;
+    top: 84px;
+    text-align: center;
+}
+
+.zakat-label {
+    margin: 0;
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.zakat-amount {
+    margin: 6px 0 4px;
+    color: var(--gold);
+    font-weight: 300;
+    font-size: clamp(2.25rem, 1.6rem + 2.4vw, 3.25rem);
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+}
+
+.zakat-status {
+    margin: 0 0 16px;
+    color: var(--text-2);
+    font-size: 0.9375rem;
+}
+
+.zakat-status.is-due {
+    color: var(--text);
+}
+
+.zakat-facts {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    font-size: 0.875rem;
+}
+
+.zakat-facts div {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.zakat-facts dt {
+    color: var(--muted);
+    text-align: start;
+}
+
+.zakat-facts dd {
+    margin: 0;
+    font-weight: 700;
+}
+
+@media (max-width: 860px) {
+    .zakat-layout {
+        grid-template-columns: 1fr;
+    }
+
+    /* On a phone the full result sits on top; a slim bar with the amount stays in view while filling in the form. */
+    .zakat-result {
+        position: static;
+        order: -1;
+    }
+
+    .zakat-mini {
+        position: sticky;
+        bottom: calc(var(--tabbar-height) + 12px + env(safe-area-inset-bottom));
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 4px;
+        padding: 12px 16px;
+        border: 1px solid var(--gold-line);
+        border-radius: 14px;
+        background: var(--panel-3);
+        box-shadow: var(--shadow);
+        font-weight: 700;
+    }
+
+    .zakat-mini strong {
+        color: var(--gold);
+        font-size: 1.25rem;
+    }
+}
+
+.zakat-mini {
+    display: none;
+}
+
+@media (max-width: 860px) {
+    .zakat-mini {
+        display: flex;
+    }
+}
+
+@media (max-width: 480px) {
+    .zakat-field {
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .zakat-input {
+        grid-column: 1 / -1;
+    }
+}

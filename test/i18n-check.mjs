@@ -16,7 +16,7 @@ const files = [];
 
 const { DUA_CATEGORIES } = await import(url.pathToFileURL(path.join(root, 'js/data/content.js')).href);
 const used = new Set();
-const PREFIX = '(adhkar|alert|app|backup|dua|duas|khatm|memo|calendar|common|display|error|event|hadith|hijri|home|insight|islamic|learn|location|names|nav|prayer|qada|qibla|quran|ramadan|settings|shahada|share|site|sound|tasbih|time|times|tool|tracker|asr|latitude)';
+const PREFIX = '(adhkar|alert|app|backup|zakat|dua|duas|khatm|memo|calendar|common|display|error|event|hadith|hijri|home|insight|islamic|learn|location|names|nav|prayer|qada|qibla|quran|ramadan|settings|shahada|share|site|sound|tasbih|time|times|tool|tracker|asr|latitude)';
 const literal = new RegExp(`['\`](${PREFIX}\\.[A-Za-z0-9.]+)['\`]`, 'g');
 for (const file of files) {
     const src = fs.readFileSync(file, 'utf8');
@@ -24,7 +24,7 @@ for (const file of files) {
 }
 const expand = {
     'event': ['newYear', 'ashura', 'ramadan', 'lastTen', 'eidFitr', 'dhulHijjah', 'arafah', 'eidAdha'].flatMap(id => [`event.${id}`, `event.${id}.note`]),
-    'tool': ['adhkar', 'duas', 'tasbih', 'names', 'ramadan', 'calendar'].flatMap(id => [`tool.${id}`, `tool.${id}.text`]),
+    'tool': ['adhkar', 'duas', 'tasbih', 'names', 'ramadan', 'calendar', 'zakat'].flatMap(id => [`tool.${id}`, `tool.${id}.text`]),
     'duas': DUA_CATEGORIES.flatMap(category => [`duas.cat.${category.id}`, ...category.duas.map(dua => `dua.${dua.id}`)]),
     'site': ['haram', 'nabawi', 'aqsa'].flatMap(id => [`site.${id}`, `site.${id}.city`]),
     'learn': ['book', 'ios', 'android'].flatMap(id => [`learn.${id}`, `learn.${id}.text`]),
@@ -32,6 +32,7 @@ const expand = {
     'prayer': ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha', 'Jumuah'].map(n => `prayer.${n}`),
     'nav': ['home', 'prayer', 'quran', 'hadith', 'islamic', 'settings'].map(n => `nav.${n}`),
     'ramadan': ['days', 'hours', 'minutes', 'seconds'].map(n => `ramadan.${n}`),
+    'zakat': ['cash', 'metals', 'investments', 'owed', 'business', 'debts'].flatMap(id => [`zakat.${id}`, `zakat.${id}.hint`]).concat(['zakat.gold', 'zakat.silver']),
     'settings': ['appearance', 'location', 'prayer', 'alerts', 'display', 'quran', 'data', 'about', 'notBackup', 'noBackupData'].map(n => `settings.${n}`)
 };
 Object.values(expand).flat().forEach(k => used.add(k));

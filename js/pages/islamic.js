@@ -15,6 +15,7 @@ import { prayerState, hijriFor } from '../services/prayer.js';
 import { location } from '../services/location.js';
 import { namesOfAllah } from '../services/api.js';
 import { liveStreams } from '../services/live-streams.js';
+import { zakatView, mountZakat } from './zakat.js';
 import {
     ADHKAR, DAILY_DUAS, TASBIH_PHRASES, HOLY_SITES, LEARN_SALAH, DUA_CATEGORIES
 } from '../data/content.js';
@@ -28,7 +29,8 @@ const TOOLS = [
     ['tasbih', 'sparkle'],
     ['names', 'star'],
     ['ramadan', 'crescent'],
-    ['calendar', 'calendar']
+    ['calendar', 'calendar'],
+    ['zakat', 'coins']
 ];
 
 function whenLabel(days) {
@@ -596,6 +598,7 @@ function viewFor(tool) {
     switch (tool) {
         case 'adhkar': return adhkarView();
         case 'duas': return duasView();
+        case 'zakat': return zakatView(backLink());
         case 'tasbih': return tasbihView();
         case 'names': return namesView();
         case 'ramadan': return ramadanView();
@@ -627,6 +630,20 @@ export const islamicPage = {
                         card.outerHTML = siteCard(id, url);
                     }
                 });
+            });
+        }
+
+        if (tool === 'zakat') {
+            mountZakat(root, ({ keepNisabOpen = false } = {}) => {
+                const open = keepNisabOpen || root.querySelector('.zakat-nisab')?.open;
+                const focused = document.activeElement?.dataset?.zakatValue;
+                root.innerHTML = zakatView(backLink());
+                if (open) {
+                    root.querySelector('.zakat-nisab')?.setAttribute('open', '');
+                }
+                if (focused) {
+                    root.querySelector(`[data-zakat-value="${focused}"]`)?.focus();
+                }
             });
         }
 

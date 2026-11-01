@@ -1,0 +1,42 @@
+# Updates the gold and silver prices for the zakat calculator once a day.
+# Run it by hand: Actions > "Update zakat prices" > Run workflow.
+name: Update zakat prices
+
+on:
+  schedule:
+    - cron: '37 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: data-commits
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Fetch prices
+        run: node scripts/update-prices.mjs
+
+      - name: Commit changed prices
+        run: |
+          if git diff --quiet -- data/zakat-prices.json; then
+            echo "No change"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/zakat-prices.json
+          git commit -m "Update zakat prices"
+          git pull --rebase
+          git push
