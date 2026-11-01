@@ -1,16 +1,18 @@
 /*
  * Keeps the live stream links for Makkah, Madinah and Al-Aqsa working.
  *
- * Runs on GitHub Actions (.github/workflows/live-streams.yml). For each site it:
- *   1. tries the preferred channels in order and uses the first one that is live
- *      (https://www.youtube.com/@channel/live always opens that channel's current stream);
- *   2. otherwise searches YouTube for live streams and takes the first matching result;
- *   3. otherwise keeps the previous link.
- * The result is written to data/live-streams.json, which the site reads.
+ * Runs on GitHub Actions every few hours (.github/workflows/live-streams.yml).
+ * For each site it searches YouTube for streams that are live right now and picks:
+ *   1. a stream from one of the preferred (official) channels, otherwise
+ *   2. the first live stream whose title matches the site (when `match` is set).
+ * If nothing is found, the previous link is kept and marked as not live; the site
+ * then also offers YouTube's live search.
+ *
+ * The result is written to data/live-streams.json, which the website reads.
  * The file only changes when a link changes, so there are no needless commits.
  *
  * Usage: node scripts/update-live-streams.mjs [--dry]
- * To prefer other channels, edit the `channels` lists below.
+ * To prefer other channels, edit the `channels` lists below (YouTube handles).
  */
 
 import fs from 'node:fs';
@@ -23,20 +25,22 @@ const DRY = process.argv.includes('--dry');
 
 const SITES = {
     haram: {
-        channels: ['@SaudiQuranTv', '@makkahlivehd4385'],
-        search: 'makkah live',
+        /* Saudi Quran TV, the official broadcast from Masjid al-Haram */
+        channels: ['@SaudiQuranTv'],
+        searches: ['makkah live', 'قناة القرآن الكريم بث مباشر'],
         match: /makkah|mecca|makka|mekka|haram|kaaba|ka'?bah|مكة|الحرم|الكعبة/i
     },
     nabawi: {
+        /* Saudi Sunnah TV, the official broadcast from Masjid an-Nabawi */
         channels: ['@SaudiSunnahTv'],
-        search: 'madinah live masjid nabawi',
-        match: /madina|medina|nabawi|nabvi|المدينة|النبوي/i
+        searches: ['madinah live', 'قناة السنة النبوية بث مباشر'],
+        match: /madina|medina|nabawi|nabvi|المدينة|النبوي|السنة النبوية/i
     },
-    /* There is no stable 24/7 stream of Al-Aqsa; search results are mostly other cameras or re-uploads.
-       Only listed channels are used; otherwise the site shows YouTube's live search. */
+    /* There is no stable 24/7 stream of Al-Aqsa; search results are mostly other cameras and
+       re-uploads. Only streams from listed channels are used; otherwise the site shows YouTube's live search. */
     aqsa: {
-        channels: ['@livebroadcastal-aqsa3717'],
-        search: null,
+        channels: [],
+        searches: ['al aqsa mosque live', 'المسجد الأقصى بث مباشر'],
         match: null
     }
 };
@@ -53,17 +57,6 @@ async function get(target) {
         throw new Error(`HTTP ${response.status}`);
     }
     return response.text();
-}
-
-/* Is this channel live right now? Returns { id, author } of the live video, or null. */
-async function channelLive(handle) {
-    const html = await get(`https://www.youtube.com/${handle}/live?hl=en&gl=US`);
-    const match = html.match(/var ytInitialPlayerResponse = (\{.+?\});(?:var |<\/script>)/s);
-    if (!match) {
-        return null;
-    }
-    const details = JSON.parse(match[1]).videoDetails || {};
-    return details.isLive === true && details.videoId ? { id: details.videoId, author: details.author || '' } : null;
 }
 
 function initialData(html) {
@@ -83,63 +76,62 @@ function* videoRenderers(node) {
     }
 }
 
-function isLiveRenderer(video) {
-    const text = JSON.stringify([video.badges, video.thumbnailOverlays]);
-    return /LIVE_NOW|"style":"LIVE"/.test(text);
-}
-
-/* First live search result whose title matches. */
-async function searchLive(query, match) {
+/* All streams that are live right now for a search query. */
+async function searchLive(query) {
     const html = await get(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}&sp=EgJAAQ%253D%253D&hl=en&gl=US`);
-    const data = initialData(html);
-    for (const video of videoRenderers(data)) {
-        const title = video.title?.runs?.map(run => run.text).join('') || '';
-        if (!video.videoId || !isLiveRenderer(video) || !match.test(title)) {
+    const results = [];
+
+    for (const video of videoRenderers(initialData(html))) {
+        const live = /LIVE_NOW|"style":"LIVE"/.test(JSON.stringify([video.badges, video.thumbnailOverlays]));
+        if (!video.videoId || !live) {
             continue;
         }
         const owner = video.ownerText?.runs?.[0];
-        return {
+        results.push({
             id: video.videoId,
-            title,
+            title: video.title?.runs?.map(run => run.text).join('') || '',
             channel: owner?.text || '',
-            handle: owner?.navigationEndpoint?.browseEndpoint?.canonicalBaseUrl || ''
-        };
+            handle: (owner?.navigationEndpoint?.browseEndpoint?.canonicalBaseUrl || '').replace(/^\//, '')
+        });
     }
-    return null;
+
+    return results;
 }
 
 async function resolve(id, site, previous) {
-    for (const handle of site.channels) {
+    const results = [];
+
+    for (const query of site.searches) {
         try {
-            const video = await channelLive(handle);
-            console.log(`${id}: ${handle} ${video ? `live (${video.id}, ${video.author})` : 'not live'}`);
-            if (video) {
-                return { url: `https://www.youtube.com/${handle}/live`, source: 'channel', channel: video.author || handle, live: true };
-            }
+            const found = await searchLive(query);
+            console.log(`${id}: "${query}" -> ${found.length} live`);
+            results.push(...found);
         } catch (error) {
-            console.log(`${id}: ${handle} check failed: ${error.message}`);
+            console.log(`${id}: "${query}" failed: ${error.message}`);
         }
     }
 
-    try {
-        const found = site.search ? await searchLive(site.search, site.match) : null;
-        console.log(`${id}: search ${found ? `found "${found.title}" by ${found.channel} (${found.id}, ${found.handle})` : 'found nothing live'}`);
-        if (found) {
-            /* A channel's /live link survives a restart of the stream; a watch link does not. */
-            const link = found.handle.startsWith('/@')
-                ? `https://www.youtube.com${found.handle}/live`
-                : `https://www.youtube.com/watch?v=${found.id}`;
-            return { url: link, source: 'search', channel: found.channel, live: true };
-        }
-    } catch (error) {
-        console.log(`${id}: search failed: ${error.message}`);
+    const preferred = site.channels.map(handle => handle.toLowerCase());
+    const official = results.find(item => preferred.includes(item.handle.toLowerCase()));
+    const matching = site.match ? results.find(item => site.match.test(item.title)) : null;
+    const pick = official || matching;
+
+    if (pick) {
+        console.log(`${id}: using "${pick.title}" by ${pick.channel} (${pick.handle}, ${pick.id})${official ? ' [preferred channel]' : ''}`);
+        return {
+            url: `https://www.youtube.com/watch?v=${pick.id}`,
+            channel: pick.channel,
+            official: Boolean(official),
+            live: true
+        };
     }
 
     if (previous?.url) {
-        console.log(`${id}: keeping previous link`);
+        console.log(`${id}: nothing live found, keeping the previous link`);
         return { ...previous, live: false };
     }
 
+    console.log(`${id}: nothing live found`);
     return null;
 }
 
@@ -159,6 +151,7 @@ const output = { updated: changed ? new Date().toISOString() : before.updated ||
 console.log(JSON.stringify(output, null, 2));
 
 if (!DRY && changed) {
+    fs.mkdirSync(path.dirname(OUTPUT), { recursive: true });
     fs.writeFileSync(OUTPUT, `${JSON.stringify(output, null, 2)}\n`);
     console.log('data/live-streams.json updated');
 } else {
