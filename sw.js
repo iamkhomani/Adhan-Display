@@ -11,7 +11,7 @@
  * translation is pre-cached; the chosen language is cached when it loads.
  */
 
-const VERSION = 'adhan-display-5.4.0';
+const VERSION = 'adhan-display-5.4.1';
 
 const SHELL = [
     './',
@@ -54,7 +54,8 @@ const SHELL = [
     'fonts/amiri-quran.woff2',
     'images/icons/logo-96.png',
     'images/icons/icon-192.png',
-    'images/icons/favicon-32.png'
+    'images/icons/favicon-32.png',
+    'favicon.ico'
 ];
 
 self.addEventListener('install', event => {
