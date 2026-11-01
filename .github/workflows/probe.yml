@@ -10,4 +10,4 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: node scripts/debug.mjs
+      - run: node scripts/update-prices.mjs && echo "JSONSTART" && cat data/zakat-prices.json
