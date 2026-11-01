@@ -346,6 +346,7 @@ export default {
     'islamic.expectedNote': 'সম্ভাব্য তারিখ; মাসের শুরু চাঁদ দেখার ওপর নির্ভর করে।',
     'islamic.holyMosques': 'পবিত্র মসজিদগুলো, সরাসরি',
     'islamic.liveOn': '{city}, YouTube-এ সরাসরি',
+    'islamic.live': 'সরাসরি',
     'islamic.near': '{place}-এর কাছে',
     'islamic.mosques': 'মসজিদ',
     'islamic.mosquesText': 'আপনার অবস্থানের আশেপাশে Google Maps খুলুন',

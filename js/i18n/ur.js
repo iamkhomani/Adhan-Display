@@ -346,6 +346,7 @@ export default {
     'islamic.expectedNote': 'متوقع تاریخیں؛ مہینے کا آغاز چاند نظر آنے پر منحصر ہے۔',
     'islamic.holyMosques': 'مقدس مساجد، براہِ راست',
     'islamic.liveOn': '{city}، YouTube پر براہِ راست',
+    'islamic.live': 'براہِ راست',
     'islamic.near': '{place} کے قریب',
     'islamic.mosques': 'مساجد',
     'islamic.mosquesText': 'اپنے مقام کے آس پاس Google Maps کھولیں',

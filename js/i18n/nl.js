@@ -346,6 +346,7 @@ export default {
     'islamic.expectedNote': 'Verwachte data; het begin van een maand hangt af van de maanwaarneming.',
     'islamic.holyMosques': 'De heilige moskeeën, live',
     'islamic.liveOn': '{city}, live op YouTube',
+    'islamic.live': 'Live',
     'islamic.near': 'In de buurt van {place}',
     'islamic.mosques': 'Moskeeën',
     'islamic.mosquesText': 'Open Google Maps rond je locatie',

@@ -1,0 +1,17 @@
+{
+  "updated": "2026-11-01T21:30:00.000Z",
+  "sites": {
+    "haram": {
+      "url": "https://www.youtube.com/watch?v=eC4LfEVxvKg",
+      "channel": "قناة القران الكريم",
+      "official": true,
+      "live": true
+    },
+    "nabawi": {
+      "url": "https://www.youtube.com/watch?v=Rs7St51oDDc",
+      "channel": "قناة السنة النبوية",
+      "official": true,
+      "live": true
+    }
+  }
+}

@@ -346,6 +346,7 @@ export default {
     'islamic.expectedNote': 'تواريخ متوقعة؛ بداية الشهر تعتمد على رؤية الهلال.',
     'islamic.holyMosques': 'المساجد المقدسة، بث مباشر',
     'islamic.liveOn': '{city}، بث مباشر على YouTube',
+    'islamic.live': 'مباشر',
     'islamic.near': 'بالقرب من {place}',
     'islamic.mosques': 'المساجد',
     'islamic.mosquesText': 'افتح خرائط Google حول موقعك',

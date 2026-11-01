@@ -346,6 +346,7 @@ export default {
     'islamic.expectedNote': '日期为预计；每月的开始以见月为准。',
     'islamic.holyMosques': '圣寺直播',
     'islamic.liveOn': '{city}，YouTube 直播',
+    'islamic.live': '直播',
     'islamic.near': '{place}附近',
     'islamic.mosques': '清真寺',
     'islamic.mosquesText': '在你所在位置附近打开 Google 地图',

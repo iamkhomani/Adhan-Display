@@ -75,6 +75,8 @@ js/services/          Prayer times, location, adhan alerts, tracker, Quran and A
 js/pages/             Home, Prayer, Quran, Hadith, Islamic, Settings and Display mode
 js/data/content.js    Daily hadith, du'as, adhkar and other static content
 js/i18n/              Interface translations, one file per language (en.js is the base)
+data/live-streams.json Current live stream links (updated by a GitHub Action)
+scripts/              Maintenance scripts run by GitHub Actions
 fonts/                Self-hosted Manrope (Latin and Cyrillic), Marcellus and Amiri Quran (SIL Open Font License)
 images/icons/         App icons
 audio/                Adhan recordings and the reminder chime
@@ -92,6 +94,12 @@ python3 -m http.server 8080
 ```
 
 Then open <http://localhost:8080>. A local web server is needed because browsers do not load JavaScript modules from `file://`.
+
+## Live streams of the holy mosques
+
+The Islamic page links straight to the live streams of Masjid al-Haram and Masjid an-Nabawi. Because stream links on YouTube change now and then, a GitHub Action (`.github/workflows/live-streams.yml`) runs `scripts/update-live-streams.mjs` every 3 hours. It searches YouTube for streams that are live, prefers the official channels (Saudi Quran TV and Saudi Sunnah TV) and updates `data/live-streams.json` when a link changes. The site reads that file from GitHub, so a new link works right away. When no live stream is found (for Al-Aqsa there is no stable 24/7 stream), the card opens YouTube's live search instead.
+
+To prefer other channels, edit the `channels` lists in the script. To run the check by hand: Actions, *Update live stream links*, *Run workflow*.
 
 ## Translations
 

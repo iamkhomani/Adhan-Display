@@ -14,6 +14,7 @@ import {
 import { prayerState, hijriFor } from '../services/prayer.js';
 import { location } from '../services/location.js';
 import { namesOfAllah } from '../services/api.js';
+import { liveStreams } from '../services/live-streams.js';
 import {
     ADHKAR, DAILY_DUAS, TASBIH_PHRASES, HOLY_SITES, LEARN_SALAH, DUA_CATEGORIES
 } from '../data/content.js';
@@ -62,6 +63,23 @@ function backLink() {
 /* ---------------------------------------------------------------
  * Hub
  * ------------------------------------------------------------- */
+
+/* Direct stream links, filled in by liveStreams(); null until loaded. */
+let streams = null;
+
+function siteCard(id, searchUrl) {
+    const stream = streams?.[id];
+    return `
+        <a class="link-card" href="${esc(stream?.url || searchUrl)}" target="_blank" rel="noopener noreferrer" data-site="${id}">
+            <span class="link-card-icon">${icon('video', { size: 20 })}</span>
+            <span>
+                <strong>${esc(t(`site.${id}`))}${stream ? ` <span class="live-badge">${esc(t('islamic.live'))}</span>` : ''}</strong>
+                <small>${esc(t('islamic.liveOn', { city: t(`site.${id}.city`) }))}</small>
+            </span>
+            ${icon('external', { size: 16, className: 'link-card-arrow' })}
+        </a>
+    `;
+}
 
 function hubView() {
     const [arabic, transliteration, meaning, reference] = pickOfDay(DAILY_DUAS, 3) || [];
@@ -113,13 +131,7 @@ function hubView() {
             <section class="section" id="discover" aria-labelledby="sites-title">
                 <h2 id="sites-title" class="section-title">${esc(t('islamic.holyMosques'))}</h2>
                 <div class="link-grid">
-                    ${HOLY_SITES.map(([id, url]) => `
-                        <a class="link-card" href="${esc(url)}" target="_blank" rel="noopener noreferrer">
-                            <span class="link-card-icon">${icon('video', { size: 20 })}</span>
-                            <span><strong>${esc(t(`site.${id}`))}</strong><small>${esc(t('islamic.liveOn', { city: t(`site.${id}.city`) }))}</small></span>
-                            ${icon('external', { size: 16, className: 'link-card-arrow' })}
-                        </a>
-                    `).join('')}
+                    ${HOLY_SITES.map(([id, url]) => siteCard(id, url)).join('')}
                 </div>
             </section>
 
@@ -604,6 +616,18 @@ export const islamicPage = {
 
         if (tool === 'discover') {
             requestAnimationFrame(() => root.querySelector('#discover')?.scrollIntoView());
+        }
+
+        if (!tool || tool === 'discover') {
+            liveStreams().then(found => {
+                streams = found;
+                HOLY_SITES.forEach(([id, url]) => {
+                    const card = root.querySelector(`[data-site="${id}"]`);
+                    if (card) {
+                        card.outerHTML = siteCard(id, url);
+                    }
+                });
+            });
         }
 
         if (tool === 'names') {

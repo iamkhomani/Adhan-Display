@@ -1,0 +1,42 @@
+# Checks every 3 hours which YouTube streams of Makkah, Madinah and Al-Aqsa are live
+# and updates data/live-streams.json when a link changes.
+# Run it by hand: Actions > "Update live stream links" > Run workflow.
+name: Update live stream links
+
+on:
+  schedule:
+    - cron: '23 */3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: live-streams
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Find live streams
+        run: node scripts/update-live-streams.mjs
+
+      - name: Commit changed links
+        run: |
+          if git diff --quiet -- data/live-streams.json; then
+            echo "No change"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/live-streams.json
+          git commit -m "Update live stream links"
+          git push

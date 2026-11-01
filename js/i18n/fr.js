@@ -346,6 +346,7 @@ export default {
     'islamic.expectedNote': 'Dates prévues ; le début d’un mois dépend de l’observation de la lune.',
     'islamic.holyMosques': 'Les mosquées saintes, en direct',
     'islamic.liveOn': '{city}, en direct sur YouTube',
+    'islamic.live': 'En direct',
     'islamic.near': 'Près de {place}',
     'islamic.mosques': 'Mosquées',
     'islamic.mosquesText': 'Ouvrir Google Maps autour de votre position',

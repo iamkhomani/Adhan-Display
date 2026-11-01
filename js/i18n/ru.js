@@ -346,6 +346,7 @@ export default {
     'islamic.expectedNote': 'Ожидаемые даты; начало месяца зависит от наблюдения луны.',
     'islamic.holyMosques': 'Священные мечети в прямом эфире',
     'islamic.liveOn': '{city}, прямой эфир на YouTube',
+    'islamic.live': 'Прямой эфир',
     'islamic.near': 'Рядом: {place}',
     'islamic.mosques': 'Мечети',
     'islamic.mosquesText': 'Открыть Google Карты рядом с вами',

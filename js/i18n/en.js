@@ -368,6 +368,7 @@ export default {
     'islamic.expectedNote': 'Expected dates; the start of a month depends on the moon sighting.',
     'islamic.holyMosques': 'The holy mosques, live',
     'islamic.liveOn': '{city}, live on YouTube',
+    'islamic.live': 'Live',
     'islamic.near': 'Near {place}',
     'islamic.mosques': 'Mosques',
     'islamic.mosquesText': 'Open Google Maps around your location',

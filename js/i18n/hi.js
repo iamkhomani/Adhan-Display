@@ -346,6 +346,7 @@ export default {
     'islamic.expectedNote': 'संभावित तारीख़ें; महीने की शुरुआत चाँद दिखने पर निर्भर है।',
     'islamic.holyMosques': 'पवित्र मस्जिदें, लाइव',
     'islamic.liveOn': '{city}, YouTube पर लाइव',
+    'islamic.live': 'लाइव',
     'islamic.near': '{place} के पास',
     'islamic.mosques': 'मस्जिदें',
     'islamic.mosquesText': 'अपने स्थान के आसपास Google Maps खोलें',

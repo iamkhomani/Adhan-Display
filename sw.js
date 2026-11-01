@@ -11,7 +11,7 @@
  * translation is pre-cached; the chosen language is cached when it loads.
  */
 
-const VERSION = 'adhan-display-5.3.0';
+const VERSION = 'adhan-display-5.3.1';
 
 const SHELL = [
     './',
@@ -42,6 +42,7 @@ const SHELL = [
     'js/services/backup.js',
     'js/services/api.js',
     'js/services/iqamah.js',
+    'js/services/live-streams.js',
     'js/services/location.js',
     'js/services/prayer.js',
     'js/services/quran.js',
