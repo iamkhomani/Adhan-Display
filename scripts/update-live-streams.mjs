@@ -32,10 +32,12 @@ const SITES = {
         search: 'madinah live masjid nabawi',
         match: /madina|medina|nabawi|nabvi|المدينة|النبوي/i
     },
+    /* There is no stable 24/7 stream of Al-Aqsa; search results are mostly other cameras or re-uploads.
+       Only listed channels are used; otherwise the site shows YouTube's live search. */
     aqsa: {
         channels: ['@livebroadcastal-aqsa3717'],
-        search: 'al aqsa mosque live',
-        match: /aqsa|الأقصى|الاقصى/i
+        search: null,
+        match: null
     }
 };
 
@@ -53,12 +55,15 @@ async function get(target) {
     return response.text();
 }
 
-/* Is this channel live right now? Returns the video id or null. */
+/* Is this channel live right now? Returns { id, author } of the live video, or null. */
 async function channelLive(handle) {
     const html = await get(`https://www.youtube.com/${handle}/live?hl=en&gl=US`);
-    const canonical = html.match(/<link rel="canonical" href="https:\/\/www\.youtube\.com\/watch\?v=([\w-]{11})"/);
-    const live = /"isLiveNow":true/.test(html) || /"isLive":true/.test(html);
-    return canonical && live ? canonical[1] : null;
+    const match = html.match(/var ytInitialPlayerResponse = (\{.+?\});(?:var |<\/script>)/s);
+    if (!match) {
+        return null;
+    }
+    const details = JSON.parse(match[1]).videoDetails || {};
+    return details.isLive === true && details.videoId ? { id: details.videoId, author: details.author || '' } : null;
 }
 
 function initialData(html) {
@@ -107,9 +112,9 @@ async function resolve(id, site, previous) {
     for (const handle of site.channels) {
         try {
             const video = await channelLive(handle);
-            console.log(`${id}: ${handle} ${video ? `live (${video})` : 'not live'}`);
+            console.log(`${id}: ${handle} ${video ? `live (${video.id}, ${video.author})` : 'not live'}`);
             if (video) {
-                return { url: `https://www.youtube.com/${handle}/live`, source: 'channel', channel: handle, live: true };
+                return { url: `https://www.youtube.com/${handle}/live`, source: 'channel', channel: video.author || handle, live: true };
             }
         } catch (error) {
             console.log(`${id}: ${handle} check failed: ${error.message}`);
@@ -117,7 +122,7 @@ async function resolve(id, site, previous) {
     }
 
     try {
-        const found = await searchLive(site.search, site.match);
+        const found = site.search ? await searchLive(site.search, site.match) : null;
         console.log(`${id}: search ${found ? `found "${found.title}" by ${found.channel} (${found.id}, ${found.handle})` : 'found nothing live'}`);
         if (found) {
             /* A channel's /live link survives a restart of the stream; a watch link does not. */
