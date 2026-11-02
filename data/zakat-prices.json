@@ -1,7 +1,7 @@
 {
   "gramUSD": {
-    "gold": 124.6292,
-    "silver": 1.5836
+    "gold": 126.9762,
+    "silver": 1.6437
   },
   "rates": {
     "USD": 1,
@@ -41,6 +41,6 @@
     "OMR": 0.3845,
     "JOD": 0.709
   },
-  "pricesDate": "2026-11-01",
+  "pricesDate": "2026-11-02",
   "ratesDate": "2026-10-30"
 }
