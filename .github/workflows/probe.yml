@@ -6,8 +6,27 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - run: node scripts/update-prices.mjs && echo "JSONSTART" && cat data/zakat-prices.json
+      - name: Mawaqit search by word (headers + body)
+        run: |
+          curl -sS -D - -H "Origin: https://adhandisplay.com" "https://mawaqit.net/api/2.0/mosque/search?word=amsterdam" -o s.json | grep -iE "^HTTP|access-control|content-type|cache-control|ratelimit|cf-"
+          python3 -c "import json;d=json.load(open('s.json'));print('COUNT',len(d));print(json.dumps(d[0],ensure_ascii=False)[:2500]) if d else None"
+      - name: Mawaqit search by lat/lon
+        run: |
+          curl -sS -D - -H "Origin: https://adhandisplay.com" "https://mawaqit.net/api/2.0/mosque/search?lat=52.37&lon=4.89" -o n.json | grep -iE "^HTTP|access-control"
+          python3 -c "import json;d=json.load(open('n.json'));print('COUNT',len(d));[print(m.get('slug'),'|',m.get('name'),'|',m.get('times'),m.get('iqama'),m.get('jumua'),m.get('proximity')) for m in d[:5]]"
+      - name: Preflight check
+        run: curl -sS -i -X OPTIONS -H "Origin: https://adhandisplay.com" -H "Access-Control-Request-Method: GET" "https://mawaqit.net/api/2.0/mosque/search?word=x" | head -15
+      - name: Mosque page confData
+        run: |
+          SLUG=$(python3 -c "import json;print(json.load(open('s.json'))[0]['slug'])")
+          curl -sS -D - -H "Origin: https://adhandisplay.com" "https://mawaqit.net/nl/$SLUG" -o p.html | grep -iE "^HTTP|access-control"
+          python3 - <<'PY'
+          import re,json
+          h=open('p.html',encoding='utf8').read()
+          m=re.search(r'(?:let|var|const)\s+confData\s*=\s*(\{.*?\});',h,re.S)
+          print('confData found',bool(m))
+          if m:
+              d=json.loads(m.group(1)); print('KEYS',sorted(d.keys()))
+              for k in ('times','iqamaCalendar','calendar','jumua','jumua2','shuruq','timezone','iqamaEnabled'):
+                  v=d.get(k); print(k, json.dumps(v)[:300])
+          PY
