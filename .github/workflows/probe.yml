@@ -6,28 +6,42 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - name: Mawaqit search by word (headers + body)
+      - name: Search without Origin, browser UA
+        continue-on-error: true
         run: |
-          curl -sS -D - -H "Origin: https://adhandisplay.com" "https://mawaqit.net/api/2.0/mosque/search?word=amsterdam" -o s.json | grep -iE "^HTTP|access-control|content-type|cache-control|ratelimit|cf-"
-          python3 -c "import json;d=json.load(open('s.json'));print('COUNT',len(d));print(json.dumps(d[0],ensure_ascii=False)[:2500]) if d else None"
-      - name: Mawaqit search by lat/lon
+          UA="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130 Safari/537.36"
+          curl -sS -D - -A "$UA" "https://mawaqit.net/api/2.0/mosque/search?word=amsterdam" -o s.json | grep -iE "^HTTP|access-control|content-type"
+          head -c 300 s.json; echo
+      - name: Public mosque page (known slugs)
+        continue-on-error: true
         run: |
-          curl -sS -D - -H "Origin: https://adhandisplay.com" "https://mawaqit.net/api/2.0/mosque/search?lat=52.37&lon=4.89" -o n.json | grep -iE "^HTTP|access-control"
-          python3 -c "import json;d=json.load(open('n.json'));print('COUNT',len(d));[print(m.get('slug'),'|',m.get('name'),'|',m.get('times'),m.get('iqama'),m.get('jumua'),m.get('proximity')) for m in d[:5]]"
-      - name: Preflight check
-        run: |
-          curl -sS -i -X OPTIONS -H "Origin: https://adhandisplay.com" -H "Access-Control-Request-Method: GET" "https://mawaqit.net/api/2.0/mosque/search?word=x" | head -15
-      - name: Mosque page confData
-        run: |
-          SLUG=$(python3 -c "import json;print(json.load(open('s.json'))[0]['slug'])")
-          curl -sS -D - -H "Origin: https://adhandisplay.com" "https://mawaqit.net/nl/$SLUG" -o p.html | grep -iE "^HTTP|access-control"
-          python3 - <<'PY'
+          UA="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130 Safari/537.36"
+          for SLUG in moskee-blauwe-amsterdam el-tawheed-moskee-amsterdam mosquee-de-paris; do
+            echo "== $SLUG"
+            curl -sS -D - -A "$UA" -H "Origin: https://adhandisplay.com" "https://mawaqit.net/nl/$SLUG" -o p.html | grep -iE "^HTTP|access-control|x-frame|content-security"
+            python3 - <<'PY'
           import re,json
-          h=open('p.html',encoding='utf8').read()
-          m=re.search(r'(?:let|var|const)\s+confData\s*=\s*(\{.*?\});',h,re.S)
-          print('confData found',bool(m))
+          h=open('p.html',encoding='utf8',errors='replace').read()
+          m=re.search(r'confData\s*=\s*(\{.*?\});\s*\n',h,re.S)
+          print('bytes',len(h),'confData',bool(m))
           if m:
-              d=json.loads(m.group(1)); print('KEYS',sorted(d.keys()))
-              for k in ('times','iqamaCalendar','calendar','jumua','jumua2','shuruq','timezone','iqamaEnabled'):
-                  v=d.get(k); print(k, json.dumps(v)[:300])
+              try:
+                  d=json.loads(m.group(1)); print('KEYS',sorted(d.keys())[:60])
+                  for k in ('name','times','iqamaCalendar','calendar','jumua','jumua2','shuruq','timezone','iqamaEnabled'):
+                      print(' ',k, json.dumps(d.get(k),ensure_ascii=False)[:240])
+              except Exception as e: print('parse',e, m.group(1)[:200])
           PY
+          done
+      - name: Mawaqit widget / embed endpoints
+        continue-on-error: true
+        run: |
+          for U in "https://mawaqit.net/api/2.0/mosque/search?word=paris" "https://mawaqit.net/api/3.0/mosque/search?word=paris" "https://mawaqit.net/nl/w/mosquee-de-paris" "https://mawaqit.net/nl/m/mosquee-de-paris"; do
+            echo "== $U"; curl -sS -o /dev/null -w "%{http_code} %{content_type} %{size_download}\n" -H "Origin: https://adhandisplay.com" "$U"; curl -sSI -H "Origin: https://adhandisplay.com" "$U" | grep -iE "access-control|x-frame|frame-ancestors"
+          done
+      - name: islamic.app masajid
+        continue-on-error: true
+        run: |
+          curl -sS -D - -H "Origin: https://adhandisplay.com" "https://api.islamic.app/v1/masajid/near?lat=52.37&lng=4.89&radius=10&limit=5" -o i.json | grep -iE "^HTTP|access-control|content-type"
+          head -c 2500 i.json; echo
+          curl -sS -D - -H "Origin: https://adhandisplay.com" "https://api.islamic.app/v1/masajid?country=NL&limit=3" -o j.json | grep -iE "^HTTP|access-control"
+          head -c 1500 j.json; echo
