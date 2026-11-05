@@ -6,24 +6,18 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - name: Mosque pages
+      - name: Find web search endpoint
         continue-on-error: true
         shell: bash {0}
         run: |
           UA="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130 Safari/537.36"
-          for URL in "https://mawaqit.net/en/al-kabir-amsterdam" "https://mawaqit.net/nl/w/blauwe-amsterdam" "https://mawaqit.net/en/essalam-rotterdam"; do
-            echo "=================== $URL"
-            curl -sS -L -D - -A "$UA" -H "Origin: https://adhandisplay.com" "$URL" -o p.html | grep -iE "^HTTP|^location|access-control|x-frame|content-security|cache-control"
-            python3 - <<'PY'
-          import re,json
-          h=open('p.html',encoding='utf8',errors='replace').read()
-          m=re.search(r'confData\s*=\s*(\{.*?\});\s*\n',h,re.S)
-          print('bytes',len(h),'confData',bool(m))
-          if m:
-              d=json.loads(m.group(1)); print('KEYS',sorted(d.keys()))
-              for k in ('name','uuid','slug','times','iqamaCalendar','calendar','jumua','jumua2','jumua3','shuruq','timezone','iqamaEnabled','latitude','longitude','hijriAdjustment','dst'):
-                  v=d.get(k); s=json.dumps(v,ensure_ascii=False); print(' ',k,len(s), s[:300])
-          PY
+          curl -sS -L -c jar -A "$UA" "https://mawaqit.net/en/" -o h.html -w "home %{http_code} %{url_effective} %{size_download}\n"
+          grep -oiE '(action|href|src|data-[a-z-]+)="[^"]*(search|mosque|api|\.js)[^"]*"' h.html | sort -u | head -40
+          for JS in $(grep -oE 'src="[^"]+\.js[^"]*"' h.html | sed -E 's/src="//; s/"$//' | head -8); do
+            case "$JS" in http*) U="$JS";; *) U="https://mawaqit.net$JS";; esac
+            curl -sS -A "$UA" "$U" -o a.js; echo "-- $U $(wc -c < a.js)"; grep -oE '["'"'"'`][^"'"'"'`]*(search|api/)[^"'"'"'`]{0,80}' a.js | sort -u | head -15
           done
-          echo "== no-origin CORS check on page"
-          curl -sSI -A "$UA" -H "Origin: https://adhandisplay.com" "https://mawaqit.net/en/al-kabir-amsterdam" | grep -iE "^HTTP|access-control"
+          echo "== try with session cookie"
+          for U in "https://mawaqit.net/api/2.0/mosque/search?word=amsterdam" "https://mawaqit.net/en/m?search=amsterdam" "https://mawaqit.net/api/2.0/mosque/search?word=amsterdam&fields=slug,label"; do
+            curl -sS -b jar -A "$UA" -H "X-Requested-With: XMLHttpRequest" -H "Referer: https://mawaqit.net/en/" -o r.out -w "$U -> %{http_code} %{content_type} %{size_download}\n" "$U"; head -c 400 r.out; echo
+          done
