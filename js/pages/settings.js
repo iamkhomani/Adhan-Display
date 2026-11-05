@@ -304,7 +304,7 @@ export const settingsPage = {
         });
 
         if (path[0]) {
-            requestAnimationFrame(() => root.querySelector(`#set-${path[0]}`)?.scrollIntoView({ block: 'start' }));
+            requestAnimationFrame(() => document.getElementById(`set-${path[0]}`)?.scrollIntoView({ block: 'start' }));
         }
 
         root.addEventListener('click', async event => {

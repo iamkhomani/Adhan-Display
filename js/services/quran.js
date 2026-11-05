@@ -126,11 +126,11 @@ async function quranApi(path) {
 export function surahList() {
     return remember('surahs', () => cachedJson('q_surahs', `${ENDPOINTS.quran}/surah`, 24 * 30, json =>
         (json?.data || []).map(surah => ({
-            number: surah.number,
+            number: Number(surah.number),
             name: surah.name,
             englishName: surah.englishName,
             meaning: surah.englishNameTranslation,
-            ayahs: surah.numberOfAyahs,
+            ayahs: Number(surah.numberOfAyahs),
             type: surah.revelationType
         }))
     ));
@@ -196,8 +196,8 @@ function mergeEditions(arabic, translated, surahInfo = null) {
         }
 
         return {
-            number: ayah.number,
-            numberInSurah: ayah.numberInSurah,
+            number: Number(ayah.number),
+            numberInSurah: Number(ayah.numberInSurah),
             surah: surahNumber,
             surahName: surah.englishName || '',
             juz: ayah.juz,
@@ -221,11 +221,11 @@ export function surah(number, translation) {
 
         return {
             info: {
-                number: arabic.number,
+                number: Number(arabic.number),
                 name: arabic.name,
                 englishName: arabic.englishName,
                 meaning: arabic.englishNameTranslation,
-                ayahs: arabic.numberOfAyahs,
+                ayahs: Number(arabic.numberOfAyahs),
                 type: arabic.revelationType
             },
             ayahs: mergeEditions(arabic, translated, arabic)
@@ -256,10 +256,10 @@ export async function searchQuran(query, edition) {
     return {
         count: Number(data?.count) || 0,
         matches: (data?.matches || []).map(match => ({
-            number: match.number,
-            surah: match.surah?.number,
+            number: Number(match.number),
+            surah: Number(match.surah?.number),
             surahName: match.surah?.englishName || '',
-            numberInSurah: match.numberInSurah,
+            numberInSurah: Number(match.numberInSurah),
             text: match.text
         }))
     };
@@ -285,12 +285,12 @@ export function ayahWithTranslation(globalNumber, translation) {
         }
 
         return {
-            number: arabic.number,
+            number: Number(arabic.number),
             text,
             translation: translated?.text || '',
-            surah: arabic.surah?.number,
+            surah: Number(arabic.surah?.number),
             surahName: arabic.surah?.englishName || '',
-            numberInSurah: arabic.numberInSurah
+            numberInSurah: Number(arabic.numberInSurah)
         };
     });
 }

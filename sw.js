@@ -11,7 +11,7 @@
  * translation is pre-cached; the chosen language is cached when it loads.
  */
 
-const VERSION = 'adhan-display-5.4.1';
+const VERSION = 'adhan-display-5.4.2';
 
 const SHELL = [
     './',
@@ -55,7 +55,9 @@ const SHELL = [
     'images/icons/logo-96.png',
     'images/icons/icon-192.png',
     'images/icons/favicon-32.png',
-    'favicon.ico'
+    'favicon.ico',
+    'js/boot.js',
+    'js/analytics-init.js'
 ];
 
 self.addEventListener('install', event => {

@@ -8,52 +8,10 @@
     <link rel="canonical" href="https://adhandisplay.com/">
     <meta name="theme-color" content="#14110d">
     <meta name="color-scheme" content="dark light">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://*.googletagmanager.com; connect-src 'self' https://api.aladhan.com https://api.alquran.cloud https://api.quran.com https://ummahapi.com https://geocoding-api.open-meteo.com https://api.bigdatacloud.net https://raw.githubusercontent.com https://cdn.islamic.network https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com; img-src 'self' data: blob: https://*.google-analytics.com https://*.googletagmanager.com; media-src 'self' https://cdn.islamic.network; style-src 'self' 'unsafe-inline'; font-src 'self'; manifest-src 'self'; worker-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
 
-    <script>
-        /* Apply the saved theme before the page paints. Dark is the default. */
-        (function () {
-            try {
-                var root = document.documentElement;
-                var theme = localStorage.getItem('adhan_theme') || localStorage.getItem('ad2_theme') || 'dark';
-                if (theme === 'system') {
-                    theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-                }
-                root.setAttribute('data-theme', theme === 'light' ? 'light' : 'dark');
-                var size = localStorage.getItem('adhan_size');
-                if (size === 'compact' || size === 'large') {
-                    root.setAttribute('data-size', size);
-                }
-            } catch (error) {
-                /* Storage unavailable: keep the dark default. */
-            }
-
-            /* Language and text direction, so Arabic and Urdu start right-to-left without a flash. */
-            try {
-                var supported = ['en', 'zh', 'hi', 'es', 'fr', 'ar', 'bn', 'pt', 'ru', 'ur', 'nl'];
-                var lang = null;
-                try {
-                    lang = localStorage.getItem('adhan_lang');
-                } catch (error) {
-                    lang = null;
-                }
-                if (supported.indexOf(lang) === -1) {
-                    lang = 'en';
-                    var wanted = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || 'en'];
-                    for (var i = 0; i < wanted.length; i += 1) {
-                        var code = String(wanted[i]).slice(0, 2).toLowerCase();
-                        if (supported.indexOf(code) !== -1) {
-                            lang = code;
-                            break;
-                        }
-                    }
-                }
-                document.documentElement.setAttribute('lang', lang);
-                document.documentElement.setAttribute('dir', lang === 'ar' || lang === 'ur' ? 'rtl' : 'ltr');
-            } catch (error) {
-                /* Keep English. */
-            }
-        })();
-    </script>
+    <script src="js/boot.js"></script>
 
     <link rel="preload" href="fonts/manrope.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="fonts/marcellus.woff2" as="font" type="font/woff2" crossorigin>
@@ -100,12 +58,7 @@
 
     <!-- Google Analytics: page views are sent by the app on each route change. -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-BEKQEF4RR5"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-        gtag('config', 'G-BEKQEF4RR5', { send_page_view: false });
-    </script>
+    <script src="js/analytics-init.js"></script>
 
     <script type="module" src="js/app.js"></script>
 </head>

@@ -4,7 +4,7 @@
 
 import { bus } from './core/bus.js';
 
-export const APP_VERSION = '5.4.1';
+export const APP_VERSION = '5.4.2';
 
 let deferredPrompt = null;
 
