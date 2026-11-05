@@ -6,28 +6,24 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - name: Mosque pages via listing
+      - name: Mosque pages
         continue-on-error: true
         shell: bash {0}
         run: |
           UA="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130 Safari/537.36"
-          curl -sS -A "$UA" "https://mawaqit.net/nl/?page=39" -o l.html -w "listing %{http_code} %{size_download}\n"
-          grep -oE 'href="/nl/[a-z0-9-]+"' l.html | sort -u | head -8
-          SLUG=$(grep -oE 'href="/nl/[a-z0-9-]{6,}"' l.html | sed -E 's#href="/nl/##; s/"//' | grep -vE '^(login|register|faq|contact|search|mosques)$' | head -1)
-          echo "SLUG=$SLUG"
-          curl -sS -D - -A "$UA" -H "Origin: https://adhandisplay.com" "https://mawaqit.net/nl/$SLUG" -o p.html | grep -iE "^HTTP|access-control|x-frame|content-security|cache-control"
-          python3 - <<'PY'
+          for URL in "https://mawaqit.net/en/al-kabir-amsterdam" "https://mawaqit.net/nl/w/blauwe-amsterdam" "https://mawaqit.net/en/essalam-rotterdam"; do
+            echo "=================== $URL"
+            curl -sS -L -D - -A "$UA" -H "Origin: https://adhandisplay.com" "$URL" -o p.html | grep -iE "^HTTP|^location|access-control|x-frame|content-security|cache-control"
+            python3 - <<'PY'
           import re,json
           h=open('p.html',encoding='utf8',errors='replace').read()
           m=re.search(r'confData\s*=\s*(\{.*?\});\s*\n',h,re.S)
           print('bytes',len(h),'confData',bool(m))
           if m:
               d=json.loads(m.group(1)); print('KEYS',sorted(d.keys()))
-              for k in ('name','uuid','times','iqamaCalendar','calendar','jumua','jumua2','shuruq','timezone','iqamaEnabled','latitude','longitude'):
-                  print(' ',k, json.dumps(d.get(k),ensure_ascii=False)[:260])
+              for k in ('name','uuid','slug','times','iqamaCalendar','calendar','jumua','jumua2','jumua3','shuruq','timezone','iqamaEnabled','latitude','longitude','hijriAdjustment','dst'):
+                  v=d.get(k); s=json.dumps(v,ensure_ascii=False); print(' ',k,len(s), s[:300])
           PY
-          echo "== widget/embed"
-          for P in "w/$SLUG" "m/$SLUG" "$SLUG?view=desktop"; do curl -sS -o /dev/null -w "$P %{http_code} %{size_download}\n" -A "$UA" "https://mawaqit.net/nl/$P"; done
-          echo "== search API with UA"
-          curl -sS -o /dev/null -w "search %{http_code}\n" -A "$UA" "https://mawaqit.net/api/2.0/mosque/search?word=amsterdam"
-          curl -sS -o /dev/null -w "search-noauth-hdr %{http_code}\n" -A "$UA" -H "Accept: application/json" "https://mawaqit.net/api/2.0/mosque/search?lat=52.37&lon=4.89"
+          done
+          echo "== no-origin CORS check on page"
+          curl -sSI -A "$UA" -H "Origin: https://adhandisplay.com" "https://mawaqit.net/en/al-kabir-amsterdam" | grep -iE "^HTTP|access-control"
