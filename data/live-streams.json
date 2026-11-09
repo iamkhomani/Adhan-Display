@@ -1,16 +1,16 @@
 {
-  "updated": "2026-11-01T21:30:00.000Z",
+  "updated": "2026-11-09T19:54:00.773Z",
   "sites": {
     "haram": {
-      "url": "https://www.youtube.com/watch?v=eC4LfEVxvKg",
-      "channel": "قناة القران الكريم",
-      "official": true,
+      "url": "https://www.youtube.com/watch?v=gaPehpPcU7Q",
+      "channel": "القرآن الكريم AlQuran4K",
+      "official": false,
       "live": true
     },
     "nabawi": {
-      "url": "https://www.youtube.com/watch?v=Rs7St51oDDc",
-      "channel": "قناة السنة النبوية",
-      "official": true,
+      "url": "https://www.youtube.com/watch?v=ek7894plrD4",
+      "channel": "Ar Rahman",
+      "official": false,
       "live": true
     }
   }
