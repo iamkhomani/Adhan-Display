@@ -58,11 +58,11 @@ jobs:
       - name: Check publishing secrets
         id: secrets
         env:
-          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_USER_ID: '17841478344022848'   # @adhandisplay (public account ID, not a secret)
           IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
         run: |
           if [ -n "$IG_USER_ID" ] && [ -n "$IG_ACCESS_TOKEN" ]; then echo "ok=true" >> "$GITHUB_OUTPUT"
-          else echo "ok=false" >> "$GITHUB_OUTPUT"; echo "::notice::IG_USER_ID / IG_ACCESS_TOKEN not set yet: rendered only, nothing posted."; fi
+          else echo "ok=false" >> "$GITHUB_OUTPUT"; echo "::notice::IG_ACCESS_TOKEN secret not set yet: rendered only, nothing posted."; fi
 
       - name: Put image(s) on the media branch
         id: media
@@ -107,7 +107,7 @@ jobs:
       - name: Publish to Instagram
         if: steps.media.outputs.url != ''
         env:
-          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_USER_ID: '17841478344022848'   # @adhandisplay (public account ID, not a secret)
           IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
         run: node scripts/instagram/post.mjs publish "${{ steps.media.outputs.url }}"
 
@@ -120,17 +120,3 @@ jobs:
           git commit -q -m "Instagram: posted $(node -p "require('./out/instagram/meta.json').id")"
           for i in 1 2 3; do git pull -q --rebase && git push -q && exit 0; sleep 5; done
           exit 1
-
-      - name: Refresh access token (1st and 15th of the month)
-        if: env.MODE == 'post' && steps.secrets.outputs.ok == 'true'
-        env:
-          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
-          GH_TOKEN: ${{ secrets.GH_SECRETS_TOKEN }}
-        run: |
-          DAY=$(date -u +%d)
-          if [ "$DAY" != 01 ] && [ "$DAY" != 15 ]; then echo "Not a refresh day."; exit 0; fi
-          if [ -z "$GH_TOKEN" ]; then echo "::warning::GH_SECRETS_TOKEN not set: refresh the Instagram token yourself within 60 days."; exit 0; fi
-          NEW=$(curl -sf "https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=$IG_ACCESS_TOKEN" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const j=JSON.parse(s);if(!j.access_token)process.exit(1);process.stdout.write(j.access_token)})")
-          echo "::add-mask::$NEW"
-          gh secret set IG_ACCESS_TOKEN --repo "${{ github.repository }}" --body "$NEW"
-          echo "Token refreshed."

@@ -13,7 +13,8 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const OUT = path.join(ROOT, 'out/instagram');
 const CONTENT = path.join(ROOT, 'social/content.json');
 const STATE = path.join(ROOT, 'social/state.json');
-const GRAPH = 'https://graph.instagram.com/v23.0';
+// Instagram API with Unified (Facebook) login; system-user token that never expires.
+const GRAPH = 'https://graph.facebook.com/v23.0';
 const ROTATION = ['quran', 'hadith', 'quran', 'story', 'quran', 'hadith'];
 const HASHTAGS = {
     quran: '#Quran #QuranVerses #Islam #Muslim #Allah #Deen #IslamicReminders #AdhanDisplay',
