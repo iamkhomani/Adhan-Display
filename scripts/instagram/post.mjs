@@ -66,7 +66,13 @@ async function fetchJson(url, tries = 3) {
     }
 }
 
-const BISMILLAH = /^بِسْمِ\s+ٱللَّهِ\s+ٱلرَّحْمَٰنِ\s+ٱلرَّحِيمِ\s*/;
+// The API prefixes ayah 1 of most surahs with the Basmala. Compare letters only (no diacritics or tatweel).
+const bare = (w) => w.replace(/[\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g, '').replace(/[ٱأإآ]/g, 'ا');
+function stripBasmala(text) {
+    const words = text.trim().split(/\s+/);
+    const head = words.slice(0, 4).map(bare).join(' ');
+    return head === 'بسم الله الرحمن الرحيم' ? words.slice(4).join(' ') : text;
+}
 
 export async function fetchVerses(ref) {
     const { surah, from, to } = parseRef(ref);
@@ -83,12 +89,13 @@ export async function fetchVerses(ref) {
             throw new Error(`Unexpected API answer for ${surah}:${a}`);
         }
         let text = String(arabic.text);
-        if (a === 1 && surah !== 1 && surah !== 9) text = text.replace(BISMILLAH, '');
+        if (a === 1 && surah !== 1 && surah !== 9) text = stripBasmala(text);
+        if (a === 1 && surah !== 1 && surah !== 9 && text === String(arabic.text)) throw new Error(`Could not remove the Basmala from ${surah}:1`);
         ar.push(`${text} ﴿${toArabicDigits(a)}﴾`);
         en.push(String(english.text).trim());
         surahName = String(arabic.surah?.englishName || '');
     }
-    return { surahName, ref, arabic: ar.join(' '), english: en.join(' ') };
+    return { surahName, ref, arabic: ar.join(' '), english: en.join(' ').replace(/[;,:]\s*$/, '') };
 }
 
 const toArabicDigits = (n) => String(n).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]);
