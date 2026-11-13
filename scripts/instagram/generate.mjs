@@ -151,7 +151,8 @@ export async function newHadithItems(items, count) {
     const pick = await gemini(`You prepare authentic hadith for a Muslim app's daily Instagram reminder.
 Below are hadith from Sahih al-Bukhari with the Arabic text and a reference English translation.
 Choose the ones that are a clear, general, uplifting teaching of the Prophet ﷺ that needs no extra context
-(skip legal details, rulings, battles, unclear or sensitive topics).
+(skip anything that is a legal ruling, prohibition, punishment, oath, ritual detail, battle, or unclear or sensitive topic;
+prefer teachings about kindness, character, mercy, worship, gratitude, patience and hope).
 For each chosen hadith write a short, faithful modern English rendering of ONLY the Prophet's own words.
 Do not add, explain, soften or summarise meaning that is not in the Arabic. Keep it under 220 characters.
 Also give the companion who narrated it, as named in the source.
@@ -172,19 +173,27 @@ ${candidates.map((c) => `#${c.number}\nARABIC: ${c.arabic}\nENGLISH: ${c.english
         if (prepared.some((x) => x.c.number === c.number)) continue;
         prepared.push({ c, text, narrator });
     }
-    const checks = await Promise.allSettled(prepared.map(({ c, text }) => gemini(`Compare a short English rendering of a hadith with its source.
+    // Checked one by one: the free Gemini tier rejects bursts (HTTP 429).
+    const out = [];
+    for (const { c, text, narrator } of prepared) {
+        if (out.length >= count) break;
+        let check = null;
+        try {
+            check = await gemini(`Review a short English rendering of a hadith for a gentle daily Instagram reminder.
 ARABIC: ${c.arabic}
 REFERENCE ENGLISH: ${c.english}
 RENDERING: ${text}
-Answer JSON only: {"faithful": true|false, "reason": "..."}.
-"faithful" is true only if the rendering contains nothing that is not in the Prophet's words in the source
-and does not change their meaning.`)));
-    const out = [];
-    prepared.forEach(({ c, text, narrator }, i) => {
-        const check = checks[i].status === 'fulfilled' ? checks[i].value : null;
-        if (check?.faithful !== true) { console.warn(`Dropped Bukhari ${c.number}: ${check?.reason || 'check failed'}`); return; }
-        if (out.length < count) out.push({ id: `h-bukhari-${c.number}`, type: 'hadith', text, narrator, source: `Sahih al-Bukhari ${c.number}`, grade: 'Sahih', approved: true, origin: 'gemini', added: today() });
-    });
+Answer JSON only: {"faithful": true|false, "suitable": true|false, "reason": "..."}.
+"faithful" is true only if the rendering contains nothing that is not in the Prophet's words in the source and does not change their meaning.
+"suitable" is true only if it is an uplifting, general teaching about faith, character, kindness, worship or hope.
+It must be false for legal rulings, prohibitions, punishments, oaths, war, ritual details, or anything that needs context.`);
+        } catch (err) {
+            console.warn(`Check failed for Bukhari ${c.number}: ${err.message}`);
+        }
+        if (check?.faithful !== true || check?.suitable !== true) { console.warn(`Dropped Bukhari ${c.number}: ${check?.reason || 'check failed'}`); continue; }
+        out.push({ id: `h-bukhari-${c.number}`, type: 'hadith', text, narrator, source: `Sahih al-Bukhari ${c.number}`, grade: 'Sahih', approved: true, origin: 'gemini', added: today() });
+        await new Promise((r) => setTimeout(r, 4000));
+    }
     return out;
 }
 
