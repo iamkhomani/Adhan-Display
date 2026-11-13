@@ -1,0 +1,47 @@
+name: Instagram content top-up
+
+on:
+  schedule:
+    - cron: '17 3 * * 0'    # every Sunday, 04:17 Amsterdam (winter)
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Only show what would be added'
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: data-commits
+  cancel-in-progress: false
+
+jobs:
+  topup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Generate new Qur'an and hadith items with Gemini
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '1' || '' }}
+        run: |
+          if [ -z "$GEMINI_API_KEY" ]; then echo "::warning::GEMINI_API_KEY secret not set: nothing generated."; exit 0; fi
+          node scripts/instagram/generate.mjs
+
+      - name: Commit new items
+        run: |
+          if git diff --quiet social/content.json; then echo "No changes."; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add social/content.json
+          git commit -q -m "Instagram: weekly content top-up"
+          for i in 1 2 3; do git pull -q --rebase && git push -q && exit 0; sleep 5; done
+          exit 1

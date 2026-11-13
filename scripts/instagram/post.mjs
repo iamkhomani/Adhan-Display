@@ -15,7 +15,8 @@ const CONTENT = path.join(ROOT, 'social/content.json');
 const STATE = path.join(ROOT, 'social/state.json');
 // Instagram API with Unified (Facebook) login; system-user token that never expires.
 const GRAPH = 'https://graph.facebook.com/v23.0';
-const ROTATION = ['quran', 'hadith', 'quran', 'story', 'quran', 'hadith'];
+// 10 slots: stories are rare because there are only a few hand-written ones.
+const ROTATION = ['quran', 'hadith', 'quran', 'hadith', 'quran', 'story', 'quran', 'hadith', 'quran', 'hadith'];
 const HASHTAGS = {
     quran: '#Quran #QuranVerses #Islam #Muslim #Allah #Deen #IslamicReminders #AdhanDisplay',
     hadith: '#Hadith #Sunnah #ProphetMuhammad #Islam #Muslim #IslamicReminders #AdhanDisplay',

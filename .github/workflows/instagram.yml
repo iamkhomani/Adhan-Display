@@ -2,7 +2,8 @@ name: Instagram post
 
 on:
   schedule:
-    - cron: '23 17 * * *'   # daily, 18:23 Amsterdam (winter) / 19:23 (summer)
+    - cron: '13 6 * * *'    # morning: 07:13 Amsterdam (winter) / 08:13 (summer)
+    - cron: '23 17 * * *'   # evening: 18:23 Amsterdam (winter) / 19:23 (summer)
   push:
     branches: [main]
     paths: ['social/content.json', 'scripts/instagram/**', '.github/workflows/instagram.yml']
