@@ -170,7 +170,7 @@
       "narrator": "Umar ibn al-Khattab",
       "source": "Sahih al-Bukhari 1, Sahih Muslim 1907",
       "grade": "Sahih",
-      "approved": false
+      "approved": true
     },
     {
       "id": "h-brother",
@@ -179,7 +179,7 @@
       "narrator": "Anas ibn Malik",
       "source": "Sahih al-Bukhari 13, Sahih Muslim 45",
       "grade": "Sahih",
-      "approved": false
+      "approved": true
     },
     {
       "id": "h-speak-good",
@@ -188,7 +188,7 @@
       "narrator": "Abu Hurairah",
       "source": "Sahih al-Bukhari 6018, Sahih Muslim 47",
       "grade": "Sahih",
-      "approved": false
+      "approved": true
     },
     {
       "id": "h-strong",
@@ -197,7 +197,7 @@
       "narrator": "Abu Hurairah",
       "source": "Sahih al-Bukhari 6114, Sahih Muslim 2609",
       "grade": "Sahih",
-      "approved": false
+      "approved": true
     },
     {
       "id": "h-make-easy",
@@ -206,7 +206,7 @@
       "narrator": "Anas ibn Malik",
       "source": "Sahih al-Bukhari 69, Sahih Muslim 1734",
       "grade": "Sahih",
-      "approved": false
+      "approved": true
     },
     {
       "id": "h-consistent",
@@ -215,7 +215,7 @@
       "narrator": "Aisha",
       "source": "Sahih al-Bukhari 6464",
       "grade": "Sahih",
-      "approved": false
+      "approved": true
     },
     {
       "id": "h-hearts",
@@ -224,7 +224,7 @@
       "narrator": "Abu Hurairah",
       "source": "Sahih Muslim 2564",
       "grade": "Sahih",
-      "approved": false
+      "approved": true
     },
     {
       "id": "h-good-word",
@@ -233,7 +233,7 @@
       "narrator": "Abu Hurairah",
       "source": "Sahih al-Bukhari 2989, Sahih Muslim 1009",
       "grade": "Sahih",
-      "approved": false
+      "approved": true
     },
     {
       "id": "h-sincerity",
@@ -242,7 +242,7 @@
       "narrator": "Tamim ad-Dari",
       "source": "Sahih Muslim 55",
       "grade": "Sahih",
-      "approved": false
+      "approved": true
     },
     {
       "id": "h-learn-quran",
@@ -251,7 +251,7 @@
       "narrator": "Uthman ibn Affan",
       "source": "Sahih al-Bukhari 5027",
       "grade": "Sahih",
-      "approved": false
+      "approved": true
     },
     {
       "id": "s-yunus",
@@ -259,7 +259,7 @@
       "title": "Yunus in the darkness",
       "text": "Swallowed by a great fish, in layers of darkness, Prophet Yunus did not despair. He turned to his Lord, admitted his mistake and called out for help. Allah rescued him, and promised the same rescue to every believer who calls on Him like that.",
       "ref": "21:87-88",
-      "approved": false
+      "approved": true
     },
     {
       "id": "s-ibrahim",
@@ -267,7 +267,7 @@
       "title": "Ibrahim and the fire",
       "text": "When Prophet Ibrahim stood firm against the idols of his people, they threw him into a fire. Allah commanded the fire, and it became cool and safe for him.",
       "ref": "21:69",
-      "approved": false
+      "approved": true
     },
     {
       "id": "s-musa-mother",
@@ -275,7 +275,7 @@
       "title": "The promise to Musa's mother",
       "text": "Fearing for her newborn, Musa's mother placed him in a chest on the river, trusting Allah's promise. The river carried him to Pharaoh's household, who took him in, and Allah brought him back to his mother to nurse him.",
       "ref": "28:13",
-      "approved": false
+      "approved": true
     },
     {
       "id": "s-yusuf",
@@ -283,7 +283,7 @@
       "title": "Yusuf forgives his brothers",
       "text": "Thrown into a well by his own brothers, sold, wrongly imprisoned, Prophet Yusuf rose to high office in Egypt. When his brothers finally stood before him, he did not take revenge.",
       "ref": "12:92",
-      "approved": false
+      "approved": true
     }
   ]
 }
