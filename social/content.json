@@ -1,0 +1,289 @@
+{
+  "_readme": [
+    "Content for the daily Instagram post (scripts/instagram/post.mjs).",
+    "Only items with \"approved\": true are posted. Order = posting order; after the last item it starts again.",
+    "quran: only a reference. The text is fetched verbatim at post time (Arabic: quran-uthmani, English: Pickthall 1930, public domain).",
+    "hadith: text is Adhan Display's own English rendering; only Sahih Bukhari/Muslim with references. Check before approving.",
+    "story: short summary of a Qur'anic story plus the verse(s) in 'ref', fetched verbatim. Check before approving."
+  ],
+  "items": [
+    {
+      "id": "q-2-45",
+      "type": "quran",
+      "ref": "2:45",
+      "approved": true
+    },
+    {
+      "id": "q-2-152",
+      "type": "quran",
+      "ref": "2:152",
+      "approved": true
+    },
+    {
+      "id": "q-2-153",
+      "type": "quran",
+      "ref": "2:153",
+      "approved": true
+    },
+    {
+      "id": "q-2-186",
+      "type": "quran",
+      "ref": "2:186",
+      "approved": true
+    },
+    {
+      "id": "q-3-139",
+      "type": "quran",
+      "ref": "3:139",
+      "approved": true
+    },
+    {
+      "id": "q-3-200",
+      "type": "quran",
+      "ref": "3:200",
+      "approved": true
+    },
+    {
+      "id": "q-4-28",
+      "type": "quran",
+      "ref": "4:28",
+      "approved": true
+    },
+    {
+      "id": "q-11-115",
+      "type": "quran",
+      "ref": "11:115",
+      "approved": true
+    },
+    {
+      "id": "q-13-28",
+      "type": "quran",
+      "ref": "13:28",
+      "approved": true
+    },
+    {
+      "id": "q-14-7",
+      "type": "quran",
+      "ref": "14:7",
+      "approved": true
+    },
+    {
+      "id": "q-16-128",
+      "type": "quran",
+      "ref": "16:128",
+      "approved": true
+    },
+    {
+      "id": "q-20-25-26",
+      "type": "quran",
+      "ref": "20:25-26",
+      "approved": true
+    },
+    {
+      "id": "q-25-63",
+      "type": "quran",
+      "ref": "25:63",
+      "approved": true
+    },
+    {
+      "id": "q-28-24",
+      "type": "quran",
+      "ref": "28:24",
+      "approved": true
+    },
+    {
+      "id": "q-29-69",
+      "type": "quran",
+      "ref": "29:69",
+      "approved": true
+    },
+    {
+      "id": "q-33-41-42",
+      "type": "quran",
+      "ref": "33:41-42",
+      "approved": true
+    },
+    {
+      "id": "q-39-53",
+      "type": "quran",
+      "ref": "39:53",
+      "approved": true
+    },
+    {
+      "id": "q-40-60",
+      "type": "quran",
+      "ref": "40:60",
+      "approved": true
+    },
+    {
+      "id": "q-49-10",
+      "type": "quran",
+      "ref": "49:10",
+      "approved": true
+    },
+    {
+      "id": "q-50-16",
+      "type": "quran",
+      "ref": "50:16",
+      "approved": true
+    },
+    {
+      "id": "q-51-56",
+      "type": "quran",
+      "ref": "51:56",
+      "approved": true
+    },
+    {
+      "id": "q-55-60",
+      "type": "quran",
+      "ref": "55:60",
+      "approved": true
+    },
+    {
+      "id": "q-64-11",
+      "type": "quran",
+      "ref": "64:11",
+      "approved": true
+    },
+    {
+      "id": "q-93-3-5",
+      "type": "quran",
+      "ref": "93:3-5",
+      "approved": true
+    },
+    {
+      "id": "q-94-5-6",
+      "type": "quran",
+      "ref": "94:5-6",
+      "approved": true
+    },
+    {
+      "id": "q-103-1-3",
+      "type": "quran",
+      "ref": "103:1-3",
+      "approved": true
+    },
+    {
+      "id": "h-intentions",
+      "type": "hadith",
+      "text": "Actions are only by intentions, and every person will have only what they intended.",
+      "narrator": "Umar ibn al-Khattab",
+      "source": "Sahih al-Bukhari 1, Sahih Muslim 1907",
+      "grade": "Sahih",
+      "approved": false
+    },
+    {
+      "id": "h-brother",
+      "type": "hadith",
+      "text": "None of you truly believes until he loves for his brother what he loves for himself.",
+      "narrator": "Anas ibn Malik",
+      "source": "Sahih al-Bukhari 13, Sahih Muslim 45",
+      "grade": "Sahih",
+      "approved": false
+    },
+    {
+      "id": "h-speak-good",
+      "type": "hadith",
+      "text": "Whoever believes in Allah and the Last Day, let him speak good or remain silent.",
+      "narrator": "Abu Hurairah",
+      "source": "Sahih al-Bukhari 6018, Sahih Muslim 47",
+      "grade": "Sahih",
+      "approved": false
+    },
+    {
+      "id": "h-strong",
+      "type": "hadith",
+      "text": "The strong one is not the one who overpowers others. The strong one is the one who controls himself when angry.",
+      "narrator": "Abu Hurairah",
+      "source": "Sahih al-Bukhari 6114, Sahih Muslim 2609",
+      "grade": "Sahih",
+      "approved": false
+    },
+    {
+      "id": "h-make-easy",
+      "type": "hadith",
+      "text": "Make things easy and do not make them difficult. Give glad tidings and do not drive people away.",
+      "narrator": "Anas ibn Malik",
+      "source": "Sahih al-Bukhari 69, Sahih Muslim 1734",
+      "grade": "Sahih",
+      "approved": false
+    },
+    {
+      "id": "h-consistent",
+      "type": "hadith",
+      "text": "The most beloved deeds to Allah are those done consistently, even if they are small.",
+      "narrator": "Aisha",
+      "source": "Sahih al-Bukhari 6464",
+      "grade": "Sahih",
+      "approved": false
+    },
+    {
+      "id": "h-hearts",
+      "type": "hadith",
+      "text": "Allah does not look at your bodies or your appearance, but He looks at your hearts and your deeds.",
+      "narrator": "Abu Hurairah",
+      "source": "Sahih Muslim 2564",
+      "grade": "Sahih",
+      "approved": false
+    },
+    {
+      "id": "h-good-word",
+      "type": "hadith",
+      "text": "A good word is charity.",
+      "narrator": "Abu Hurairah",
+      "source": "Sahih al-Bukhari 2989, Sahih Muslim 1009",
+      "grade": "Sahih",
+      "approved": false
+    },
+    {
+      "id": "h-sincerity",
+      "type": "hadith",
+      "text": "The religion is sincerity: to Allah, His Book, His Messenger, and to the leaders of the Muslims and their common folk.",
+      "narrator": "Tamim ad-Dari",
+      "source": "Sahih Muslim 55",
+      "grade": "Sahih",
+      "approved": false
+    },
+    {
+      "id": "h-learn-quran",
+      "type": "hadith",
+      "text": "The best of you are those who learn the Qur'an and teach it.",
+      "narrator": "Uthman ibn Affan",
+      "source": "Sahih al-Bukhari 5027",
+      "grade": "Sahih",
+      "approved": false
+    },
+    {
+      "id": "s-yunus",
+      "type": "story",
+      "title": "Yunus in the darkness",
+      "text": "Swallowed by a great fish, in layers of darkness, Prophet Yunus did not despair. He turned to his Lord, admitted his mistake and called out for help. Allah rescued him, and promised the same rescue to every believer who calls on Him like that.",
+      "ref": "21:87-88",
+      "approved": false
+    },
+    {
+      "id": "s-ibrahim",
+      "type": "story",
+      "title": "Ibrahim and the fire",
+      "text": "When Prophet Ibrahim stood firm against the idols of his people, they threw him into a fire. Allah commanded the fire, and it became cool and safe for him.",
+      "ref": "21:69",
+      "approved": false
+    },
+    {
+      "id": "s-musa-mother",
+      "type": "story",
+      "title": "The promise to Musa's mother",
+      "text": "Fearing for her newborn, Musa's mother placed him in a chest on the river, trusting Allah's promise. The river carried him into Pharaoh's palace, and Allah brought him back to his mother to nurse him.",
+      "ref": "28:13",
+      "approved": false
+    },
+    {
+      "id": "s-yusuf",
+      "type": "story",
+      "title": "Yusuf forgives his brothers",
+      "text": "Thrown into a well by his own brothers, sold, wrongly imprisoned, Prophet Yusuf rose to high office in Egypt. When his brothers finally stood before him, he did not take revenge.",
+      "ref": "12:92",
+      "approved": false
+    }
+  ]
+}

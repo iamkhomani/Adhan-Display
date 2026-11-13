@@ -1,0 +1,136 @@
+name: Instagram post
+
+on:
+  schedule:
+    - cron: '23 17 * * *'   # daily, 18:23 Amsterdam (winter) / 19:23 (summer)
+  push:
+    branches: [main]
+    paths: ['social/content.json', 'scripts/instagram/**', '.github/workflows/instagram.yml']
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'post = publish now, dry-run = render only, preview = render every item for review'
+        type: choice
+        options: [dry-run, post, preview]
+        default: dry-run
+
+permissions:
+  contents: write
+
+concurrency:
+  group: data-commits
+  cancel-in-progress: false
+
+jobs:
+  instagram:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      MODE: ${{ github.event_name == 'schedule' && 'post' || github.event_name == 'push' && 'preview' || inputs.mode }}
+      MEDIA_BRANCH: instagram-media
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install renderer
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.49.1
+          npx playwright install --with-deps chromium
+
+      - name: Render previews of all items
+        if: env.MODE == 'preview'
+        run: node scripts/instagram/post.mjs preview
+
+      - name: Render today's post
+        if: env.MODE != 'preview'
+        run: node scripts/instagram/post.mjs render
+
+      - name: Upload images as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: instagram-${{ env.MODE }}
+          path: out/instagram/
+          retention-days: 14
+
+      - name: Check publishing secrets
+        id: secrets
+        env:
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+        run: |
+          if [ -n "$IG_USER_ID" ] && [ -n "$IG_ACCESS_TOKEN" ]; then echo "ok=true" >> "$GITHUB_OUTPUT"
+          else echo "ok=false" >> "$GITHUB_OUTPUT"; echo "::notice::IG_USER_ID / IG_ACCESS_TOKEN not set yet: rendered only, nothing posted."; fi
+
+      - name: Put image(s) on the media branch
+        id: media
+        if: env.MODE == 'preview' || (env.MODE == 'post' && steps.secrets.outputs.ok == 'true')
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          mkdir -p /tmp/media && cd /tmp/media
+          git init -q && git remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          if git fetch -q --depth 1 origin "$MEDIA_BRANCH"; then git checkout -q -b "$MEDIA_BRANCH" FETCH_HEAD; else git checkout -q --orphan "$MEDIA_BRANCH"; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ "$MODE" = preview ]; then
+            rm -rf preview && mkdir preview && cp "$GITHUB_WORKSPACE"/out/instagram/preview/* preview/
+          else
+            IMG=$(node -p "require('$GITHUB_WORKSPACE/out/instagram/meta.json').image")
+            cp "$GITHUB_WORKSPACE/out/instagram/$IMG" .
+            # keep only the 10 newest post images
+            ls -1 *.jpg | sed -E 's/^(.*)-([0-9]{8})\.jpg$/\2 \0/' | sort -r | tail -n +11 | cut -d' ' -f2 | xargs -r rm -f
+            echo "url=https://raw.githubusercontent.com/${{ github.repository }}/$MEDIA_BRANCH/$IMG" >> "$GITHUB_OUTPUT"
+          fi
+          printf 'Images for the Instagram workflow. Rewritten on every post; not part of the website.\n' > README.md
+          git add -A
+          git commit -q -m "Instagram media $(date -u +%F)" --allow-empty
+          # one commit only: squash history so the branch never grows
+          git checkout -q --orphan tmp && git commit -q -m "Instagram media $(date -u +%F)" && git branch -D "$MEDIA_BRANCH" -q 2>/dev/null || true
+          git branch -m "$MEDIA_BRANCH"
+          git push -q -f origin "$MEDIA_BRANCH"
+
+      - name: Wait until the image is reachable
+        if: steps.media.outputs.url != ''
+        run: |
+          for i in $(seq 1 12); do
+            TYPE=$(curl -sfI "${{ steps.media.outputs.url }}" | tr -d '\r' | awk -F': ' 'tolower($1)=="content-type"{print $2}') || true
+            echo "content-type: ${TYPE:-none}"
+            case "$TYPE" in image/jpeg*) exit 0;; esac
+            sleep 10
+          done
+          echo "::error::Image is not served as image/jpeg"; exit 1
+
+      - name: Publish to Instagram
+        if: steps.media.outputs.url != ''
+        env:
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+        run: node scripts/instagram/post.mjs publish "${{ steps.media.outputs.url }}"
+
+      - name: Save posting state
+        if: steps.media.outputs.url != ''
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add social/state.json
+          git commit -q -m "Instagram: posted $(node -p "require('./out/instagram/meta.json').id")"
+          for i in 1 2 3; do git pull -q --rebase && git push -q && exit 0; sleep 5; done
+          exit 1
+
+      - name: Refresh access token (1st and 15th of the month)
+        if: env.MODE == 'post' && steps.secrets.outputs.ok == 'true'
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_SECRETS_TOKEN }}
+        run: |
+          DAY=$(date -u +%d)
+          if [ "$DAY" != 01 ] && [ "$DAY" != 15 ]; then echo "Not a refresh day."; exit 0; fi
+          if [ -z "$GH_TOKEN" ]; then echo "::warning::GH_SECRETS_TOKEN not set: refresh the Instagram token yourself within 60 days."; exit 0; fi
+          NEW=$(curl -sf "https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=$IG_ACCESS_TOKEN" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const j=JSON.parse(s);if(!j.access_token)process.exit(1);process.stdout.write(j.access_token)})")
+          echo "::add-mask::$NEW"
+          gh secret set IG_ACCESS_TOKEN --repo "${{ github.repository }}" --body "$NEW"
+          echo "Token refreshed."
