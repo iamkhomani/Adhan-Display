@@ -18,7 +18,7 @@ import path from 'node:path';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const CONTENT = path.join(ROOT, 'social/content.json');
-const MODELS = [process.env.GEMINI_MODEL || 'gemini-3.6-flash', 'gemini-3.5-flash'];
+const MODELS = [...new Set([process.env.GEMINI_MODEL || 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-3.5-flash-lite'])];
 const ADD_QURAN = Number(process.env.ADD_QURAN || 8);
 const ADD_HADITH = Number(process.env.ADD_HADITH || 6);
 const BUKHARI_MAX = 7563;
@@ -42,21 +42,30 @@ export async function gemini(prompt) {
     const key = process.env.GEMINI_API_KEY;
     if (!key) throw new Error('GEMINI_API_KEY is not set');
     let lastErr;
+    // Each model gets a few attempts with growing pauses (503/429 are usually short overloads).
     for (const model of MODELS) {
-        try {
-            const data = await fetchJson(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-                body: JSON.stringify({
-                    contents: [{ role: 'user', parts: [{ text: prompt }] }],
-                    generationConfig: { responseMimeType: 'application/json', temperature: 0.3 }
-                })
-            }, 2);
-            const text = data?.candidates?.[0]?.content?.parts?.map((p) => p.text || '').join('') || '';
-            return JSON.parse(text);
-        } catch (err) {
-            lastErr = err;
-            console.warn(`Gemini ${model} failed: ${err.message}`);
+        for (let attempt = 1; attempt <= 3; attempt++) {
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+                    method: 'POST',
+                    signal: AbortSignal.timeout(90000),
+                    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+                    body: JSON.stringify({
+                        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+                        generationConfig: { responseMimeType: 'application/json', temperature: 0.3 }
+                    })
+                });
+                if (res.status === 429 || res.status >= 500) throw Object.assign(new Error(`HTTP ${res.status}`), { retry: true });
+                if (!res.ok) throw new Error(`HTTP ${res.status}: ${(await res.text()).slice(0, 200)}`);
+                const data = await res.json();
+                const text = data?.candidates?.[0]?.content?.parts?.map((p) => p.text || '').join('') || '';
+                return JSON.parse(text);
+            } catch (err) {
+                lastErr = err;
+                console.warn(`Gemini ${model} attempt ${attempt} failed: ${err.message}`);
+                if (!err.retry && err.name !== 'TimeoutError') break;
+                await new Promise((r) => setTimeout(r, 10000 * attempt));
+            }
         }
     }
     throw lastErr;
@@ -184,8 +193,9 @@ const today = () => new Date().toISOString().slice(0, 10);
 // ---------- main ----------
 async function main() {
     const content = JSON.parse(await readFile(CONTENT, 'utf8'));
-    const q = await newQuranItems(content.items, ADD_QURAN);
-    const h = await newHadithItems(content.items, ADD_HADITH);
+    // A Gemini outage must never break the posting itself: skip the part that fails.
+    const q = await newQuranItems(content.items, ADD_QURAN).catch((err) => { console.warn(`::warning::Qur'an top-up skipped: ${err.message}`); return []; });
+    const h = await newHadithItems(content.items, ADD_HADITH).catch((err) => { console.warn(`::warning::Hadith top-up skipped: ${err.message}`); return []; });
     const ids = new Set(content.items.map((i) => i.id));
     const added = [...q, ...h].filter((i) => !ids.has(i.id));
     console.log(`New items: ${added.length} (${q.length} Qur'an, ${h.length} hadith)`);
