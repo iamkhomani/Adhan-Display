@@ -20,7 +20,7 @@ concurrency:
 jobs:
   topup:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 45   # free Gemini tier is slow (rate limits + retries); runs weekly
     steps:
       - uses: actions/checkout@v4
 
