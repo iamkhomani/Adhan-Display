@@ -28,7 +28,7 @@ const HADITH_API = 'https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/edition
 async function fetchJson(url, opts = {}, tries = 3) {
     for (let i = 1; ; i++) {
         try {
-            const res = await fetch(url, { ...opts, headers: { 'User-Agent': 'AdhanDisplay-Instagram/1.0', ...(opts.headers || {}) } });
+            const res = await fetch(url, { signal: AbortSignal.timeout(30000), ...opts, headers: { 'User-Agent': 'AdhanDisplay-Instagram/1.0', ...(opts.headers || {}) } });
             if (!res.ok) throw new Error(`HTTP ${res.status} for ${url.replace(/key=[^&]+/, 'key=***')}`);
             return await res.json();
         } catch (err) {
@@ -120,21 +120,23 @@ async function bukhari(n) {
     return { number: n, english: String(e.text || '').trim(), arabic: String(a.text || '').trim() };
 }
 
-export const shortQuote = (h) => h.english.length >= 60 && h.english.length <= 420 && /said|says/i.test(h.english) && /["“]/.test(h.english);
+export const shortQuote = (h) => h.english.length >= 50 && h.english.length <= 500 && /(Prophet|Messenger)/i.test(h.english) && /\bsaid\b|\bsays\b/i.test(h.english);
 
 export async function newHadithItems(items, count) {
     const used = new Set(items.filter((i) => i.type === 'hadith').flatMap((i) => (String(i.source || '').match(/Bukhari (\d+)/g) || []).map((s) => +s.split(' ')[1])));
+    // sample random numbers in parallel batches until there are enough short candidates
     const candidates = [];
     const tried = new Set();
-    for (let guard = 0; candidates.length < 30 && guard < 160; guard++) {
-        const n = 1 + Math.floor(Math.random() * BUKHARI_MAX);
-        if (used.has(n) || tried.has(n)) continue;
-        tried.add(n);
-        try {
-            const h = await bukhari(n);
-            if (shortQuote(h)) candidates.push(h);
-        } catch { /* missing number: skip */ }
+    for (let round = 0; candidates.length < 40 && round < 15; round++) {
+        const batch = [];
+        while (batch.length < 25) {
+            const n = 1 + Math.floor(Math.random() * BUKHARI_MAX);
+            if (!used.has(n) && !tried.has(n)) { tried.add(n); batch.push(n); }
+        }
+        const res = await Promise.allSettled(batch.map((n) => bukhari(n)));
+        for (const r of res) if (r.status === 'fulfilled' && shortQuote(r.value)) candidates.push(r.value);
     }
+    console.log(`Hadith candidates: ${candidates.length} from ${tried.size} sampled`);
     if (!candidates.length) return [];
 
     const pick = await gemini(`You prepare authentic hadith for a Muslim app's daily Instagram reminder.
@@ -149,9 +151,8 @@ Return JSON only: an array of {"number": <hadith number>, "narrator": "...", "te
 ${candidates.map((c) => `#${c.number}\nARABIC: ${c.arabic}\nENGLISH: ${c.english}`).join('\n\n')}`);
     if (!Array.isArray(pick)) return [];
 
-    const out = [];
+    const prepared = [];
     for (const p of pick) {
-        if (out.length >= count) break;
         const c = candidates.find((x) => x.number === Number(p?.number));
         const text = String(p?.text || '').trim().replace(/^["“]|["”]$/g, '');
         const narrator = String(p?.narrator || '').trim();
@@ -159,16 +160,22 @@ ${candidates.map((c) => `#${c.number}\nARABIC: ${c.arabic}\nENGLISH: ${c.english
         // narrator must appear in the source (first word of the name, e.g. "Abu", "Aisha")
         const key = narrator.replace(/^(Abu|Ibn|Umm)\s+/i, '').split(/\s+/)[0].toLowerCase().slice(0, 5);
         if (!c.english.toLowerCase().includes(key)) continue;
-        const check = await gemini(`Compare a short English rendering of a hadith with its source.
+        if (prepared.some((x) => x.c.number === c.number)) continue;
+        prepared.push({ c, text, narrator });
+    }
+    const checks = await Promise.allSettled(prepared.map(({ c, text }) => gemini(`Compare a short English rendering of a hadith with its source.
 ARABIC: ${c.arabic}
 REFERENCE ENGLISH: ${c.english}
 RENDERING: ${text}
 Answer JSON only: {"faithful": true|false, "reason": "..."}.
 "faithful" is true only if the rendering contains nothing that is not in the Prophet's words in the source
-and does not change their meaning.`);
-        if (check?.faithful !== true) { console.warn(`Dropped Bukhari ${c.number}: ${check?.reason || 'not faithful'}`); continue; }
-        out.push({ id: `h-bukhari-${c.number}`, type: 'hadith', text, narrator, source: `Sahih al-Bukhari ${c.number}`, grade: 'Sahih', approved: true, origin: 'gemini', added: today() });
-    }
+and does not change their meaning.`)));
+    const out = [];
+    prepared.forEach(({ c, text, narrator }, i) => {
+        const check = checks[i].status === 'fulfilled' ? checks[i].value : null;
+        if (check?.faithful !== true) { console.warn(`Dropped Bukhari ${c.number}: ${check?.reason || 'check failed'}`); return; }
+        if (out.length < count) out.push({ id: `h-bukhari-${c.number}`, type: 'hadith', text, narrator, source: `Sahih al-Bukhari ${c.number}`, grade: 'Sahih', approved: true, origin: 'gemini', added: today() });
+    });
     return out;
 }
 
