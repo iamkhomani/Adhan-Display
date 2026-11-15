@@ -284,6 +284,100 @@
       "text": "Thrown into a well by his own brothers, sold, wrongly imprisoned, Prophet Yusuf rose to high office in Egypt. When his brothers finally stood before him, he did not take revenge.",
       "ref": "12:92",
       "approved": true
+    },
+    {
+      "id": "q-3-159",
+      "type": "quran",
+      "ref": "3:159",
+      "theme": "Trust in Allah",
+      "approved": true,
+      "origin": "gemini",
+      "added": "2026-11-15"
+    },
+    {
+      "id": "q-3-173",
+      "type": "quran",
+      "ref": "3:173",
+      "theme": "Reliance on Allah",
+      "approved": true,
+      "origin": "gemini",
+      "added": "2026-11-15"
+    },
+    {
+      "id": "q-4-147",
+      "type": "quran",
+      "ref": "4:147",
+      "theme": "Gratitude and Faith",
+      "approved": true,
+      "origin": "gemini",
+      "added": "2026-11-15"
+    },
+    {
+      "id": "q-6-17",
+      "type": "quran",
+      "ref": "6:17",
+      "theme": "Hope and Relief",
+      "approved": true,
+      "origin": "gemini",
+      "added": "2026-11-15"
+    },
+    {
+      "id": "q-6-162-163",
+      "type": "quran",
+      "ref": "6:162-163",
+      "theme": "Devotion to Allah",
+      "approved": true,
+      "origin": "gemini",
+      "added": "2026-11-15"
+    },
+    {
+      "id": "q-7-56",
+      "type": "quran",
+      "ref": "7:56",
+      "theme": "Mercy and Goodness",
+      "approved": true,
+      "origin": "gemini",
+      "added": "2026-11-15"
+    },
+    {
+      "id": "q-9-129",
+      "type": "quran",
+      "ref": "9:129",
+      "theme": "Sufficient is Allah",
+      "approved": true,
+      "origin": "gemini",
+      "added": "2026-11-15"
+    },
+    {
+      "id": "q-10-57",
+      "type": "quran",
+      "ref": "10:57",
+      "theme": "Healing and Guidance",
+      "approved": true,
+      "origin": "gemini",
+      "added": "2026-11-15"
+    },
+    {
+      "id": "h-bukhari-4717",
+      "type": "hadith",
+      "text": "The prayer in congregation is twenty-five degrees superior to the prayer of an individual, and the angels of the night and the angels of the day gather at the Fajr prayer.",
+      "narrator": "Abu Huraira",
+      "source": "Sahih al-Bukhari 4717",
+      "grade": "Sahih",
+      "approved": true,
+      "origin": "gemini",
+      "added": "2026-11-15"
+    },
+    {
+      "id": "h-bukhari-6446",
+      "type": "hadith",
+      "text": "Wealth is not in having many possessions, but rather true wealth is the wealth of the soul.",
+      "narrator": "Abu Huraira",
+      "source": "Sahih al-Bukhari 6446",
+      "grade": "Sahih",
+      "approved": true,
+      "origin": "gemini",
+      "added": "2026-11-15"
     }
   ]
 }
