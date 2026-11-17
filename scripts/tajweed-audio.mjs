@@ -69,7 +69,7 @@ function body(model, text) {
 let modelIndex = 0;
 
 async function synthesize(text) {
-    for (let attempt = 1; attempt <= 6; attempt++) {
+    for (let attempt = 1; attempt <= 4; attempt++) {
         const model = MODELS[modelIndex];
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
             method: 'POST',
@@ -99,7 +99,7 @@ async function synthesize(text) {
         }
         await sleep(Math.min(120000, 10000 * 2 ** (attempt - 1)));
     }
-    throw new Error('No audio after 6 attempts');
+    throw new Error('No audio after 4 attempts');
 }
 
 function toMp3(audio, mime, target) {
@@ -118,6 +118,7 @@ const todo = texts.filter(text => process.env.REDO === '1' || !manifest[text] ||
 console.log(`${texts.length} texts, ${todo.length} to record with ${MODELS[0]} (voice ${VOICE}).`);
 
 let recorded = 0;
+let failedInRow = 0;
 for (const text of todo) {
     if (Date.now() > DEADLINE) {
         console.log('Time budget used up; run again to record the rest.');
@@ -130,10 +131,14 @@ for (const text of todo) {
         manifest[text] = file;
         fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 1)}\n`);
         recorded++;
+        failedInRow = 0;
         console.log(`  ✓ ${text} → ${file}`);
     } catch (error) {
         console.warn(`  ✗ ${text}: ${error.message}`);
-        if (/Daily quota/.test(error.message)) {
+        failedInRow++;
+        if (/Daily quota/.test(error.message) || failedInRow >= 3) {
+            console.warn('Stopping: three clips in a row failed or the daily quota is used up.');
+            process.exitCode = recorded ? 0 : 1;
             break;
         }
     }
