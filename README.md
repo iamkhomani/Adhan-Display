@@ -32,6 +32,12 @@ Live: [adhandisplay.com](https://adhandisplay.com)
 - Sahih al-Bukhari, Sahih Muslim and eight other collections
 - Browse, search, jump to a number, save and share
 
+**Adhan Tajweed**
+- A beginner's course in reading the Quran in 16 short lessons: the alphabet, letter shapes, makharij, heavy and light letters, vowels, sukoon, qalqalah, hamzatul wasl, shadda and ghunnah, the rules of ر, the name Allah, sun and moon letters, two sukoons and stopping
+- Every letter and example can be played, with a slow mode; a vowel lab, practice games, flashcards, XP, streaks and a certificate
+- In English and Dutch (other interface languages show English); progress stays on this device
+- The outline follows "Tilawa from the heart – Tajweed guide" by Asma Rouane
+
 **Islamic tools**
 - Morning and evening adhkar with counters
 - Du'a collection for daily moments (sleep, home, mosque, food, travel, hardship and more), with sources
@@ -75,12 +81,13 @@ js/core/              Storage, time zones and Hijri dates, icons, UI helpers
 js/services/          Prayer times, location, adhan alerts, tracker, Quran and API access
 js/pages/             Home, Prayer, Quran, Hadith, Islamic, Settings and Display mode
 js/data/content.js    Daily hadith, du'as, adhkar and other static content
+js/data/tajweed.js    Adhan Tajweed lessons, letters and games (English and Dutch)
 js/i18n/              Interface translations, one file per language (en.js is the base)
 data/live-streams.json Current live stream links (updated by a GitHub Action)
 scripts/              Maintenance scripts run by GitHub Actions
 fonts/                Self-hosted Manrope (Latin and Cyrillic), Marcellus and Amiri Quran (SIL Open Font License)
 images/icons/         App icons
-audio/                Adhan recordings and the reminder chime
+audio/                Adhan recordings, the reminder chime and the Tajweed clips
 nginx.conf            Optional config for self-hosting with nginx
 ```
 
@@ -101,6 +108,12 @@ Then open <http://localhost:8080>. A local web server is needed because browsers
 The Islamic page links straight to the live streams of Masjid al-Haram and Masjid an-Nabawi. Because stream links on YouTube change now and then, a GitHub Action (`.github/workflows/live-streams.yml`) runs `scripts/update-live-streams.mjs` every 3 hours. It searches YouTube for streams that are live, prefers the official channels (Saudi Quran TV and Saudi Sunnah TV) and updates `data/live-streams.json` when a link changes. The site reads that file from GitHub, so a new link works right away. When no live stream is found (for Al-Aqsa there is no stable 24/7 stream), the card opens YouTube's live search instead.
 
 To prefer other channels, edit the `channels` lists in the script. To run the check by hand: Actions, *Update live stream links*, *Run workflow*.
+
+## Tajweed audio
+
+The audio clips in `audio/tajweed/` are recorded with Gemini text-to-speech by `scripts/tajweed-audio.mjs`, so visitors do not need an Arabic voice on their device. `audio/tajweed/manifest.json` maps each Arabic text to its clip; a text without a clip falls back to the device's own Arabic voice when there is one.
+
+The workflow `.github/workflows/tajweed-audio.yml` runs when `js/data/tajweed.js` changes and records only the missing clips, using the `GEMINI_API_KEY` secret. Run it by hand from Actions, *Tajweed audio*, *Run workflow*; tick *redo* to record everything again, for example with another voice. If a run stops early because of rate limits, run it again.
 
 ## Translations
 

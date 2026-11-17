@@ -358,6 +358,17 @@ export function pageHeader(title, text = '', actions = '') {
     `;
 }
 
+/* Quick switch between the two "Read" pages: Quran and Hadith. */
+export function readSwitch(active) {
+    return `
+        <nav class="segmented read-switch" aria-label="${esc(t('nav.readChoice'))}">
+            ${['quran', 'hadith'].map(id => `
+                <a class="segment ${id === active ? 'is-active' : ''}" href="#${id}" ${id === active ? 'aria-current="page"' : ''}>${esc(t(`nav.${id}`))}</a>
+            `).join('')}
+        </nav>
+    `;
+}
+
 export function tabsHTML(base, tabs, active) {
     return `
         <nav class="tabs" aria-label="${esc(t('common.sections'))}">

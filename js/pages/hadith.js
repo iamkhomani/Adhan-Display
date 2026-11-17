@@ -9,7 +9,7 @@ import { store } from '../core/storage.js';
 import { spinner, emptyState, shareText, toast } from '../core/ui.js';
 import { fetchJson, cachedJson, ENDPOINTS } from '../services/api.js';
 import { HADITH_COLLECTIONS } from '../data/content.js';
-import { pageHeader } from './components.js';
+import { pageHeader, readSwitch } from './components.js';
 import { t, lang } from '../core/i18n.js';
 
 const SITE = 'https://adhandisplay.com/';
@@ -407,6 +407,7 @@ export const hadithPage = {
     render() {
         return `
             <div class="page hadith-page">
+                ${readSwitch('hadith')}
                 ${pageHeader(t('nav.hadith'), t('hadith.lead'),
                     `<button type="button" class="button button-ghost" data-hadith="show-saved">${icon('bookmark', { size: 18 })} ${esc(t('hadith.savedShort'))} <span class="count tnum" data-saved-count>${bookmarks().length}</span></button>`)}
                 <form class="search-bar" data-hadith-search role="search">
