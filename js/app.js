@@ -6,7 +6,7 @@
 import { esc } from './core/util.js';
 import { icon } from './core/icons.js';
 import { bus } from './core/bus.js';
-import { getSettings, setSetting } from './core/storage.js';
+import { getSettings, setSetting, store } from './core/storage.js';
 import { toast } from './core/ui.js';
 import { APP_VERSION } from './app-info.js';
 import { t, loadLanguage } from './core/i18n.js';
@@ -20,6 +20,7 @@ import { hadithPage } from './pages/hadith.js';
 import { islamicPage } from './pages/islamic.js';
 import { settingsPage } from './pages/settings.js';
 import { displayPage } from './pages/display.js';
+import { tajweedPage } from './pages/tajweed.js';
 import { openLocationDialog } from './pages/components.js';
 
 const PAGES = {
@@ -29,16 +30,32 @@ const PAGES = {
     hadith: hadithPage,
     islamic: islamicPage,
     settings: settingsPage,
-    display: displayPage
+    display: displayPage,
+    tajweed: tajweedPage
 };
 
 const NAV = [
     ['home', 'home'],
+    ['read', 'book'],
     ['prayer', 'clock'],
-    ['quran', 'book'],
-    ['hadith', 'scroll'],
+    ['tajweed', 'tajweed'],
     ['islamic', 'crescent']
 ];
+
+/* "Read" covers the Quran and Hadith pages and opens the one used last. */
+const READ_PAGES = ['quran', 'hadith'];
+
+function navTarget(id) {
+    if (id !== 'read') {
+        return id;
+    }
+    const last = store.raw('read_last');
+    return READ_PAGES.includes(last) ? last : 'quran';
+}
+
+function navActive(id, page) {
+    return id === page || (id === 'read' && READ_PAGES.includes(page));
+}
 
 const ALIASES = { '': 'home', dashboard: 'home', discover: 'islamic' };
 
@@ -87,7 +104,7 @@ darkQuery?.addEventListener?.('change', () => {
 
 function navLinks(className) {
     return NAV.map(([id, iconName]) => `
-        <a class="${className}" href="#${id}" data-nav="${id}">
+        <a class="${className}" href="#${navTarget(id)}" data-nav="${id}">
             ${icon(iconName, { size: className === 'tab-link' ? 22 : 18 })}
             <span>${esc(t(`nav.${id}`))}</span>
         </a>
@@ -258,8 +275,15 @@ function render() {
     }
 
     document.body.dataset.page = route.name;
+    if (READ_PAGES.includes(route.name)) {
+        store.setRaw('read_last', route.name);
+    }
+
     document.querySelectorAll('[data-nav]').forEach(link => {
-        const current = link.dataset.nav === route.name;
+        if (link.dataset.nav === 'read') {
+            link.setAttribute('href', `#${navTarget('read')}`);
+        }
+        const current = navActive(link.dataset.nav, route.name);
         link.classList.toggle('is-active', current);
         if (current) {
             link.setAttribute('aria-current', 'page');

@@ -1,0 +1,71 @@
+# Records the Arabic audio clips for Adhan Tajweed (scripts/tajweed-audio.mjs)
+# with Gemini text-to-speech and commits them to audio/tajweed/.
+# Runs when the lesson data changes, once a day until every clip exists (the free
+# Gemini tier allows only a few clips a day), or by hand: Actions > "Tajweed audio" > Run workflow.
+# Clips that already exist are kept; run it again if a run stopped early.
+name: Tajweed audio
+
+on:
+  schedule:
+    - cron: '41 2 * * *'
+  push:
+    branches: [main]
+    paths: ['js/data/tajweed.js', 'scripts/tajweed-audio.mjs']
+  workflow_dispatch:
+    inputs:
+      redo:
+        description: 'Record every clip again (for example after changing the voice)'
+        type: boolean
+        default: false
+      voice:
+        description: 'Voice name (for example Charon, Kore, Puck)'
+        type: string
+        default: 'Charon'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tajweed-audio-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Anything left to record?
+        id: check
+        run: |
+          missing=$(node -e "import('./js/data/tajweed.js').then(m=>{const f=JSON.parse(require('fs').readFileSync('audio/tajweed/manifest.json','utf8'));console.log(m.speechTexts().filter(t=>!f[t]).length)})")
+          echo "Missing clips: $missing"
+          if [ "$missing" = "0" ] && [ "${{ inputs.redo }}" != "true" ]; then echo "skip=1" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Install ffmpeg
+        if: steps.check.outputs.skip != '1'
+        run: command -v ffmpeg || (sudo apt-get update -q && sudo apt-get install -y -q ffmpeg)
+
+      - name: Record missing clips
+        if: steps.check.outputs.skip != '1'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          REDO: ${{ inputs.redo && '1' || '' }}
+          TTS_VOICE: ${{ inputs.voice || 'Charon' }}
+        run: node scripts/tajweed-audio.mjs
+
+      - name: Commit clips
+        if: always() && steps.check.outputs.skip != '1'
+        run: |
+          if [ -z "$(git status --porcelain -- audio/tajweed)" ]; then echo "No new clips."; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A audio/tajweed
+          git commit -q -m "Tajweed: record audio clips"
+          for i in 1 2 3; do git pull -q --rebase origin "${GITHUB_REF_NAME}" && git push -q origin "HEAD:${GITHUB_REF_NAME}" && exit 0; sleep 5; done
+          exit 1

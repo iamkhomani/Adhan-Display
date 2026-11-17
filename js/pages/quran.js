@@ -12,7 +12,7 @@ import {
     quranPrefs, surahList, translations, reciters, surah as loadSurahData, juz as loadJuzData,
     searchQuran, audioUrl, tafsir, sanitizeHtml
 } from '../services/quran.js';
-import { pageHeader } from './components.js';
+import { pageHeader, readSwitch } from './components.js';
 import { t, locale } from '../core/i18n.js';
 import { zonedParts, daysBetweenKeys } from '../core/time.js';
 import { portion } from '../data/quran-meta.js';
@@ -453,6 +453,7 @@ async function handleKhatm(root, action) {
 function browseView() {
     return `
         <div class="page quran-page">
+            ${readSwitch('quran')}
             ${pageHeader(t('nav.quran'), t('quran.lead'))}
             ${continueCard()}
             <div data-khatm-slot>${khatmCard()}</div>
