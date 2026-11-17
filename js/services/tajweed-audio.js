@@ -55,16 +55,43 @@ export function stopAudio() {
     }
 }
 
+/*
+ * Speaks with the device's own voice. Android often lists no voices at all
+ * (or only after a while), yet speaks Arabic fine when asked for ar-SA, so
+ * it always tries and waits for the speech to actually start.
+ */
 function speakWithDevice(text, slow) {
-    if (!('speechSynthesis' in window) || !voice) {
-        return false;
+    if (!('speechSynthesis' in window)) {
+        return Promise.resolve(false);
     }
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = voice.lang || 'ar-SA';
-    utterance.voice = voice;
-    utterance.rate = slow ? 0.55 : 0.8;
-    window.speechSynthesis.speak(utterance);
-    return true;
+    const synth = window.speechSynthesis;
+    pickVoice();
+
+    return new Promise(resolve => {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = voice?.lang?.replace('_', '-') || 'ar-SA';
+        if (voice) {
+            utterance.voice = voice;
+        }
+        utterance.rate = slow ? 0.55 : 0.8;
+
+        let settled = false;
+        const finish = ok => {
+            if (!settled) {
+                settled = true;
+                clearTimeout(timer);
+                resolve(ok);
+            }
+        };
+        const timer = setTimeout(() => finish(false), 3000);
+        utterance.onstart = () => finish(true);
+        utterance.onend = () => finish(true);
+        utterance.onerror = event => finish(event.error === 'interrupted' || event.error === 'canceled');
+
+        /* Some Android versions drop an utterance spoken right after cancel(), so wait a moment. */
+        synth.cancel();
+        setTimeout(() => synth.speak(utterance), 80);
+    });
 }
 
 /*
@@ -73,7 +100,7 @@ function speakWithDevice(text, slow) {
  */
 export async function playArabic(text, { slow = false } = {}) {
     stopAudio();
-    const files = await loadManifest();
+    const files = manifest || await loadManifest();
     const file = files[text];
 
     if (file) {
@@ -89,7 +116,7 @@ export async function playArabic(text, { slow = false } = {}) {
         }
     }
 
-    return speakWithDevice(text, slow) ? 'device' : 'none';
+    return (await speakWithDevice(text, slow)) ? 'device' : 'none';
 }
 
 /* Fetches the manifest early so the first tap plays without delay. */

@@ -11,7 +11,7 @@
  * translation is pre-cached; the chosen language is cached when it loads.
  */
 
-const VERSION = 'adhan-display-5.5.0';
+const VERSION = 'adhan-display-5.5.1';
 
 const SHELL = [
     './',
