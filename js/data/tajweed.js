@@ -1,9 +1,8 @@
 /*
  * Adhan Tajweed: lessons, letters and games.
  *
- * The course follows the order of "Tilawa from the heart – Tajweed guide"
- * by Asma Rouane. The explanations are written for this site. Texts are in
- * English and Dutch ({ en, nl }); other interface languages show English.
+ * Texts are in English and Dutch ({ en, nl }); other interface languages
+ * show English.
  *
  * Every Arabic text that can be played is listed by speechTexts(), which
  * scripts/tajweed-audio.mjs uses to record the audio files.
@@ -110,8 +109,6 @@ export const UI = {
     resetConfirm: tx('Reset your Tajweed XP, stars and streak? This cannot be undone.',
         'Je Tajweed-XP, sterren en reeks wissen? Dit kan niet ongedaan worden.'),
     resetDone: tx('Progress reset', 'Voortgang gewist'),
-    credit: tx('Course outline based on “Tilawa from the heart – Tajweed guide” by Asma Rouane.',
-        'Leerlijn gebaseerd op “Tilawa from the heart – Tajweed guide” van Asma Rouane.'),
     noVoice: tx('This sound is not recorded yet and your device has no Arabic voice.',
         'Deze klank is nog niet opgenomen en je apparaat heeft geen Arabische stem.'),
     noSound: tx('Playing the sound did not work.', 'Afspelen lukte niet.')

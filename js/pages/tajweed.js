@@ -395,7 +395,6 @@ function pathView() {
                 <span class="tj-unit-text"><strong>${esc(tr(UI.certificate))}</strong><small>${esc(tr(UI.certificateNext))}</small></span>
             </a>
         </div>
-        <p class="tj-credit">${esc(tr(UI.credit))}</p>
     `;
 }
 

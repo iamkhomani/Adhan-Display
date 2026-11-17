@@ -86,13 +86,13 @@ async function synthesize(text) {
             }
             console.warn(`  no audio in the answer (attempt ${attempt})`);
         } else {
-            const detail = (await res.text()).slice(0, 300);
+            const detail = (await res.text()).replace(/\s+/g, ' ').slice(0, 900);
             if ((res.status === 400 || res.status === 404) && modelIndex < MODELS.length - 1) {
                 console.warn(`  ${model} answered ${res.status}; trying ${MODELS[modelIndex + 1]}. ${detail}`);
                 modelIndex++;
                 continue;
             }
-            if (res.status === 429 && /per.?day|daily/i.test(detail)) {
+            if (res.status === 429 && /per.?day|daily|PerDay/i.test(detail)) {
                 throw new Error(`Daily quota reached: ${detail}`);
             }
             console.warn(`  HTTP ${res.status} (attempt ${attempt}): ${detail}`);

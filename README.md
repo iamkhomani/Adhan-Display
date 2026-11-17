@@ -36,7 +36,6 @@ Live: [adhandisplay.com](https://adhandisplay.com)
 - A beginner's course in reading the Quran in 16 short lessons: the alphabet, letter shapes, makharij, heavy and light letters, vowels, sukoon, qalqalah, hamzatul wasl, shadda and ghunnah, the rules of ر, the name Allah, sun and moon letters, two sukoons and stopping
 - Every letter and example can be played, with a slow mode; a vowel lab, practice games, flashcards, XP, streaks and a certificate
 - In English and Dutch (other interface languages show English); progress stays on this device
-- The outline follows "Tilawa from the heart – Tajweed guide" by Asma Rouane
 
 **Islamic tools**
 - Morning and evening adhkar with counters
@@ -113,7 +112,7 @@ To prefer other channels, edit the `channels` lists in the script. To run the ch
 
 The audio clips in `audio/tajweed/` are recorded with Gemini text-to-speech by `scripts/tajweed-audio.mjs`, so visitors do not need an Arabic voice on their device. `audio/tajweed/manifest.json` maps each Arabic text to its clip; a text without a clip falls back to the device's own Arabic voice when there is one.
 
-The workflow `.github/workflows/tajweed-audio.yml` runs when `js/data/tajweed.js` changes and records only the missing clips, using the `GEMINI_API_KEY` secret. Run it by hand from Actions, *Tajweed audio*, *Run workflow*; tick *redo* to record everything again, for example with another voice. If a run stops early because of rate limits, run it again.
+The workflow `.github/workflows/tajweed-audio.yml` runs when `js/data/tajweed.js` changes and once a day, and records only the missing clips, using the `GEMINI_API_KEY` secret. Run it by hand from Actions, *Tajweed audio*, *Run workflow*; tick *redo* to record everything again, for example with another voice. If a run stops early because of rate limits, run it again.
 
 ## Translations
 

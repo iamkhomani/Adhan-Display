@@ -4787,13 +4787,6 @@ html[lang="ur"] * {
     white-space: nowrap;
 }
 
-.tj-credit {
-    margin: 28px 0 0;
-    color: var(--muted);
-    font-size: 0.8125rem;
-    text-align: center;
-}
-
 /* Lesson flow */
 
 .tajweed-flow {
